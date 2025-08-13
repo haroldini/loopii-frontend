@@ -1,5 +1,5 @@
 document.getElementById('fetchBtn').addEventListener('click', () => {
-  fetch('http://127.0.0.1:8000/')
+    fetch("https://loopii-backend.onrender.com/")
     .then(response => response.json())
     .then(data => {
       document.getElementById('message').textContent = data.message;
