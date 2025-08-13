@@ -1,5 +1,5 @@
 document.getElementById('fetchBtn').addEventListener('click', () => {
-    fetch("https://loopii-backend.onrender.com/")
+    fetch("https://api.loopii.app/")
     .then(response => response.json())
     .then(data => {
       document.getElementById('message').textContent = data.message;
