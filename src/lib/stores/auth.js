@@ -7,10 +7,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export const user = writable(null);
 export const session = writable(null);
+export const loading = writable(true);
 
 
-// Intialize the auth store
 export async function initAuth() {
+    loading.set(true);
+
     const { data } = await supabase.auth.getSession();
     session.set(data.session);
     user.set(data.session?.user ?? null);
@@ -19,7 +21,10 @@ export async function initAuth() {
         session.set(newSession);
         user.set(newSession?.user ?? null);
     });
+
+    loading.set(false);
 }
+
 
 export async function signInWithEmail(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
