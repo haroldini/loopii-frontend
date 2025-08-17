@@ -1,18 +1,20 @@
 
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { getUnseenProfile, evaluateProfile } from '$lib/api/profile.js';
 
 export const profile = writable(null);
-export const profileStatus = writable('loading');
+export const profileStatus = writable('empty'); // can be 'loading', 'loaded', 'empty', 'error', 'retrieved'
 
 
 // Fetch the next profile
 export async function fetchProfile() {
+    // prevent spam if already loading
+    if (get(profileStatus) === 'loading') return;
+
     profileStatus.set('loading');
+
     try {
         const profileRes = await getUnseenProfile();
-        console.log('Fetched profile:', profileRes);
-
         if (profileRes.success) {
             profile.set(profileRes.data);
             profileStatus.set(profileRes.data ? 'loaded' : 'empty');
@@ -23,6 +25,8 @@ export async function fetchProfile() {
     } catch (err) {
         profile.set(null);
         profileStatus.set('error');
+    } finally {
+        if (get(profileStatus) === 'loading') profileStatus.set('retrieved');
     }
 }
 
@@ -36,10 +40,10 @@ export async function handleDecision(connect) {
 
     try {
         console.log('Evaluating profile:', current.id, 'Connect:', connect);
+        await fetchProfile();
         const res = await evaluateProfile(current.id, connect);
         if (!res.success) throw new Error(res.error);
 
-        await fetchProfile();
     } catch (err) {
         profile.set(null);
         profileStatus.set('error');

@@ -12,7 +12,7 @@
 {#if $profileStatus === 'loading'}
     <p>Loading profile...</p>
 
-{:else if $profileStatus === 'error'}
+{:else if $profileStatus === 'error' && $profileStatus !== 'empty'}
     <p>Error loading profile.</p>
     <button on:click={fetchProfile}>Retry</button>
 
