@@ -39,7 +39,6 @@ export async function handleDecision(connect) {
     if (!current) return;
 
     try {
-        console.log('Evaluating profile:', current.id, 'Connect:', connect);
         await fetchProfile();
         const res = await evaluateProfile(current.id, connect);
         if (!res.success) throw new Error(res.error);

@@ -10,7 +10,7 @@
     import { 
         subPage, email, confirmEmail, password, confirmPassword, 
         emailTouched, passwordTouched,
-        validationErrors, error,
+        validationErrors, error, message,
         readyToSubmit,
         toggleMode
     } from '$lib/stores/authForm';
@@ -25,24 +25,29 @@
     // Function to handle the authentication page form complete, triggering correct auth function
     async function handleSubmit() {
         error.set('');
+        message.set('');
         validationErrors.set([]);
-        try {
-            if ($subPage === 'signup') {
-                const { data, error: err } = await signUpWithEmail($email, $password);
-                if (err) throw err;
-            } else if ($subPage === 'login') {
-                const { data, error: err } = await signInWithEmail($email, $password);
-                if (err) throw err;
-            } else if ($subPage === 'requestReset') {
-                const { data, error: err } = await requestPasswordReset($email);
-                if (err) throw err;
-            } else if ($subPage === 'reset') {
-                const { data, error: err } = await resetPasswordWithToken($resetToken, $password);
-                if (err) throw err;
-            }
-        } catch (err) {
-            error.set(err.message || err);
+
+        let result;
+
+        if ($subPage === 'signup') {
+            result = await signUpWithEmail($email, $password);
+            if (!result.error && result.data.user) message.set('Sign up successful! Check your email.');
+        } else if ($subPage === 'login') {
+            result = await signInWithEmail($email, $password);
+            if (!result.error && result.data.session) message.set('Login successful!');
+        } else if ($subPage === 'requestReset') {
+            result = await requestPasswordReset($email);
+            if (!result.error) message.set('Password reset email sent!');
+        } else if ($subPage === 'reset') {
+            result = await resetPasswordWithToken($resetToken, $password);
+            if (!result.error && result.data.user) message.set('Password updated successfully!');
+            setTimeout(() => {
+                window.location.reload(); 
+            }, 1500);
         }
+
+        if (result.error) error.set(result.error);
     }
 
     const pageTitles = {
@@ -106,6 +111,10 @@
 
         {#if $error}
             <p style="color:red; margin-top:0.5rem;">{$error}</p>
+        {/if}
+
+        {#if $message}
+            <p style="color:red; margin-top:0.5rem;">{$message}</p>
         {/if}
     </div>
 {/if}

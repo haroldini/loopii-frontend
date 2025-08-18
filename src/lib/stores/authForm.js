@@ -16,9 +16,10 @@ export const emailTouched = writable(false);
 export const passwordTouched = writable(false);
 
 
-///// --- Errors ---
+///// --- Errors / Messages ---
 export const validationErrors = writable([]);
 export const error = writable('');
+export const message = writable('');
 
 
 ///// --- Validation logic for email and password fields ---
@@ -91,4 +92,5 @@ export function toggleMode(mode) {
     passwordTouched.set(false);
     validationErrors.set([]);
     error.set('');
+    message.set('')
 }
