@@ -1,6 +1,7 @@
 
 <script>
     import { get } from 'svelte/store';
+    import { goto } from '$app/navigation';
 
     import { 
         user, signInWithEmail, signUpWithEmail, requestPasswordReset, 
@@ -8,11 +9,11 @@
     } from '$lib/stores/auth';
 
     import { 
-        subPage, email, confirmEmail, password, confirmPassword, 
-        emailTouched, passwordTouched,
-        validationErrors, error, message,
+        email, confirmEmail, password, confirmPassword, 
+        emailTouched, passwordTouched, isSubmitting, subPage, showForm,
+        validationErrors, error, authFormStatus,
         readyToSubmit,
-        toggleMode
+        toggleMode, resetAuthForm, toggleForm
     } from '$lib/stores/authForm';
 
     import { onMount } from 'svelte';
@@ -24,30 +25,63 @@
 
     // Function to handle the authentication page form complete, triggering correct auth function
     async function handleSubmit() {
+        isSubmitting.set('true'); // Prevent double submission
+
         error.set('');
-        message.set('');
+        authFormStatus.set('');
         validationErrors.set([]);
 
         let result;
 
-        if ($subPage === 'signup') {
-            result = await signUpWithEmail($email, $password);
-            if (!result.error && result.data.user) message.set('Sign up successful! Check your email.');
-        } else if ($subPage === 'login') {
-            result = await signInWithEmail($email, $password);
-            if (!result.error && result.data.session) message.set('Login successful!');
-        } else if ($subPage === 'requestReset') {
-            result = await requestPasswordReset($email);
-            if (!result.error) message.set('Password reset email sent!');
-        } else if ($subPage === 'reset') {
-            result = await resetPasswordWithToken($resetToken, $password);
-            if (!result.error && result.data.user) message.set('Password updated successfully!');
-            setTimeout(() => {
-                window.location.reload(); 
-            }, 1500);
-        }
+        try {
+            if ($subPage === 'signup') {
+                authFormStatus.set('signingUp')
+                result = await signUpWithEmail($email, $password);
+                if (!result.error && result.data.user) {
+                    authFormStatus.set('signedUp');
+                    toggleForm(false); // Hide the form on successful signup
+                }
+                else authFormStatus.set('signUpFailed')
 
-        if (result.error) error.set(result.error);
+            } else if ($subPage === 'login') {
+                authFormStatus.set('loggingIn')
+                result = await signInWithEmail($email, $password);
+                if (!result.error && result.data.session) {
+                    authFormStatus.set('loggedIn');
+                    // Reset the auth form as we exit form
+                    resetAuthForm()
+                    await goto('/')
+                }
+                else authFormStatus.set('loginFailed')
+                
+            } else if ($subPage === 'requestReset') {
+                authFormStatus.set('sendingResetRequest')
+                result = await requestPasswordReset($email);
+                if (!result.error) {
+                    authFormStatus.set('resetEmailSent');
+                    toggleForm(false);
+                }
+                else authFormStatus.set('resetRequestFailed')
+
+            } else if ($subPage === 'reset') {
+                authFormStatus.set('resettingPassword')
+                result = await resetPasswordWithToken($resetToken, $password);
+                if (!result.error && result.data.user) {
+                    authFormStatus.set('passwordReset');
+                }
+                else {
+                    authFormStatus.set('resetPasswordFailed')
+                }
+            }
+
+            // If error (from supabase), set status to idle and display the supabase error directly
+            if (result.error) {
+                if (result.error.message)
+                error.set(result.error.message || 'Something went wrong');
+            }
+        } finally {
+            isSubmitting.set(false)
+        }
     }
 
     const pageTitles = {
@@ -59,11 +93,13 @@
 </script>
 
 
-{#if $user === null || $authIsRecovery}
-    <div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px;">
-        
-        <h2 style="text-align:center;">{pageTitles[$subPage] ?? 'Unknown Page'}</h2>
 
+<div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px;">
+    
+    <h2 style="text-align:center;">{pageTitles[$subPage] ?? 'Unknown Page'}</h2>
+
+    <!-- Form for login / signup / reset / requestReset fields -->
+    {#if $showForm}
         <form on:submit|preventDefault={handleSubmit} style="display:flex; flex-direction:column; gap:0.5rem;">
             
             <!-- Always show email, except reset -->
@@ -89,32 +125,137 @@
             <!-- Display the correct buttons -->
             <div style="margin-top:1rem; display:flex; justify-content:space-between;">
                 {#if $subPage === 'signup'}
-                    <button type="submit" disabled={!$readyToSubmit}>Sign Up</button>
+                    <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Sign Up</button>
                     <button type="button" on:click={() => toggleMode('login')}>Login instead</button>
                 {:else if $subPage === 'login'}
-                    <button type="submit" disabled={!$readyToSubmit}>Login</button>
+                    <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Login</button>
                     <button type="button" on:click={() => toggleMode('signup')}>Sign up instead</button>
                     <button type="button" on:click={() => toggleMode('requestReset')}>Forgot password?</button>
                 {:else if $subPage === 'requestReset'}
-                    <button type="submit" disabled={!$readyToSubmit}>Send reset email</button>
+                    <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Send reset email</button>
                     <button type="button" on:click={() => toggleMode('login')}>Back to Login</button>
                 {:else if $subPage === 'reset'}
-                    <button type="submit" disabled={!$readyToSubmit}>Set New Password</button>
+                    <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Set New Password</button>
                 {/if}
             </div>
         </form>
+    {/if}
 
 
-        {#each $validationErrors.filter(e => e.display) as err}
-            <p style="color:red; margin-top:0.5rem;">{err.message}</p>
-        {/each}
+    <!-- Status / Feedback Box -->
+    {#if $validationErrors.filter(e => e.display).length || $error || $authFormStatus}
+        <div style="margin-top:1rem; padding:0.75rem; border-radius:6px; background:#f9f9f9;">
 
-        {#if $error}
-            <p style="color:red; margin-top:0.5rem;">{$error}</p>
-        {/if}
+            <!-- Validation errors (field-level, usually multiple) -->
+            {#each $validationErrors.filter(e => e.display) as err}
+                <p style="color:#d00; margin:0.25rem 0;">{err.message}</p>
+            {/each}
 
-        {#if $message}
-            <p style="color:red; margin-top:0.5rem;">{$message}</p>
-        {/if}
-    </div>
-{/if}
+            <!-- Auth status messages -->
+            <!-- Login -->
+            {#if $authFormStatus === 'loggingIn'}
+                <p>Logging in…</p>
+            {:else if $authFormStatus === 'loggedIn'}
+                <p style="color:green;">Login successful!</p>
+            {:else if $authFormStatus === 'loginFailed'}
+                <p style="color:#d00;">Login failed</p>
+
+
+            <!-- Signup -->
+            {:else if $authFormStatus === 'signingUp'}
+                <p>Creating your account…</p>
+            {:else if $authFormStatus === 'signedUp'}
+            <p style="color:green;">
+                Confirmation email sent! Check your inbox ({$email}) to verify your account.
+            </p>
+            {#if !$showForm}
+                <p>
+                    Click
+                    <span
+                        role="button"
+                        tabindex="0"
+                        on:click={() => toggleForm(true)}
+                        on:keydown={(e) => e.key === 'Enter' && toggleForm(true)}
+                        style="color:blue; cursor:pointer; text-decoration:underline;"
+                    >
+                        here
+                    </span>
+                    if you need to resend the email.
+                </p>
+            {/if}
+            <p>
+                If you don’t receive it, your email may already be in use — Try
+                <span
+                    role="button"
+                    tabindex="0"
+                    on:click={() => toggleMode('login')}
+                    on:keydown={(e) => e.key === 'Enter' && toggleMode('login')}
+                    style="color:blue; cursor:pointer; text-decoration:underline;"
+                >
+                    logging in
+                </span>
+                instead.
+            </p>
+            {:else if $authFormStatus === 'signUpFailed'}
+                <p style="color:#d00;">Sign up failed</p>
+
+            <!-- Password reset request -->
+            {:else if $authFormStatus === 'sendingResetRequest'}
+                <p>Sending password reset email…</p>
+            {:else if $authFormStatus === 'resetEmailSent'}
+                <p style="color:green;">Password reset email sent! Check your inbox ({$email}) to set a new password.</p>
+                {#if !$showForm}
+                    <p>
+                        Click
+                        <span
+                            role="button"
+                            tabindex="0"
+                            on:click={() => toggleForm(true)}
+                            on:keydown={(e) => e.key === 'Enter' && toggleForm(true)}
+                            style="color:blue; cursor:pointer; text-decoration:underline;"
+                        >
+                            here
+                        </span> to resend the email.
+                    </p>
+                {/if}
+            {:else if $authFormStatus === 'resetRequestFailed'}
+                <p style="color:#d00;">Could not send reset email</p>
+                
+            <!-- Password update -->
+            {:else if $authFormStatus === 'resettingPassword'}
+                <p>Updating your password…</p>
+            {:else if $authFormStatus === 'passwordReset'}
+                <p style="color:green;">Password updated successfully!</p>
+                <p>
+                    You can now 
+                    <span
+                        role="button"
+                        tabindex="0"
+                        on:click={() => location.reload()}
+                        on:keydown={(e) => e.key === 'Enter' && location.reload()}
+                        style="color:blue; cursor:pointer; text-decoration:underline;"
+                    >
+                        continue to the app
+                    </span>, or 
+                    <span
+                        role="button"
+                        tabindex="0"
+                        on:click={() => toggleMode('login')}
+                        on:keydown={(e) => e.key === 'Enter' && toggleMode('login')}
+                        style="color:blue; cursor:pointer; text-decoration:underline;"
+                    >
+                        login to check your new password
+                    </span>.
+                </p>
+            {:else if $authFormStatus === 'resetPasswordFailed'}
+                <p style="color:#d00;">Password reset failed</p>
+            {/if}
+
+            <!-- API error (single) -->
+            {#if $error}
+                <p style="color:#d00; margin:0.25rem 0;">{$error}</p>
+            {/if}
+
+        </div>
+    {/if}
+</div>

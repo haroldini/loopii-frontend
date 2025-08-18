@@ -2,7 +2,6 @@ import { writable, derived } from 'svelte/store';
 
 
 ///// --- Form state ---
-export const subPage = writable('login'); // 'login', 'signup', 'requestReset', 'reset
 export const email = writable('');
 export const confirmEmail = writable('');
 export const password = writable('');
@@ -10,16 +9,22 @@ export const confirmPassword = writable('');
 export const resetToken = writable('');
 
 
-
-///// --- Touched fields (for UI feedback) ---
+///// --- UI state ---
+export const subPage = writable('login'); // 'login', 'signup', 'requestReset', 'reset
 export const emailTouched = writable(false);
 export const passwordTouched = writable(false);
+export const isSubmitting = writable(false);
+export const showForm = writable(true);
 
 
 ///// --- Errors / Messages ---
 export const validationErrors = writable([]);
 export const error = writable('');
-export const message = writable('');
+export const authFormStatus = writable(''); 
+// 'loggingIn', 'loginFailed', 'loggedIn',
+// 'signingUp', 'signUpFailed, 'signedUp',
+// 'sendingResetEmail', ''resetEmailFailed', 'resetEmailSent',
+// 'resettingPassword', 'resetPasswordFailed', 'passwordReset
 
 
 ///// --- Validation logic for email and password fields ---
@@ -85,12 +90,30 @@ export const readyToSubmit = derived(
 
 ///// --- Swap between login, requestReset and signup mode ---
 export function toggleMode(mode) {
-    subPage.set(mode)
+    subPage.set(mode);
+    showForm.set(true);
     confirmEmail.set('');
     confirmPassword.set('');
     emailTouched.set(false);
     passwordTouched.set(false);
     validationErrors.set([]);
     error.set('');
-    message.set('')
+    authFormStatus.set('');
+}
+
+// Reset all the authForm stores
+export function resetAuthForm() {
+    toggleMode('login');
+    email.set('');
+    password.set('');
+    resetToken.set('')
+}
+
+// Toggles the showForm store, used to toggle the fields/submit buttons
+export function toggleForm(value) {
+    if (typeof value === 'boolean') {
+        showForm.set(value);
+    } else {
+        showForm.update(v => !v); // toggle if no argument
+    }
 }

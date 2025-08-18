@@ -75,7 +75,7 @@ export async function signUpWithEmail(email, password) {
 export async function requestPasswordReset(email) {
     try {
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/'
+            redirectTo: window.location.origin
         });
         return { data, error };
     } catch (err) {
