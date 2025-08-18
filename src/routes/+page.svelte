@@ -1,6 +1,7 @@
 
 <script>
-    import { profile, profileStatus, handleDecision, fetchProfile } from '$lib/stores/profile.js';
+    import { initProfileStore, profile, profileStatus, handleDecision, fetchProfile } from '$lib/stores/profile.js';
+    initProfileStore();
 </script>
 
 

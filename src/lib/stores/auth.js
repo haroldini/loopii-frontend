@@ -7,11 +7,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export const user = writable(null);
 export const session = writable(null);
-export const loading = writable(true);
+export const authLoading = writable(true);
 
 
 export async function initAuth() {
-    loading.set(true);
+    authLoading.set(true);
 
     const { data } = await supabase.auth.getSession();
     session.set(data.session);
@@ -22,22 +22,34 @@ export async function initAuth() {
         user.set(newSession?.user ?? null);
     });
 
-    loading.set(false);
+    authLoading.set(false);
 }
 
 
 export async function signInWithEmail(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { data, error };
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        return { data, error };
+    } catch (error) {
+        return { data: null, error: 'A network error occurred' };
+    }
 }
 
 export async function signUpWithEmail(email, password) {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    return { data, error };
+    try {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        return { data, error };
+    } catch (error) {
+        return { data: null, error: 'A network error occurred' };
+    }
 }
 
 export async function signOut() {
-    await supabase.auth.signOut();
-    user.set(null);
-    session.set(null);
+    try {
+        await supabase.auth.signOut();
+        user.set(null);
+        session.set(null);
+    } catch (error) {
+        return { error: 'A network error occurred' };
+    }
 }

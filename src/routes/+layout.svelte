@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { initAuth, user, loading } from '$lib/stores/auth';
+	import { initAuth, user, authLoading, signOut } from '$lib/stores/auth';
 	import Auth from '$lib/components/Auth.svelte';
 	import favicon from '$lib/assets/favicon.svg';
 
@@ -9,6 +9,10 @@
 	onMount(async () => {
 		await initAuth();
 	});
+
+	async function handleLogout() {
+		await signOut();
+	}
 </script>
 
 <svelte:head>
@@ -17,9 +21,11 @@
 
 <h1>loopii</h1>
 
-{#if $loading}
-	<p>Loading...</p>
+{#if $authLoading}
+	<p>Loading Login...</p>
 {:else if $user}
+	<p>Logged in as {$user.email}</p>
+	<button onclick={handleLogout}>Log Out</button>
 	{@render children?.()}
 {:else}
 	<Auth />
