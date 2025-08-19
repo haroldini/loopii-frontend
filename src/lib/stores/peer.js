@@ -1,56 +1,137 @@
 
 import { writable, get } from 'svelte/store';
-import { getUnseenPeer, evaluatePeer } from '$lib/api/peer.js';
+import { getUnseenPeers, evaluatePeer } from '$lib/api/peer.js';
 
 export const peer = writable(null);
-export const peerStatus = writable('empty'); // can be 'loading', 'loaded', 'empty', 'error', 'retrieved'
+export const peerQueue = writable([]);            // queue[0] is the current peer (not removed until evaluated)
+export const peerStatus = writable('empty');      // 'loading' | 'loaded' | 'empty' | 'error'
+
+const QUEUE_BATCH_SIZE = 10;
+const QUEUE_MIN = 5;
+
+let isFetching = false;
 
 
-// Fetch the next peer
-export async function fetchPeer() {
-    // prevent spam if already loading
-    if (get(peerStatus) === 'loading') return;
+/**
+ * Fetch a batch of unseen peers from the API and append them to the queue.
+ * Does not touch peerStatus directly - only returns result info.
+*/
+export async function fetchPeerBatch() {
+    if (isFetching) return { ok: true, added: 0, skipped: true };
+    isFetching = true;
 
+    try {
+        const queue = get(peerQueue);
+        const exclude_ids = queue.map(p => p.id);
+        const res = await getUnseenPeers({ exclude_ids, limit: QUEUE_BATCH_SIZE });
+
+        if (res?.success) {
+            const added = Array.isArray(res.data) ? res.data.length : 0;
+            if (added > 0) {
+                peerQueue.update(q => [...q, ...res.data]);
+            }
+            return { ok: true, added };
+        }
+
+        return { ok: false, added: 0, error: res?.error ?? 'Unknown error' };
+    } catch (err) {
+        console.error('fetchPeerBatch error:', err);
+        return { ok: false, added: 0, error: err?.message || String(err) };
+    } finally {
+        isFetching = false;
+    }
+}
+
+/**
+ * Set the current peer to the first in the queue (without removing it).
+ * If queue is running low, silently fetch more in the background.
+*/
+export function setNextPeer() {
+    const queue = get(peerQueue);
+    if (queue.length === 0) {
+        peer.set(null);
+        peerStatus.set('empty');   // only mark empty if no current and no queue
+        return null;
+    }
+    
+    peer.set(queue[0]);
+    peerStatus.set('loaded');
+    
+    const remainingAfterCurrent = queue.length - 1;
+    if (remainingAfterCurrent < QUEUE_MIN) {
+        void fetchPeerBatch();
+    }
+    
+    return queue[0];
+}
+
+/**
+ * Initialize the peer store from scratch.
+ * Sets peerStatus into 'loading', fetches peers, then either
+ * assigns a peer or sets 'empty'/'error' if nothing available.
+*/
+export async function initPeerStore() {
     peerStatus.set('loading');
 
-    try {
-        const peerRes = await getUnseenPeer();
-        if (peerRes.success) {
-            peer.set(peerRes.data);
-            peerStatus.set(peerRes.data ? 'loaded' : 'empty');
-        } else {
-            peer.set(null);
-            peerStatus.set('error');
-        }
-    } catch (err) {
+    const { ok, added } = await fetchPeerBatch();
+    if (!ok) {
         peer.set(null);
         peerStatus.set('error');
-    } finally {
-        if (get(peerStatus) === 'loading') peerStatus.set('retrieved');
+        return;
     }
+
+    if ((added === 0) && get(peerQueue).length === 0) {
+        peer.set(null);
+        peerStatus.set('empty');
+        return;
+    }
+
+    setNextPeer();
 }
 
 
-// Handle decision on the current peer
-export async function handleDecision(connect) {
-    let current;
-    peer.subscribe(p => current = p)();
-
+/**
+ * Handle a decision (connect or pass) on the current peer.
+ * Moves on instantly, while evaluating the old peer in the background.
+*/
+export function handleDecision(connect) {
+    const current = get(peer);
     if (!current) return;
 
-    try {
-        await fetchPeer();
-        const res = await evaluatePeer(current.id, connect);
-        if (!res.success) throw new Error(res.error);
+    const peerId = current.id;
 
-    } catch (err) {
+    // Fire off evaluation in background
+    (async () => {
+        try {
+            const res = await evaluatePeer(peerId, connect);
+            if (!res?.success) {
+                console.error('Failed to evaluate peer:', res?.error);
+            }
+        } catch (err) {
+            console.error('Error evaluating peer:', err);
+        }
+    })();
+
+    // Advance immediately
+    peerQueue.update(q => q.slice(1));
+
+    if (get(peerQueue).length === 0) {
         peer.set(null);
-        peerStatus.set('error');
+        peerStatus.set('loading');
+        void (async () => {
+            const { ok, added } = await fetchPeerBatch();
+
+            if (!ok) {
+                peerStatus.set('error');
+                return;
+            }
+            if ((added === 0) && get(peerQueue).length === 0) {
+                peerStatus.set('empty');
+                return;
+            }
+            setNextPeer();
+        })();
+    } else {
+        setNextPeer();
     }
-}
-
-
-// Initialize the peer store
-export function initPeerStore() {
-    fetchPeer();
 }
