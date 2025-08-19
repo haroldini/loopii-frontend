@@ -39,7 +39,7 @@
                 result = await signUpWithEmail($email, $password);
                 if (!result.error && result.data.user) {
                     authFormStatus.set('signedUp');
-                    toggleForm(false); // Hide the form on successful signup
+                    toggleForm(false);
                 }
                 else authFormStatus.set('signUpFailed')
 
@@ -48,9 +48,7 @@
                 result = await signInWithEmail($email, $password);
                 if (!result.error && result.data.session) {
                     authFormStatus.set('loggedIn');
-                    // Reset the auth form as we exit form
                     resetAuthForm()
-                    await goto('/')
                 }
                 else authFormStatus.set('loginFailed')
                 
@@ -231,8 +229,8 @@
                     <span
                         role="button"
                         tabindex="0"
-                        on:click={() => location.reload()}
-                        on:keydown={(e) => e.key === 'Enter' && location.reload()}
+                        on:click={() => window.location.replace('/')}
+                        on:keydown={(e) => e.key === 'Enter' && window.location.replace('/')}
                         style="color:blue; cursor:pointer; text-decoration:underline;"
                     >
                         continue to the app

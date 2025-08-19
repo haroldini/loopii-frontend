@@ -65,7 +65,10 @@ export async function signInWithEmail(email, password) {
 
 export async function signUpWithEmail(email, password) {
     try {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp(
+            { email, password },
+            { redirectTo: window.location.origin }
+        );
         return { data, error };
     } catch (error) {
         return { data: null, error: 'A network error occurred' };
