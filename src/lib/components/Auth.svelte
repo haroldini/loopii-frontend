@@ -25,7 +25,7 @@
 
     // Function to handle the authentication page form complete, triggering correct auth function
     async function handleSubmit() {
-        isSubmitting.set('true'); // Prevent double submission
+        isSubmitting.set('true'); // Prevent accidental double submission
 
         error.set('');
         authFormStatus.set('');
@@ -150,6 +150,7 @@
             {/each}
 
             <!-- Auth status messages -->
+
             <!-- Login -->
             {#if $authFormStatus === 'loggingIn'}
                 <p>Logging in…</p>
@@ -197,6 +198,7 @@
             {:else if $authFormStatus === 'signUpFailed'}
                 <p style="color:#d00;">Sign up failed</p>
 
+
             <!-- Password reset request -->
             {:else if $authFormStatus === 'sendingResetRequest'}
                 <p>Sending password reset email…</p>
@@ -219,6 +221,7 @@
             {:else if $authFormStatus === 'resetRequestFailed'}
                 <p style="color:#d00;">Could not send reset email</p>
                 
+
             <!-- Password update -->
             {:else if $authFormStatus === 'resettingPassword'}
                 <p>Updating your password…</p>
