@@ -5,6 +5,7 @@ import { getUnseenPeers, evaluatePeer } from '$lib/api/peer.js';
 export const peer = writable(null);
 export const peerQueue = writable([]);            // queue[0] is the current peer (not removed until evaluated)
 export const peerStatus = writable('empty');      // 'loading' | 'loaded' | 'empty' | 'error'
+export const ongoingEvaluations = writable([]);
 
 const QUEUE_BATCH_SIZE = 10;
 const QUEUE_MIN = 5;
@@ -21,8 +22,7 @@ export async function fetchPeerBatch() {
     isFetching = true;
 
     try {
-        const queue = get(peerQueue);
-        const exclude_ids = queue.map(p => p.id);
+        const exclude_ids = [...get(peerQueue).map(p => p.id), ...get(ongoingEvaluations)];
         const res = await getUnseenPeers({ exclude_ids, limit: QUEUE_BATCH_SIZE });
 
         if (res?.success) {
@@ -103,12 +103,15 @@ export function handleDecision(connect) {
     // Fire off evaluation in background
     (async () => {
         try {
+            ongoingEvaluations.update(ids => [...ids, peerId])
             const res = await evaluatePeer(peerId, connect);
             if (!res?.success) {
                 console.error('Failed to evaluate peer:', res?.error);
             }
         } catch (err) {
             console.error('Error evaluating peer:', err);
+        } finally {
+            ongoingEvaluations.update(ids => ids.filter(id => id !== peerId));
         }
     })();
 
