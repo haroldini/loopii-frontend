@@ -3,7 +3,7 @@ import request from '$lib/utils/request.js';
 
 // Fetch an unseen peer
 export function getUnseenPeers({ exclude_ids = [], limit = 1 } = {}) {
-    return request('/peer/get-unseen-peers', {
+    return request('/feed/get-unseen-peers', {
         method: 'POST',
         data: { exclude_ids, limit }
     });
@@ -11,7 +11,7 @@ export function getUnseenPeers({ exclude_ids = [], limit = 1 } = {}) {
 
 // Decide whether to connect with a peer
 export function evaluatePeer(peerId, connect) {
-    return request('/peer/evaluate-peer', {
+    return request('/feed/evaluate-peer', {
         method: 'POST',
         data: { peerId, connect }
     });

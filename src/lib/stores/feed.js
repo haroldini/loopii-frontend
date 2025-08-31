@@ -1,6 +1,6 @@
 
 import { writable, get } from 'svelte/store';
-import { getUnseenPeers, evaluatePeer } from '$lib/api/peer.js';
+import { getUnseenPeers, evaluatePeer } from '$lib/api/feed.js';
 
 export const peer = writable(null);
 export const peerQueue = writable([]);            // queue[0] is the current peer (not removed until evaluated)

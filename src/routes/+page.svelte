@@ -1,5 +1,5 @@
 <script>
-    import { initPeerStore, peer, peerStatus, handleDecision } from '$lib/stores/peer.js';
+    import { initPeerStore, peer, peerStatus, handleDecision } from '$lib/stores/feed.js';
 
     // Initialize the peer store (fetches batch + sets first peer)
     initPeerStore();
