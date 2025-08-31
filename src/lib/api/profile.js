@@ -3,6 +3,7 @@ import request from '$lib/utils/request.js';
 
 // Get the logged-in user's profile
 export function getProfile() {
+    console.log("getting profile")
     return request('/profile/me', {
         method: 'GET'
     });

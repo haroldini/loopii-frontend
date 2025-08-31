@@ -4,7 +4,7 @@ import { getProfile } from '$lib/api/profile';
 
 // For validating that the user has a profile
 export const profile = writable(null);
-export const profileLoading = writable(true);
+export const profileLoading = writable(false); // Default false, don't load profile until initProfile called
 
 
 // Initialises profile on page load, before rendering children

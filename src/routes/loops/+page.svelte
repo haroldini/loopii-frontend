@@ -31,15 +31,16 @@
 
 <div style="max-width:600px; margin:2rem auto; padding:1rem;">
     {#if $status === 'loading'}
-        <p>Loading your loops...</p>
+        <p>Loading...</p>
 
     {:else if $status === 'error'}
-        <p>Error loading loops.</p>
+        <p>Error loading loops</p>
         <button on:click={() => location.reload()}>Retry</button>
 
     {:else if $loops.length === 0}
-        <p>You don’t have any loops yet.</p>
-
+        <div style="border:1px solid #ccc; border-radius:8px; padding:1rem; margin-bottom:1rem;">
+            <p>You don’t have any loops yet.</p>
+        </div>
     {:else}
         {#each $loops as loop}
             <div style="border:1px solid #ccc; border-radius:8px; padding:1rem; margin-bottom:1rem;">
