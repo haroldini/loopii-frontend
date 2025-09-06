@@ -43,7 +43,6 @@
     <li><a href="/profile">Your Profile</a></li>
 
     {#if $user}
-      <li>Hello, {$user.email}</li>
       <li>
         <button on:click={signOut}>Log Out</button>
       </li>

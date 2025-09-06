@@ -25,7 +25,7 @@
 
     // Function to handle the authentication page form complete, triggering correct auth function
     async function handleSubmit() {
-        isSubmitting.set('true'); // Prevent accidental double submission
+        isSubmitting.set(true); // Prevent accidental double submission
 
         error.set('');
         authFormStatus.set('');
@@ -63,7 +63,7 @@
 
             } else if ($subPage === 'reset') {
                 authFormStatus.set('resettingPassword')
-                result = await resetPasswordWithToken($resetToken, $password);
+                result = await resetPasswordWithToken($password);
                 if (!result.error && result.data.user) {
                     authFormStatus.set('passwordReset');
                 }
@@ -89,7 +89,6 @@
         reset: 'Reset Password'
     };
 </script>
-
 
 
 <div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px;">

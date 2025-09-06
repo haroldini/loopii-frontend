@@ -23,7 +23,7 @@ export const error = writable('');
 export const authFormStatus = writable(''); 
 // 'loggingIn', 'loginFailed', 'loggedIn',
 // 'signingUp', 'signUpFailed, 'signedUp',
-// 'sendingResetEmail', ''resetEmailFailed', 'resetEmailSent',
+// 'sendingResetRequest', ''resetRequestFailed', 'resetEmailSent',
 // 'resettingPassword', 'resetPasswordFailed', 'passwordReset
 
 
