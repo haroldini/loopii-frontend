@@ -1,24 +1,20 @@
 <script>
-    import { onMount } from 'svelte';
-    import { getUserLoops } from '$lib/api/loop.js';
-    import { writable } from 'svelte/store';
+    import { onMount } from "svelte";
+    import { getUserLoops } from "$lib/api/loop.js";
+    import { writable } from "svelte/store";
 
     const loops = writable([]);
-    const status = writable('loading'); // 'loading' | 'loaded' | 'error'
+    const status = writable("loading"); // "loading" | "loaded" | "error"
 
     onMount(async () => {
-        status.set('loading');
+        status.set("loading");
         try {
-            const res = await getUserLoops();
-            if (res?.success) {
-                loops.set(res.data);
-                status.set('loaded');
-            } else {
-                status.set('error');
-            }
+            const data = await getUserLoops(); // request.js throws on non-2xx
+            loops.set(data);
+            status.set("loaded");
         } catch (err) {
-            console.error('Error fetching loops:', err);
-            status.set('error');
+            console.error("Error fetching loops:", err);
+            status.set("error");
         }
     });
 </script>
@@ -30,10 +26,10 @@
 
 
 <div style="max-width:600px; margin:2rem auto; padding:1rem;">
-    {#if $status === 'loading'}
+    {#if $status === "loading"}
         <p>Loading...</p>
 
-    {:else if $status === 'error'}
+    {:else if $status === "error"}
         <p>Error loading loops</p>
         <button on:click={() => location.reload()}>Retry</button>
 

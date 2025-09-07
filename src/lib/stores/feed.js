@@ -1,10 +1,10 @@
 
-import { writable, get } from 'svelte/store';
-import { getUnseenPeers, evaluatePeer } from '$lib/api/feed.js';
+import { writable, get } from "svelte/store";
+import { getUnseenPeers, evaluatePeer } from "$lib/api/feed.js";
 
 export const peer = writable(null);
 export const peerQueue = writable([]);            // queue[0] is the current peer (not removed until evaluated)
-export const peerStatus = writable('empty');      // 'loading' | 'loaded' | 'empty' | 'error'
+export const peerStatus = writable("empty");      // "loading" | "loaded" | "empty" | "error"
 export const ongoingEvaluations = writable([]);
 
 const QUEUE_BATCH_SIZE = 10;
@@ -23,19 +23,16 @@ export async function fetchPeerBatch() {
 
     try {
         const exclude_ids = [...get(peerQueue).map(p => p.id), ...get(ongoingEvaluations)];
-        const res = await getUnseenPeers({ exclude_ids, limit: QUEUE_BATCH_SIZE });
+        const peers = await getUnseenPeers({ exclude_ids, limit: QUEUE_BATCH_SIZE });
 
-        if (res?.success) {
-            const added = Array.isArray(res.data) ? res.data.length : 0;
-            if (added > 0) {
-                peerQueue.update(q => [...q, ...res.data]);
-            }
-            return { ok: true, added };
+        const added = Array.isArray(peers) ? peers.length : 0;
+        if (added > 0) {
+            peerQueue.update(q => [...q, ...peers]);
         }
+        return { ok: true, added };
 
-        return { ok: false, added: 0, error: res?.error ?? 'Unknown error' };
     } catch (err) {
-        console.error('fetchPeerBatch error:', err);
+        console.error("fetchPeerBatch error:", err);
         return { ok: false, added: 0, error: err?.message || String(err) };
     } finally {
         isFetching = false;
@@ -50,12 +47,12 @@ export function setNextPeer() {
     const queue = get(peerQueue);
     if (queue.length === 0) {
         peer.set(null);
-        peerStatus.set('empty');   // only mark empty if no current and no queue
+        peerStatus.set("empty");   // only mark empty if no current and no queue
         return null;
     }
     
     peer.set(queue[0]);
-    peerStatus.set('loaded');
+    peerStatus.set("loaded");
     
     const remainingAfterCurrent = queue.length - 1;
     if (remainingAfterCurrent < QUEUE_MIN) {
@@ -67,22 +64,22 @@ export function setNextPeer() {
 
 /**
  * Initialize the peer store from scratch.
- * Sets peerStatus into 'loading', fetches peers, then either
- * assigns a peer or sets 'empty'/'error' if nothing available.
+ * Sets peerStatus into "loading", fetches peers, then either
+ * assigns a peer or sets "empty"/"error" if nothing available.
 */
 export async function initPeerStore() {
-    peerStatus.set('loading');
+    peerStatus.set("loading");
 
     const { ok, added } = await fetchPeerBatch();
     if (!ok) {
         peer.set(null);
-        peerStatus.set('error');
+        peerStatus.set("error");
         return;
     }
 
     if ((added === 0) && get(peerQueue).length === 0) {
         peer.set(null);
-        peerStatus.set('empty');
+        peerStatus.set("empty");
         return;
     }
 
@@ -96,6 +93,7 @@ export async function initPeerStore() {
 */
 export function handleDecision(connect) {
     const current = get(peer);
+    console.log("handleDecision", { current, connect });
     if (!current) return;
 
     const peerId = current.id;
@@ -104,12 +102,9 @@ export function handleDecision(connect) {
     (async () => {
         try {
             ongoingEvaluations.update(ids => [...ids, peerId])
-            const res = await evaluatePeer(peerId, connect);
-            if (!res?.success) {
-                console.error('Failed to evaluate peer:', res?.error);
-            }
+            await evaluatePeer(peerId, connect);
         } catch (err) {
-            console.error('Error evaluating peer:', err);
+            console.error("Error evaluating peer:", err);
         } finally {
             ongoingEvaluations.update(ids => ids.filter(id => id !== peerId));
         }
@@ -117,19 +112,20 @@ export function handleDecision(connect) {
 
     // Advance immediately
     peerQueue.update(q => q.slice(1));
+    console.log("Queue after decision:", get(peerQueue));
 
     if (get(peerQueue).length === 0) {
         peer.set(null);
-        peerStatus.set('loading');
+        peerStatus.set("loading");
         void (async () => {
             const { ok, added } = await fetchPeerBatch();
 
             if (!ok) {
-                peerStatus.set('error');
+                peerStatus.set("error");
                 return;
             }
             if ((added === 0) && get(peerQueue).length === 0) {
-                peerStatus.set('empty');
+                peerStatus.set("empty");
                 return;
             }
             setNextPeer();

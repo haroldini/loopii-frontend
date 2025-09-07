@@ -1,195 +1,291 @@
 
-import { writable, derived, get } from 'svelte/store';
-import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '$lib/utils/env';
+import { writable, derived, get } from "svelte/store";
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env";
 
-import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from '$lib/api/account.js';
+import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// For authentication
+// --- Auth state stores ---
 export const user = writable(null);
 export const session = writable(null);
-export const authLoading = writable(true);
+export const resetToken = writable(null);
+export const authState = writable("loading"); 
+// "loading" | "unauthenticated" | "authenticated" | "recovery" | "error"
 
-//  For dangerous actions that require confirmation phrase
+// For dangerous actions that require confirmation phrase
 export const expectedPhrase = derived(user, ($user) => {
     const email = $user?.email ?? "";
     return `DELETE ${email}`;
 });
 
-// For password reset redirects & supabase messages
-export const authIsRecovery = writable(false);
-export const resetToken = writable(null);
-export const urlNotice = writable("");
-
-// Module scope singleton to avoid multiple initialisations
-let authSub;
+export const urlNotice = writable(null);
 
 
-// Initialise authentication on page load, before rendering children
+// --- Auth initialisation ---
+let authSub; // Singleton subscription to auth changes
 export async function initAuth() {
-    authLoading.set(true);
+    authState.set("loading");
 
-    // Parse URL for potential recovery redirects
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const queryParams = new URLSearchParams(window.location.search);
+    try {
+        // Parse URL for potential recovery redirects
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        const type = hashParams.get("type") || queryParams.get("type");
+        const access_token = hashParams.get("access_token") || queryParams.get("token");
 
-    const type = hashParams.get('type') || queryParams.get('type');
-    const access_token = hashParams.get('access_token') || queryParams.get('token');
-
-    // Collect message params from URL
-    const urlMsg =
-        hashParams.get("message") ||
-        queryParams.get("message") ||
-        hashParams.get("error_description") ||
-        queryParams.get("error_description");
-    if (urlMsg) {
-        const kind = /error|fail|denied/i.test(urlMsg) ? "error" : "success";
-        urlNotice.set({ text: urlMsg, type: kind });
-        history.replaceState(null, "", window.location.pathname + window.location.search);
-    }
-
-    // If this is a recovery flow and we have an access_token, set the session
-    if (type === 'recovery' && access_token) {
-        const { data, error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token: hashParams.get('refresh_token')
-        });
-        if (error) {
-            console.error('Error setting recovery session:', error.message);
-        } else {
-            authIsRecovery.set(true);
+        // Collect message params from URL
+        const urlMsg =
+            hashParams.get("message") ||
+            queryParams.get("message") ||
+            hashParams.get("error_description") ||
+            queryParams.get("error_description");
+        if (urlMsg) {
+            const kind = /error|fail|denied/i.test(urlMsg) ? "error" : "success";
+            urlNotice.set({ text: urlMsg, type: kind });
             history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+
+        // If this is a recovery flow and we have an access_token, set the session
+        if (type === "recovery" && access_token) {
+            const { data, error } = await supabase.auth.setSession({
+                access_token,
+                refresh_token: hashParams.get("refresh_token")
+            });
+            if (error) {
+                console.error("Error setting recovery session:", error.message);
+                authState.set("error");
+                return;
+            }
             resetToken.set(access_token);
+            authState.set("recovery");
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+            return;
+        }
+
+        // Normal session lookup
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+            console.error("Error getting session:", error.message);
+            authState.set("error");
+            return;
+        }
+        session.set(data.session);
+        user.set(data.session?.user ?? null);
+        authState.set(data.session?.user ? "authenticated" : "unauthenticated");
+
+        // Subscribe to auth state changes once
+        if (!authSub) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+                // console.log("auth event:", _event, newSession);
+                session.set(newSession);
+                user.set(newSession?.user ?? null);
+                authState.set(newSession?.user ? "authenticated" : "unauthenticated");
+            });
+            authSub = subscription
+        }
+
+    } catch (err) {
+        console.error("Unexpected error during auth init:", err);
+        authState.set("error");
+    } finally {
+        if (get(authState) === "loading") {
+            console.warn("Auth finished without setting state. Defaulting to unauthenticated");
+            authState.set("unauthenticated");
         }
     }
-
-    // Determine auth state
-    const { data } = await supabase.auth.getSession();
-    session.set(data.session);
-    user.set(data.session?.user ?? null);
-
-    // Listen for auth changes
-    if (!authSub) {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-            session.set(newSession);
-            user.set(newSession?.user ?? null);
-        });
-        authSub = subscription
-    }
-
-    authLoading.set(false);
 }
 
 
-export async function signInWithEmail(email, password) {
+// --- Error normalization ---
+const ERR_FALLBACK = "Something went wrong";
+function normalizeError(err, fallback = ERR_FALLBACK) {
+    if (!err) return null;
+    if (typeof err === "string") return err || fallback;
+    if (typeof err.message === "string" && err.message) return err.message;
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        return { data, error };
-    } catch (error) {
-        return { data: null, error: { message: "A network error occurred" } };
+        const s = JSON.stringify(err);
+        return s && s !== "{}" ? s : fallback;
+    } catch {
+        return fallback;
     }
 }
 
-export async function signUpWithEmail(email, password) {
+
+// --- Helper to force unauth ---
+export function forceUnauth() {
     try {
-        const { data, error } = await supabase.auth.signUp({
+        const key = `sb-${SUPABASE_URL}-auth-token`;
+        localStorage.removeItem(key);
+    } catch (err) {
+        console.warn("Failed to clear Supabase cache:", err);
+    }
+    authState.set("unauthenticated");
+    user.set(null);
+    session.set(null);
+}
+
+
+// --- Safe wrapper for Supabase auth calls ---
+async function safeAuthCall(fn) {
+    try {
+        const { data, error } = await fn();
+        if (error) {
+            // If auth error, deauth user
+            if (error.status === 401 || error.status === 403) {
+                forceUnauth();
+            }
+            return { data: null, error: normalizeError(error) };
+        }
+        return { data, error: null };
+    } catch (err) {
+        console.error("Auth call failed:", err);
+        return { data: null, error: normalizeError(err) };
+    }
+}
+
+
+// --- Authentication actions ---
+
+export function signInWithEmail(email, password) {
+    return safeAuthCall(() =>
+        supabase.auth.signInWithPassword({ email, password })
+    );
+}
+
+export function signUpWithEmail(email, password) {
+    return safeAuthCall(() =>
+        supabase.auth.signUp({
             email,
             password,
-            options: { emailRedirectTo: window.location.origin }
-        });
-        return { data, error };
-    } catch (error) {
-        return { data: null, error: { message: "A network error occurred" } };
-    }
+            options: { emailRedirectTo: window.location.origin },
+        })
+    );
 }
 
-export async function requestPasswordReset(email) {
-    try {
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin
-        });
-        return { data, error };
-    } catch (err) {
-        return { data: null, error: { message: "A network error occurred" } };
-    }
+export function requestPasswordReset(email) {
+    return safeAuthCall(() =>
+        supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin,
+        })
+    );
 }
 
-export async function resetPasswordWithToken(newPassword) {
-    try {
-        const { data, error } = await supabase.auth.updateUser({
-            password: newPassword,
-        });
-        return { data, error };
-    } catch (err) {
-        return { data: null, error: { message: "A network error occurred" } };
-    }
+export function resetPasswordWithToken(newPassword) {
+    return safeAuthCall(() =>
+        supabase.auth.updateUser({ password: newPassword })
+    );
 }
 
 export async function signOut() {
     try {
-        await supabase.auth.signOut();
-    } catch (error) {
-        return { data: null, error: { message: "A network error occurred" } };
+        // Attempt to sign out
+        const { error } = await supabase.auth.signOut();
+        if (error && error.code !== "session_not_found") {
+            console.error("Error signing out:", error);
+            return { data: null, error: normalizeError(error) };
+        }
+    } catch (err) {
+        console.error("Unexpected error during signOut:", err);
+        return { data: null, error: normalizeError(err) };
     } finally {
-        user.set(null);
-        session.set(null);
+        forceUnauth();
     }
+
+    return { data: null, error: null };
 }
+
+
+// --- Dangerous account modification actions ---
 
 export async function updatePassword(currentPassword, newPassword) {
     try {
-        const res = await _updatePassword({ currentPassword, newPassword });
-        if (res.data) {
-            await supabase.auth.setSession({
-                access_token: res.data.access_token,
-                refresh_token: res.data.refresh_token
-            });
-            session.set(res.data);
-            user.set(res.data.user ?? null);
-            return { data: res.data, error: null };
-        } else {
-            return { data: null, error: { message: res.error || "Could not update password" } };
+        // Backend verifies current password and updates Supabase
+        const data = await _updatePassword({ currentPassword, newPassword });
+        if (!data?.session) {
+            forceUnauth();
+            return { data: null, error: "No session returned after password update" };
         }
-    } catch {
-        return { data: null, error: { message: "A network error occurred" } };
+
+        // Tell Supabase client about the new session and grab the normalized session
+        const { data: newSession, error } = await supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+        });
+        if (error || !newSession?.session?.user) {
+            forceUnauth();
+            return { data: null, error: "Session expired after password update" };
+        }
+
+        session.set(newSession.session);
+        user.set(newSession.session.user);
+        return { data, error: null };
+
+    } catch (err) {
+        // If auth error, deauth user
+        if (err.status === 401 || err.status === 403) {
+            forceUnauth();
+        }
+        return { data: null, error: normalizeError(err) };
     }
 }
 
+
 export async function updateEmail(newEmail) {
     try {
-        // 1. Verify session
-        const { data: sessionData } = await supabase.auth.getSession();
-        const currentEmail = sessionData?.session?.user?.email;
-        if (!currentEmail) {
-            return { data: null, error: { message: "No active user" } };
+        // Verify session first
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData?.session?.user) {
+            forceUnauth();
+            return { data: null, error: "No active user" };
         }
 
-        // 2. Prevent updating to the same email
-        if (currentEmail === newEmail) {
-            return { data: null, error: { message: "New email must be different from current email" } };
-        }
-
-        // 3. Update to new email - Supabase will send a confirmation link
+        // Attempt update
         const { data, error } = await supabase.auth.updateUser({ email: newEmail });
-        return { data, error };
+        if (error) {
+            if (error.status === 401 || error.status === 403) {
+                forceUnauth();
+            }
+            return { data: null, error: normalizeError(error) };
+        }
+
+        // Fetch fresh session after update
+        const { data: refreshed, error: refreshError } = await supabase.auth.getSession();
+        if (refreshError || !refreshed?.session?.user) {
+            forceUnauth();
+            return { data: null, error: "Session invalid after email update" };
+        }
+
+        session.set(refreshed.session);
+        user.set(refreshed.session.user);
+        return { data, error: null };
+
     } catch (err) {
-        return { data: null, error: { message: "A network error occurred" } };
+        return { data: null, error: normalizeError(err) };
     }
 }
 
 export async function deleteAccount(currentPassword, confirmPhrase) {
-        // Validate confirmation phrase
-        const expected = get(expectedPhrase);
-        if ((confirmPhrase || "").trim().toUpperCase() !== expected.toUpperCase()) {
-            return { data: null, error: { message: `Type '${expected}' to confirm` } };
+
+    // Verify confirmation phrase
+    const expected = get(expectedPhrase);
+    if ((confirmPhrase || "").trim().toUpperCase() !== expected.toUpperCase()) {
+        return { data: null, error: `Type "${expected}" to confirm` };
+    }
+
+    try {
+        // Delete account
+        const data = await _deleteAccount({ currentPassword });
+        forceUnauth();
+        return { data, error: null };
+
+    } catch (err) {
+        // If auth error, deauth user
+        if (err.status === 401 || err.status === 403) {
+            forceUnauth();
         }
-
-        // Call backend to delete account
-        const res = await _deleteAccount({ currentPassword });
-
-        if (!res.success) return { data: null, error: { message: res.error || "Could not delete account" } };
-        return { data: res.data, error: null };
-
+        // Other errors
+        return { data: null, error: normalizeError(err) };
+    }
 }

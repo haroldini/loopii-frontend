@@ -1,5 +1,5 @@
 <script>
-    import { initPeerStore, peer, peerStatus, handleDecision } from '$lib/stores/feed.js';
+    import { initPeerStore, peer, peerStatus, handleDecision } from "$lib/stores/feed.js";
 
     // Initialize the peer store (fetches batch + sets first peer)
     initPeerStore();
@@ -11,14 +11,14 @@
 
 <div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px; text-align:center;">
     
-    {#if $peerStatus === 'loading'}
+    {#if $peerStatus === "loading"}
         <p>Loading next profile...</p>
 
-    {:else if $peerStatus === 'error' && $peerStatus !== 'empty'}
+    {:else if $peerStatus === "error" && $peerStatus !== "empty"}
         <p>Error loading peer.</p>
         <button on:click={initPeerStore}>Retry</button>
 
-    {:else if $peerStatus === 'empty'}
+    {:else if $peerStatus === "empty"}
         <p>No peers available at the moment.</p>
         <button on:click={initPeerStore}>Refresh</button>
 

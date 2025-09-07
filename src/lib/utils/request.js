@@ -1,12 +1,15 @@
 
-import { get } from 'svelte/store';
+import { get } from "svelte/store";
+import { API_URL } from "$lib/utils/env.js";
+import { session } from "$lib/stores/auth.js"; 
 
-import { API_URL } from '$lib/utils/env.js';
-import { session } from '$lib/stores/auth.js'; 
 
-
-// Generic request function to handle API calls
-async function request(endpoint, { method = 'GET', data } = {}) {
+/**
+ * Generic request function to handle API calls.
+ * - On success (2xx), returns parsed JSON directly.
+ * - On failure (non-2xx), throws Error with .status and .message.
+ */
+async function request(endpoint, { method = "GET", data } = {}) {
     const url = `${API_URL}${endpoint}`;
 
     // Grab the current session from the store
@@ -17,8 +20,8 @@ async function request(endpoint, { method = 'GET', data } = {}) {
     const options = {
         method,
         headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
     };
     if (data) options.body = JSON.stringify(data);
@@ -26,26 +29,23 @@ async function request(endpoint, { method = 'GET', data } = {}) {
     // Make request
     const response = await fetch(url, options);
 
-    // Throw on non-200 responses
+    // Handle non-2xx responses. Prefer JSON error message if available, otherwise fallback to status text.
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
+        let message = response.statusText;
+        try {
+            const body = await response.json();
+            if (body?.detail) message = body.detail;
+        } catch {
+            message = await response.text().catch(() => response.statusText);
+        }
+
+        const err = new Error(message || `HTTP ${response.status}`);
+        err.status = response.status;
+        throw err;
     }
 
-    // Parse JSON
-    const json = await response.json();
-
-    // Normalize to expected frontend structure
-    // If backend did not include success/data/error, wrap it
-    if (
-        typeof json.success === 'boolean' &&
-        'data' in json &&
-        'error' in json
-    ) {
-        return json; // already standard
-    } else {
-        return { success: true, data: json, error: null };
-    }
+    // Parse and return JSON response directly
+    return await response.json();
 }
 
 export default request;

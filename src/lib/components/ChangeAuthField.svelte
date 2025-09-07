@@ -25,7 +25,7 @@
                 status.set("updating");
                 const { data, error: err } = await updatePassword($currentPassword, $newPassword);
                 if (err) {
-                    error.set(err.message || "Could not update password");
+                    error.set(err || "Could not update password");
                     status.set("failed");
                 } else {
                     resetForm();
@@ -35,7 +35,7 @@
                 status.set("updating");
                 const { data, error: err } = await updateEmail($newEmail);
                 if (err) {
-                    error.set(err.message || "Could not update email");
+                    error.set(err || "Could not update email");
                     status.set("failed");
                 } else {
                     // Supabase sends confirmation email
@@ -47,7 +47,7 @@
             } else if ($mode === "delete") {
                 const { error: err } = await deleteAccount($currentPassword, $confirmPhrase);
                 if (err) {
-                    error.set(err.message || "Could not delete account");
+                    error.set(err || "Could not delete account");
                     status.set("failed");
                 } else {
                     resetForm();

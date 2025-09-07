@@ -44,14 +44,14 @@ function validateForm($mode, $currentPassword, $newPassword, $confirmNewPassword
         // Password complexity requirements
         if ($newPassword) {
             const reqs = [];
-            if ($newPassword.length < 8) reqs.push('at least 8 characters');
-            if (!/[a-z]/.test($newPassword)) reqs.push('a lowercase letter');
-            if (!/[A-Z]/.test($newPassword)) reqs.push('an uppercase letter');
-            if (!/[0-9]/.test($newPassword)) reqs.push('a number');
+            if ($newPassword.length < 8) reqs.push("at least 8 characters");
+            if (!/[a-z]/.test($newPassword)) reqs.push("a lowercase letter");
+            if (!/[A-Z]/.test($newPassword)) reqs.push("an uppercase letter");
+            if (!/[0-9]/.test($newPassword)) reqs.push("a number");
             if (reqs.length > 0) {
                 const last = reqs.pop();
-                const message = reqs.length ? reqs.join(', ') + ' and ' + last : last;
-                errors.push({ message: 'Password must contain ' + message, display: true });
+                const message = reqs.length ? reqs.join(", ") + " and " + last : last;
+                errors.push({ message: "Password must contain " + message, display: true });
             }
         }
 

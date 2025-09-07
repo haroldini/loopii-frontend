@@ -1,25 +1,61 @@
 
-import { writable } from 'svelte/store';
-import { getProfile } from '$lib/api/profile';
+import { get, writable } from "svelte/store";
 
-// For validating that the user has a profile
+import { getProfile } from "$lib/api/profile";
+import { authState, forceUnauth } from "$lib/stores/auth";
+
+
+// For profile data and state
 export const profile = writable(null);
-export const profileLoading = writable(false); // Default false, don't load profile until initProfile called
+export const profileState = writable("idle");
+// "idle" | "loading" | "missing" | "loaded" | "error"
 
 
-// Initialises profile on page load, before rendering children
+// Reset profile on deauth
+authState.subscribe((state) => {
+    if (state === "unauthenticated") {
+        resetProfile();
+    }
+});
+
+
 export async function initProfile() {
-    profileLoading.set(true);
+    profileState.set("loading");
 
     try {
-        // Call backend to get the user's profile, null if no profile
-        const res = await getProfile();
-        profile.set(res.data ?? null);
+        // Fetch profile
+        const data = await getProfile(); // request.js throws on non-2xx
+        if (data) {
+            profile.set(data);
+            profileState.set("loaded");
+        } else {
+            profile.set(null);
+            profileState.set("missing");
+        }
 
     } catch (err) {
-        // Unexpected error -> set profile to null and stop loading
-        profile.set(null);
-    }
+        if (err.status === 401 || err.status === 403) {
+            // Force unauth if auth error
+            forceUnauth();
+            profile.set(null);
+            profileState.set("idle");
+            return;
+        } else if (err.status === 404) {
+            // No profile
+            profile.set(null);
+            profileState.set("missing");
+            return;
+        }
 
-    profileLoading.set(false);
+        // Other errors
+        console.error("initProfile failed:", err);
+        profile.set(null);
+        profileState.set("error");
+    }
+}
+
+// Helper to reset profile
+export function resetProfile() {
+    profile.set(null);
+    profileState.set("idle");
 }

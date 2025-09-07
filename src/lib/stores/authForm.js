@@ -1,16 +1,16 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived } from "svelte/store";
 
 
 ///// --- Form state ---
-export const email = writable('');
-export const confirmEmail = writable('');
-export const password = writable('');
-export const confirmPassword = writable('');
-export const resetToken = writable('');
+export const email = writable("");
+export const confirmEmail = writable("");
+export const password = writable("");
+export const confirmPassword = writable("");
+export const resetToken = writable("");
 
 
 ///// --- UI state ---
-export const subPage = writable('login'); // 'login', 'signup', 'requestReset', 'reset
+export const subPage = writable("login"); // "login", "signup", "requestReset", "reset
 export const emailTouched = writable(false);
 export const passwordTouched = writable(false);
 export const isSubmitting = writable(false);
@@ -19,55 +19,55 @@ export const showForm = writable(true);
 
 ///// --- Errors / Messages ---
 export const validationErrors = writable([]);
-export const error = writable('');
-export const authFormStatus = writable(''); 
-// 'loggingIn', 'loginFailed', 'loggedIn',
-// 'signingUp', 'signUpFailed, 'signedUp',
-// 'sendingResetRequest', ''resetRequestFailed', 'resetEmailSent',
-// 'resettingPassword', 'resetPasswordFailed', 'passwordReset
+export const error = writable("");
+export const authFormStatus = writable(""); 
+// "loggingIn", "loginFailed", "loggedIn",
+// "signingUp", "signUpFailed, "signedUp",
+// "sendingResetRequest", ""resetRequestFailed", "resetEmailSent",
+// "resettingPassword", "resetPasswordFailed", "passwordReset
 
 
 ///// --- Validation logic for email and password fields ---
-export function validateForm($subPage, $email, $confirmEmail = '', $password = '', $confirmPassword = '') {
+export function validateForm($subPage, $email, $confirmEmail = "", $password = "", $confirmPassword = "") {
     const errors = [];
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // Require and validate email for signup, requestReset and login
-    if (['signup', 'requestReset', 'login'].includes($subPage)) {
-        if (!$email) errors.push({ message: 'Email is required', display: false });
-        if ($email && !emailRegex.test($email)) errors.push({ message: 'Email is not valid', display: true });
+    if (["signup", "requestReset", "login"].includes($subPage)) {
+        if (!$email) errors.push({ message: "Email is required", display: false });
+        if ($email && !emailRegex.test($email)) errors.push({ message: "Email is not valid", display: true });
     }
 
     // Require and validate confirm email on signup
-    if (['signup'].includes($subPage)) {
-        if (!$confirmEmail) errors.push({ message: 'Confirm Email is required', display: false });
-        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ message: 'Emails do not match', display: true });
+    if (["signup"].includes($subPage)) {
+        if (!$confirmEmail) errors.push({ message: "Confirm Email is required", display: false });
+        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ message: "Emails do not match", display: true });
     }
     
     // Require and validate confirm password on signup and reset
-    if (['signup', 'reset'].includes($subPage)) {
-        if (!$confirmPassword) errors.push({ message: 'Confirm Password is required', display: false });
+    if (["signup", "reset"].includes($subPage)) {
+        if (!$confirmPassword) errors.push({ message: "Confirm Password is required", display: false });
         if ($password && $confirmPassword && $password !== $confirmPassword)
-            errors.push({ message: 'Passwords do not match', display: true });
+            errors.push({ message: "Passwords do not match", display: true });
     }
 
     // Require password on login, signup and reset
-    if (['signup', 'reset', 'login'].includes($subPage)) {
-        if (!$password) errors.push({ message: 'Password is required', display: false });
+    if (["signup", "reset", "login"].includes($subPage)) {
+        if (!$password) errors.push({ message: "Password is required", display: false });
     }
     
     // Validate password on signup and reset
-    if (['signup', 'reset'].includes($subPage)) {
+    if (["signup", "reset"].includes($subPage)) {
         if ($password) {
             const reqs = [];
-            if ($password.length < 8) reqs.push('at least 8 characters');
-            if (!/[a-z]/.test($password)) reqs.push('a lowercase letter');
-            if (!/[A-Z]/.test($password)) reqs.push('an uppercase letter');
-            if (!/[0-9]/.test($password)) reqs.push('a number');
+            if ($password.length < 8) reqs.push("at least 8 characters");
+            if (!/[a-z]/.test($password)) reqs.push("a lowercase letter");
+            if (!/[A-Z]/.test($password)) reqs.push("an uppercase letter");
+            if (!/[0-9]/.test($password)) reqs.push("a number");
             if (reqs.length > 0) {
                 const last = reqs.pop();
-                const message = reqs.length ? reqs.join(', ') + ' and ' + last : last;
-                errors.push({ message: 'Password must contain ' + message, display: true });
+                const message = reqs.length ? reqs.join(", ") + " and " + last : last;
+                errors.push({ message: "Password must contain " + message, display: true });
             }
         }
     }
@@ -92,26 +92,30 @@ export const readyToSubmit = derived(
 export function toggleMode(mode) {
     subPage.set(mode);
     showForm.set(true);
-    confirmEmail.set('');
-    confirmPassword.set('');
+    confirmEmail.set("");
+    confirmPassword.set("");
     emailTouched.set(false);
     passwordTouched.set(false);
     validationErrors.set([]);
-    error.set('');
-    authFormStatus.set('');
+    error.set("");
+    authFormStatus.set("");
+
+    if (mode !== "reset") {
+        resetToken.set("");
+    }
 }
 
 // Reset all the authForm stores
 export function resetAuthForm() {
-    toggleMode('login');
-    email.set('');
-    password.set('');
-    resetToken.set('')
+    toggleMode("login");
+    email.set("");
+    password.set("");
+    resetToken.set("")
 }
 
 // Toggles the showForm store, used to toggle the fields/submit buttons
 export function toggleForm(value) {
-    if (typeof value === 'boolean') {
+    if (typeof value === "boolean") {
         showForm.set(value);
     } else {
         showForm.update(v => !v); // toggle if no argument
