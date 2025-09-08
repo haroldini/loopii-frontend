@@ -172,22 +172,33 @@ export function requestPasswordReset(email) {
     );
 }
 
-export function resetPasswordWithToken(newPassword) {
-    return safeAuthCall(() =>
+export async function resetPasswordWithToken(newPassword) {
+    const { data, error } = await safeAuthCall(() =>
         supabase.auth.updateUser({ password: newPassword })
     );
+    if (error) {
+        console.error("Error resetting password with token:", error);
+        return { data: null, error };
+    } 
+
+    // Revoke all sessions if password was reset successfully
+    const { error: signOutError } = await supabase.auth.signOut({ scope: "global" });
+    if (signOutError) {
+        console.error("Error during global sign out:", signOutError);
+        return { data: data, error: normalizeError(signOutError) };
+    }
+    return { data, error: null };
 }
 
-export async function signOut() {
+export async function signOut(scope = "local") {
     try {
-        // Attempt to sign out
-        const { error } = await supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut({ scope });
         if (error && error.code !== "session_not_found") {
-            console.error("Error signing out:", error);
+            console.error(`Error signing out (${scope}):`, error);
             return { data: null, error: normalizeError(error) };
         }
     } catch (err) {
-        console.error("Unexpected error during signOut:", err);
+        console.error(`Unexpected error during signOut (${scope}):`, err);
         return { data: null, error: normalizeError(err) };
     } finally {
         forceUnauth();
@@ -205,10 +216,10 @@ export async function updatePassword(currentPassword, newPassword) {
         const data = await _updatePassword({ currentPassword, newPassword });
         if (!data?.session) {
             forceUnauth();
-            return { data: null, error: "No session returned after password update" };
+            return { data: null, error: "Session expired after password update" };
         }
 
-        // Tell Supabase client about the new session and grab the normalized session
+        // Update client with new session
         const { data: newSession, error } = await supabase.auth.setSession({
             access_token: data.session.access_token,
             refresh_token: data.session.refresh_token,

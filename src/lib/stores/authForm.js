@@ -113,6 +113,15 @@ export function resetAuthForm() {
     resetToken.set("")
 }
 
+// Reset all the sensitive stores
+export function resetSensitive() {
+    email.set("");
+    confirmEmail.set("");
+    password.set("");
+    confirmPassword.set("");
+    resetToken.set("");
+}
+
 // Toggles the showForm store, used to toggle the fields/submit buttons
 export function toggleForm(value) {
     if (typeof value === "boolean") {

@@ -2,7 +2,7 @@
 <script>
     import { goto } from "$app/navigation";
     import ChangeAuthField from "$lib/components/ChangeAuthField.svelte";
-    import { mode, setMode, resetForm } from "$lib/stores/changeauthform";
+    import { mode, setMode, status } from "$lib/stores/changeauthform";
 
     import { user } from "$lib/stores/auth";
 
@@ -18,8 +18,10 @@
 
 
 <h1>Account</h1>
+<p>{$status}</p>
+<p>{$mode}</p>
 
-<p>Currently logged in as {$user.email}</p>
+<p>Currently logged in as {$user?.email}</p>
 <button type="button" on:click={() => goto("/profile")}>
     ← Back to profile
 </button>
@@ -41,6 +43,14 @@
         aria-current={$mode === "email" ? "page" : undefined}
     >
         Change Email
+    </button>
+    <button
+        type="button"
+        on:click={() => select("revoke")}
+        style="padding:0.5rem 0.75rem; border:none; border-bottom:3px solid {$mode === 'revoke' ? 'black' : 'transparent'}; background:transparent; cursor:pointer;"
+        aria-current={$mode === "revoke" ? "page" : undefined}
+    >
+        Sign Out Everywhere
     </button>
     <button
         type="button"

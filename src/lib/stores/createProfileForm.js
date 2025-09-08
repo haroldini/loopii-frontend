@@ -72,7 +72,23 @@ export async function submitProfile() {
             success.set(false);
         }
     } finally {
+        resetFields();
         isSubmitting.set(false);
         done.set(true);
     }
+}
+
+
+function resetFields() {
+    name.set("");
+    dob.set("");
+    gender.set("");
+    country.set("");
+}
+
+export function resetState() {
+    isSubmitting.set(false);
+    error.set("");
+    success.set(false);
+    done.set(false);
 }

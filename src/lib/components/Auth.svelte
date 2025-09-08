@@ -11,9 +11,8 @@
     import { 
         email, confirmEmail, password, confirmPassword, 
         emailTouched, passwordTouched, isSubmitting, subPage, showForm,
-        validationErrors, error, authFormStatus,
-        readyToSubmit,
-        toggleMode, resetAuthForm, toggleForm
+        validationErrors, error, authFormStatus, readyToSubmit,
+        toggleMode, resetAuthForm, toggleForm, resetSensitive
     } from "$lib/stores/authForm";
 
     import { onMount } from "svelte";
@@ -77,7 +76,10 @@
                 error.set(result.error || "Something went wrong");
             }
         } finally {
-            isSubmitting.set(false)
+            if (!$error) {
+                resetSensitive(); 
+            }
+            isSubmitting.set(false);
         }
     }
 
@@ -225,27 +227,6 @@
                 <p>Updating your password…</p>
             {:else if $authFormStatus === "passwordReset"}
                 <p style="color:green;">Password updated successfully!</p>
-                <p>
-                    You can now 
-                    <span
-                        role="button"
-                        tabindex="0"
-                        on:click={() => window.location.replace("/")}
-                        on:keydown={(e) => e.key === "Enter" && window.location.replace("/")}
-                        style="color:blue; cursor:pointer; text-decoration:underline;"
-                    >
-                        continue to the app
-                    </span>, or 
-                    <span
-                        role="button"
-                        tabindex="0"
-                        on:click={() => toggleMode("login")}
-                        on:keydown={(e) => e.key === "Enter" && toggleMode("login")}
-                        style="color:blue; cursor:pointer; text-decoration:underline;"
-                    >
-                        login to check your new password
-                    </span>.
-                </p>
             {:else if $authFormStatus === "resetPasswordFailed"}
                 <p style="color:#d00;">Password reset failed</p>
             {/if}
@@ -256,5 +237,9 @@
             {/if}
 
         </div>
+    {/if}
+
+    {#if $authFormStatus === "passwordReset"}
+        <button type="button" on:click={() => window.location.replace("/")}>Continue to loopii</button>
     {/if}
 </div>

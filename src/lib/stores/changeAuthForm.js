@@ -3,7 +3,7 @@ import { user, expectedPhrase } from "$lib/stores/auth";
 
 
 ///// --- Form state ---
-export const mode = writable("password"); // "password" | "email" | "delete"
+export const mode = writable("password"); // "password" | "email" | "delete" | "reset"
 export const currentPassword = writable("");
 export const newPassword = writable("");
 export const confirmNewPassword = writable("");
@@ -20,7 +20,7 @@ export const isSubmitting = writable(false);
 export const validationErrors = writable([]);
 export const error = writable("");
 export const status = writable("idle"); 
-// "idle", "verifying", "updating", "updated", "emailPending", "failed", "deleting", "deleted"
+// "idle", "updating", "updated", "emailPending", "failed"
 
 
 ///// --- Validation logic for email and password fields ---
@@ -89,24 +89,30 @@ export const readyToSubmit = derived(
 ///// Swap between password and email modes
 export function setMode(next) {
     mode.set(next);
-    resetTransient();
+    resetState();
 }
 
-//  Reset the entire form
-export function resetForm() {
+export function resetSensitive() {
     currentPassword.set("");
     newPassword.set("");
     confirmNewPassword.set("");
     newEmail.set("");
     confirmNewEmail.set("");
-    resetTransient();
+    confirmPhrase.set("");
 }
 
-//  Reset transient state only
-function resetTransient() {
+export function resetValidation() {
     validationErrors.set([]);
+}
+
+export function resetTransient() {
     error.set("");
     status.set("idle");
     isSubmitting.set(false);
-    confirmPhrase.set("");
+}
+
+export function resetState() {
+    resetSensitive();
+    resetValidation();
+    resetTransient();
 }
