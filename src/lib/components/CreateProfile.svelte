@@ -1,8 +1,10 @@
 <script>
 	import { get } from "svelte/store";
-	import { name, dob, gender, country, isSubmitting, error, success, done, submitProfile, readyToSubmit } from "$lib/stores/createProfileForm";
+	import { 
+		username, name, dob, gender, country, bio, location,
+		error, submitProfile, readyToSubmit, validationErrors, profileFormState
+	} from "$lib/stores/createProfileForm";
     import { user, signOut } from "$lib/stores/auth";
-	import { profile } from "$lib/stores/profile";
 </script>
 
 <div class="create-profile-container">
@@ -10,55 +12,56 @@
     <p>Logged in as {$user.email}</p>
     <button on:click={signOut}>Log Out</button>
 	
-	<div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px;">
+	<div class="card">
 		<h2>Create your profile</h2>
-		<!-- After creation request, handle cases -->
-		{#if $done}
 
-			<!-- Profile created -->
-			{#if $success}
-				<!-- Profile already exists -->
-				{#if $error}
-					<p style="color:green;">You already have a profile.</p>
-					<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
-				<!-- Profile created -->
-				{:else}
-					<p style="color:green;">Profile created successfully!</p>
-				{/if}
-			{/if}
-			<!-- Error creating profile -->
-			{#if $error}
-				<p style="color:red;">{$error}</p>
-				<button on:click={() => window.location.replace(window.location.origin)}>Try again</button>
-			{/if}
-		
-		<!-- Before request -->
+		{#if $profileFormState === "submitting"}
+    		<p>Creating profile...</p>
+
+		{:else if $profileFormState === "success"}
+			<p class="success">Profile created successfully!</p>
+			<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
+
+		{:else if $profileFormState === "exists"}
+			<p class="success">You already have a profile.</p>
+			<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
+
+		{:else if $profileFormState === "error"}
+			<p class="error">{$error}</p>
+			<button on:click={resetProfileForm}>Try again</button>
+
 		{:else}
+			<form on:submit|preventDefault={submitProfile} class="profile-form">
+				<input placeholder="Username" bind:value={$username} required />
+				<input placeholder="Full Name (optional)" bind:value={$name} />
+				<input type="date" placeholder="Date of Birth" bind:value={$dob} required />
+				
+				<select bind:value={$gender} required>
+					<option value="" disabled>Select Gender</option>
+					<option value="male">Male</option>
+					<option value="female">Female</option>
+					<option value="other">Non-Binary / Other</option>
+				</select>
 
-			<!-- Show loading while submitting -->
-			{#if $isSubmitting} 
-				<p>Creating profile...</p>
+				<input placeholder="Country code (e.g. US)" bind:value={$country} required />
+				<input placeholder="Location (optional)" bind:value={$location} />
+				<textarea placeholder="Bio (optional)" bind:value={$bio}></textarea>
 
-			<!-- Show form while not submitting -->
-			{:else }
-				<form on:submit|preventDefault={submitProfile} class="profile-form">
-					<input placeholder="Full Name" bind:value={$name} required />
-					<input type="date" placeholder="Date of Birth" bind:value={$dob} required />
-					
-					<select bind:value={$gender} required>
-						<option value="" disabled>Select Gender</option>
-						<option value="male">Male</option>
-						<option value="female">Female</option>
-						<option value="other">Other</option>
-					</select>
+				<!-- Real-time validation errors -->
+				{#if $validationErrors.length > 0}
+					<ul class="errors">
+						{#each $validationErrors as err}
+							{#if err.display}
+								<li>{err.message}</li>
+							{/if}
+						{/each}
+					</ul>
+				{/if}
 
-					<input placeholder="Country" bind:value={$country} required />
-
-					<button type="submit" disabled={$isSubmitting || !$readyToSubmit}>
-						{$isSubmitting ? "Creating…" : "Create Profile"}
-					</button>
-				</form>
-			{/if}
+				<button type="submit" disabled={$profileFormState === "submitting" || !$readyToSubmit}>
+					{$profileFormState === "submitting" ? "Creating…" : "Create Profile"}
+				</button>
+			</form>
 		{/if}
 	</div>
 </div>
@@ -72,11 +75,26 @@
 	min-height: 60vh;
 	text-align: center;
 }
-
+.card {
+	max-width: 400px;
+	margin: 2rem auto;
+	padding: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+}
 .profile-form {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 	width: 300px;
 }
+.errors {
+	color: red;
+	font-size: 0.9rem;
+	margin: 0;
+	padding-left: 1.2rem;
+	text-align: left;
+}
+.success { color: green; }
+.error { color: red; }
 </style>

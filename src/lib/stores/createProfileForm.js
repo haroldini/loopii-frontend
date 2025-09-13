@@ -4,80 +4,140 @@ import { createProfile, getProfile } from "$lib/api/profile";
 import { profile } from "$lib/stores/profile";
 
 ///// --- Form state ---
-export const name = writable("");
+export const username = writable("");
 export const dob = writable("");
 export const gender = writable("");
 export const country = writable("");
+export const name = writable("");
+export const bio = writable("");
+export const location = writable("");
 
 
 ///// --- UI state ---
-export const isSubmitting = writable(false);
+export const validationErrors = writable([]);
 export const error = writable("");
-export const success = writable(false);
-export const done = writable(false);
+export const profileFormState = writable("idle");
+// "idle" | "submitting" | "success" | "exists" | "error"
 
 
-///// --- Derived store to check if profile creation is ready to submit ---
+///// --- Validation logic ---
+export function validateProfile($username, $dob, $gender, $country) {
+    const errors = [];
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+    // Username required + format
+    if (!$username) {
+        errors.push({ message: "Username is required", display: false });
+    } else {
+        if ($username.length < 3 || $username.length > 30) {
+            errors.push({ message: "Username must be 3–30 characters", display: true });
+        }
+        if (!usernameRegex.test($username)) {
+            errors.push({ message: "Username may only contain letters, numbers, underscores", display: true });
+        }
+    }
+
+    // DOB required + range
+    if (!$dob) {
+        errors.push({ message: "Date of birth is required", display: false });
+    } else {
+        const d = new Date($dob);
+        if (d > new Date()) {
+            errors.push({ message: "Date of birth cannot be in the future", display: true });
+        }
+        if (d < new Date("1900-01-01")) {
+            errors.push({ message: "Date of birth must be after 1900", display: true });
+        }
+    }
+
+    // Gender required
+    if (!$gender) {
+        errors.push({ message: "Gender is required", display: false });
+    }
+
+    // Country required
+    if (!$country) {
+        errors.push({ message: "Country is required", display: false });
+    }
+
+    validationErrors.set(errors);
+    return errors.length === 0;
+}
+
+///// --- Derived store to check if profile is ready ---
 export const readyToSubmit = derived(
-    [name, dob, gender, country],
-    ([$name, $dob, $gender, $country]) =>
-        Boolean($name && $dob && $gender && $country)
+    [username, dob, gender, country],
+    ([$username, $dob, $gender, $country], set) => {
+        set(validateProfile($username, $dob, $gender, $country));
+    },
+    false
 );
 
 
-// Submit function
+///// --- Submit function ---
 export async function submitProfile() {
-    isSubmitting.set(true);
+    profileFormState.set("submitting")
     error.set("");
-    success.set(false);
-    done.set(false);
-
+    
     try {
-        const $name = get(name);
+        const $username = get(username);
         const $dob = get(dob);
         const $gender = get(gender);
-        const $country = get(country);
+        const $country = get(country).toUpperCase();
+        const $name = get(name);
+        const $bio = get(bio);
+        const $location = get(location);
 
         if (!get(readyToSubmit)) {
-            error.set("All fields are required");
+            error.set("Please fix validation errors");
             return;
         }
 
-        // Call endpoint to create profile (request.js throws if not 2xx)
         const data = await createProfile({
-            name: $name,
+            username: $username,
             dob: $dob,
             gender: $gender,
-            country: $country,
+            country_code: $country,
+            name: $name || null,
+            bio: $bio || null,
+            location: $location || null,
         });
 
-        // On success: update global profile store
         profile.set(data);
-        success.set(true);
+        profileFormState.set("success");
 
     } catch (err) {
+
+        // 409 for profile already exists
         if (err.status === 409) {
             error.set("You already have a profile");
-            success.set(true);
+            profileFormState.set("exists")
 
+        // 422 for invalid payload / FastAPI validation error
         } else if (err.status === 422) {
-            if (err.message) {
-                error.set(`Invalid profile data: ${err.message}`);
-            } else {
-                error.set("Invalid profile data");
+            let validationMsg = "Invalid profile data";
+            const detail = err.data?.detail;
+
+            // Handle FastAPI validation errors
+            if (Array.isArray(detail) && detail.length > 0) {
+            validationMsg = detail.map(d => d.msg || String(d)).join("; ");
+
+            // Handle response = message
+            } else if (typeof detail === "string") {
+            validationMsg = detail;
+
+            // Handle response contains message
+            } else if (detail?.message) {
+            validationMsg = detail.message;
             }
-            success.set(false);
+            error.set(validationMsg);
+            profileFormState.set("error")
         } else {
-            error.set(err.message || "Failed to create profile");
-            success.set(false);
+            error.set(err.message || "Unexpected error");
+            profileFormState.set("error")
         }
-    } finally {
-        resetFields();
-        isSubmitting.set(false);
-        done.set(true);
     }
 }
-
 
 function resetFields() {
     name.set("");
@@ -91,4 +151,5 @@ export function resetState() {
     error.set("");
     success.set(false);
     done.set(false);
+    validationErrors.set([]);
 }
