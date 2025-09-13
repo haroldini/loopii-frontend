@@ -23,3 +23,12 @@ export function updateProfile(data) {
         data
     });
 }
+
+
+// Create profile interests
+export function createProfileInterests(data) {
+    return request("/profile/interests", {
+        method: "POST",
+        data
+    });
+}

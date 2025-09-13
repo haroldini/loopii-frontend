@@ -1,6 +1,7 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createProfile, getProfile } from "$lib/api/profile";
+import { getCountries, getInterests } from "$lib/api/references";
 import { profile } from "$lib/stores/profile";
 
 ///// --- Form state ---
@@ -11,13 +12,34 @@ export const country = writable("");
 export const name = writable("");
 export const bio = writable("");
 export const location = writable("");
-
+export const selectedInterests = writable([]);
 
 ///// --- UI state ---
 export const validationErrors = writable([]);
 export const error = writable("");
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "error"
+
+
+// Stores for reference data
+export const allCountries = writable([]);
+export const allInterests = writable([]);
+
+
+// Init function to load references
+export async function initReferences() {
+    try {
+        const [countries, interests] = await Promise.all([
+            getCountries(),
+            getInterests()
+        ]);
+        allCountries.set(countries);
+        allInterests.set(interests);
+
+    } catch (err) {
+        console.error("Failed to load reference data", err);
+    }
+}
 
 
 ///// --- Validation logic ---
@@ -87,6 +109,7 @@ export async function submitProfile() {
         const $name = get(name);
         const $bio = get(bio);
         const $location = get(location);
+        const $selectedInterests = get(selectedInterests);
 
         if (!get(readyToSubmit)) {
             error.set("Please fix validation errors");
@@ -101,6 +124,7 @@ export async function submitProfile() {
             name: $name || null,
             bio: $bio || null,
             location: $location || null,
+            interest_ids: $selectedInterests || []
         });
 
         profile.set(data);

@@ -1,10 +1,16 @@
 <script>
-	import { get } from "svelte/store";
+	import { onMount } from "svelte";
+	import { get, writable } from "svelte/store";
 	import { 
-		username, name, dob, gender, country, bio, location,
-		error, submitProfile, readyToSubmit, validationErrors, profileFormState
+		username, name, dob, gender, country, bio, location, selectedInterests, allInterests, allCountries,
+		error, submitProfile, readyToSubmit, validationErrors, profileFormState, initReferences
 	} from "$lib/stores/createProfileForm";
     import { user, signOut } from "$lib/stores/auth";
+
+
+	onMount(() => {
+        initReferences();
+    });
 </script>
 
 <div class="create-profile-container">
@@ -43,9 +49,23 @@
 					<option value="other">Non-Binary / Other</option>
 				</select>
 
-				<input placeholder="Country code (e.g. US)" bind:value={$country} required />
+				<label for="country">Country</label>
+				<select id="country" bind:value={$country} required>
+					<option value="" disabled selected>Select Country</option>
+					{#each $allCountries as country}
+						<option value={country.code}>{country.name}</option>
+					{/each}
+				</select>
+				
 				<input placeholder="Location (optional)" bind:value={$location} />
 				<textarea placeholder="Bio (optional)" bind:value={$bio}></textarea>
+
+				<label for="interests">Select your interests</label>
+				<select id="interests" multiple bind:value={$selectedInterests}>
+					{#each $allInterests as interest}
+						<option value={interest.id}>{interest.name}</option>
+					{/each}
+				</select>
 
 				<!-- Real-time validation errors -->
 				{#if $validationErrors.length > 0}
