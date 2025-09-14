@@ -18,6 +18,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-		"@supabase/supabase-js": "^2.55.0"
+		"@supabase/supabase-js": "^2.55.0",
+		"leaflet": "^1.9.4"
 	}
 }

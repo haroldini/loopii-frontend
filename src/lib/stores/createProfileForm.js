@@ -5,18 +5,21 @@ import { getCountries, getInterests } from "$lib/api/references";
 import { profile } from "$lib/stores/profile";
 
 ///// --- Form state ---
-export const username = writable("");
-export const dob = writable("");
-export const gender = writable("");
-export const country = writable("");
-export const name = writable("");
-export const bio = writable("");
-export const location = writable("");
+export const username = writable(null);
+export const dob = writable(null);
+export const gender = writable(null);
+export const country = writable(null);
+export const name = writable(null);
+export const bio = writable(null);
+export const location = writable(null);
 export const selectedInterests = writable([]);
+export const latitude = writable(null);
+export const longitude = writable(null);
 
 ///// --- UI state ---
+export const currentPage = writable(0);
 export const validationErrors = writable([]);
-export const error = writable("");
+export const error = writable(null);
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "error"
 
@@ -24,6 +27,12 @@ export const profileFormState = writable("idle");
 // Stores for reference data
 export const allCountries = writable([]);
 export const allInterests = writable([]);
+
+export const pageFields = {
+    0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
+    1: ["bio", "interests", "latitude", "longitude"],                  // Help others find you
+    2: []                                                              // What your loops will see
+};
 
 
 // Init function to load references
@@ -34,6 +43,15 @@ export async function initReferences() {
             getInterests()
         ]);
         allCountries.set(countries);
+        allCountries.set(
+            countries.sort((a, b) => {
+                if (a.code === "US") return -1;
+                if (b.code === "US") return 1;
+                if (a.code === "GB") return -1;
+                if (b.code === "GB") return 1;
+                return a.name.localeCompare(b.name);
+            })
+        );
         allInterests.set(interests);
 
     } catch (err) {
@@ -43,63 +61,98 @@ export async function initReferences() {
 
 
 ///// --- Validation logic ---
-export function validateProfile($username, $dob, $gender, $country) {
+export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests) {
     const errors = [];
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    console.log("validating")
 
     // Username required + format
     if (!$username) {
-        errors.push({ message: "Username is required", display: false });
+        errors.push({ field: "username", message: "Username is required", display: false });
     } else {
         if ($username.length < 3 || $username.length > 30) {
-            errors.push({ message: "Username must be 3–30 characters", display: true });
+            errors.push({ field: "username", message: "Username must be 3–30 characters", display: true });
         }
         if (!usernameRegex.test($username)) {
-            errors.push({ message: "Username may only contain letters, numbers, underscores", display: true });
+            errors.push({ field: "username", message: "Username may only contain letters, numbers, underscores", display: true });
         }
     }
 
     // DOB required + range
     if (!$dob) {
-        errors.push({ message: "Date of birth is required", display: false });
+        errors.push({ field: "dob", message: "Date of birth is required", display: false });
     } else {
         const d = new Date($dob);
-        if (d > new Date()) {
-            errors.push({ message: "Date of birth cannot be in the future", display: true });
+        const today = new Date();
+        const minDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+
+        if (d > today) {
+            errors.push({ field: "dob", message: "Date of birth cannot be in the future", display: true });
         }
         if (d < new Date("1900-01-01")) {
-            errors.push({ message: "Date of birth must be after 1900", display: true });
+            errors.push({ field: "dob", message: "Date of birth must be after 1900", display: true });
+        }
+        if (d > minDate) {
+            errors.push({ field: "dob", message: "You must be at least 13 years old", display: true });
         }
     }
 
     // Gender required
     if (!$gender) {
-        errors.push({ message: "Gender is required", display: false });
+        errors.push({ field: "gender", message: "Gender is required", display: false });
     }
 
     // Country required
     if (!$country) {
-        errors.push({ message: "Country is required", display: false });
+        errors.push({ field: "country", message: "Country is required", display: false });
+    }
+
+    // Display Name length (optional)
+    if ($name && $name.length > 30) {
+        errors.push({ field: "name", message: "Display name must be 30 characters or fewer", display: true });
+    }
+
+    // Bio length (optional)
+    if ($bio && $bio.length > 500) {
+        errors.push({ field: "bio", message: "Bio must be 500 characters or fewer", display: true });
+    }
+
+    // Location length (optional)
+    if ($location && $location.length > 50) {
+        errors.push({ field: "location", message: "Location must be 50 characters or fewer", display: true });
+    }
+
+    // Interests max count
+    if ($selectedInterests && $selectedInterests.length > 20) {
+        errors.push({ field: "interests", message: "You can select up to 20 interests", display: true });
     }
 
     validationErrors.set(errors);
     return errors.length === 0;
 }
 
-///// --- Derived store to check if profile is ready ---
+///// --- Derived store to check if profile is ready for submission---
 export const readyToSubmit = derived(
-    [username, dob, gender, country],
-    ([$username, $dob, $gender, $country], set) => {
-        set(validateProfile($username, $dob, $gender, $country));
+    [currentPage, username, dob, gender, country, name, bio, location, selectedInterests],
+    ([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests]) => {
+        const allValid = validateProfile(
+            $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests
+        );
+        if ($currentPage === 2) return allValid;
+
+        // Other pages: only require this page's fields to be error-free
+        const fields = pageFields[$currentPage] || [];
+        const pageErrors = get(validationErrors).filter(e => fields.includes(e.field));
+        return pageErrors.length === 0;
     },
     false
 );
 
-
+``
 ///// --- Submit function ---
 export async function submitProfile() {
     profileFormState.set("submitting")
-    error.set("");
+    error.set(null);
     
     try {
         const $username = get(username);
@@ -109,6 +162,8 @@ export async function submitProfile() {
         const $name = get(name);
         const $bio = get(bio);
         const $location = get(location);
+        const $latitude = get(latitude);
+        const $longitude = get(longitude);
         const $selectedInterests = get(selectedInterests);
 
         if (!get(readyToSubmit)) {
@@ -124,6 +179,8 @@ export async function submitProfile() {
             name: $name || null,
             bio: $bio || null,
             location: $location || null,
+            latitude: $latitude || null,
+            longitude: $longitude || null,
             interest_ids: $selectedInterests || []
         });
 
@@ -160,20 +217,29 @@ export async function submitProfile() {
             error.set(err.message || "Unexpected error");
             profileFormState.set("error")
         }
+    } finally {
+        if (["exists", "success"].includes(profileFormState)) {
+            resetFields();
+        }
     }
 }
 
 function resetFields() {
-    name.set("");
-    dob.set("");
-    gender.set("");
-    country.set("");
+    name.set(null);
+    dob.set(null);
+    gender.set(null);
+    country.set(null);
+    name.set(null);
+    bio.set(null);
+    location.set(null);
+    selectedInterests.set([])
+    latitude.set(null)
+    longitude.set(null)
 }
 
 export function resetState() {
-    isSubmitting.set(false);
-    error.set("");
-    success.set(false);
-    done.set(false);
+    error.set(null);
     validationErrors.set([]);
+    currentPage.set(0);
+    profileFormState.set(idle);
 }

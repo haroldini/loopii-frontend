@@ -75,7 +75,7 @@
         } finally {
             isSubmitting.set(false);
             resetValidation();
-            if ($status !== "failed") {
+            if (!["emailPending", "failed"].includes($status)) {
                 resetSensitive();
             }
         }

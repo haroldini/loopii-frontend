@@ -77,7 +77,10 @@
             }
         } finally {
             if (!$error) {
-                resetSensitive(); 
+                // Don't reset form yet for email confirmations
+                if (!["resetEmailSent", "signedUp"].includes($authFormStatus)) {
+                    resetSensitive(); 
+                }
             }
             isSubmitting.set(false);
         }
@@ -91,6 +94,10 @@
     };
 </script>
 
+<p>{$subPage}</p>
+<p>{$authFormStatus}</p>
+<p>{$isSubmitting}</p>
+<p>{$readyToSubmit}</p>
 
 <div style="max-width:400px; margin:2rem auto; padding:1rem; border:1px solid #ccc; border-radius:8px;">
     

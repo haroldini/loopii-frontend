@@ -1,25 +1,44 @@
 <script>
 	import { onMount } from "svelte";
 	import { get, writable } from "svelte/store";
+	import { user, signOut } from "$lib/stores/auth";
 	import { 
-		username, name, dob, gender, country, bio, location, selectedInterests, allInterests, allCountries,
-		error, submitProfile, readyToSubmit, validationErrors, profileFormState, initReferences
+		allInterests, allCountries, 
+		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests,
+		error, readyToSubmit, validationErrors, currentPage,
+		profileFormState, initReferences, submitProfile, resetState
 	} from "$lib/stores/createProfileForm";
-    import { user, signOut } from "$lib/stores/auth";
-
+	
+	import MapPicker from "./MapPicker.svelte";
 
 	onMount(() => {
         initReferences();
     });
+
 </script>
 
 <div class="create-profile-container">
 	<h1>loopii</h1>
     <p>Logged in as {$user.email}</p>
+
+	<!-- Debug: show all validation errors -->
+	{#if $validationErrors.length > 0}
+		<div class="debug-errors">
+			<h4>Debug: Validation Errors</h4>
+			<ul>
+				{#each $validationErrors as err}
+					<li>
+						<strong>{err.field}</strong>: {err.message} 
+						(display: {err.display ? "true" : "false"})
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+
     <button on:click={signOut}>Log Out</button>
 	
 	<div class="card">
-		<h2>Create your profile</h2>
 
 		{#if $profileFormState === "submitting"}
     		<p>Creating profile...</p>
@@ -34,54 +53,151 @@
 
 		{:else if $profileFormState === "error"}
 			<p class="error">{$error}</p>
-			<button on:click={resetProfileForm}>Try again</button>
+			<button on:click={resetState}>Try again</button>
 
 		{:else}
-			<form on:submit|preventDefault={submitProfile} class="profile-form">
-				<input placeholder="Username" bind:value={$username} required />
-				<input placeholder="Full Name (optional)" bind:value={$name} />
-				<input type="date" placeholder="Date of Birth" bind:value={$dob} required />
-				
-				<select bind:value={$gender} required>
+
+		<form on:submit|preventDefault={submitProfile} class="profile-form">
+
+			{#if $currentPage === 0}
+				<h3>Create your profile</h3>
+				<label for="username">Username*</label>
+				<input id="username" bind:value={$username} required />
+				{#if $validationErrors.find(e => e.field === "username" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "username" && e.display).message}
+					</p>
+				{/if}
+
+				<label for="name">Display Name</label>
+				<input id="name" bind:value={$name} />
+				{#if $validationErrors.find(e => e.field === "name" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "name" && e.display).message}
+					</p>
+				{/if}
+
+				<label for="dob">Date of Birth*</label>
+				<input id="dob" type="date" bind:value={$dob} required />
+				{#if $validationErrors.find(e => e.field === "dob" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "dob" && e.display).message}
+					</p>
+				{/if}
+
+				<label for="gender">Gender*</label>
+				<select id="gender" bind:value={$gender} required>
 					<option value="" disabled>Select Gender</option>
 					<option value="male">Male</option>
 					<option value="female">Female</option>
 					<option value="other">Non-Binary / Other</option>
 				</select>
+				{#if $validationErrors.find(e => e.field === "gender" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "gender" && e.display).message}
+					</p>
+				{/if}
 
-				<label for="country">Country</label>
+				<label for="country">Country*</label>
 				<select id="country" bind:value={$country} required>
-					<option value="" disabled selected>Select Country</option>
+					<option value="" disabled>Select Country</option>
 					{#each $allCountries as country}
 						<option value={country.code}>{country.name}</option>
 					{/each}
 				</select>
-				
-				<input placeholder="Location (optional)" bind:value={$location} />
-				<textarea placeholder="Bio (optional)" bind:value={$bio}></textarea>
+				{#if $validationErrors.find(e => e.field === "country" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "country" && e.display).message}
+					</p>
+				{/if}
 
-				<label for="interests">Select your interests</label>
+				<label for="location">City</label>
+				<input id="location" bind:value={$location} />
+				{#if $validationErrors.find(e => e.field === "location" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "location" && e.display).message}
+					</p>
+				{/if}
+
+				<div class="nav">
+					<button type="button" on:click={() => $currentPage = 1} disabled={!$readyToSubmit}>
+						Continue →
+					</button>
+				</div>
+			{/if}
+
+			{#if $currentPage === 1}
+				<h3>Help others find you</h3>
+
+				<label for="">Location</label>
+				{#if $latitude && $longitude}
+					<MapPicker
+						lat={$latitude}
+						lng={$longitude}
+						radius={2500}
+						mode="preview"
+						defaultZoom={11}
+						on:confirm={(e) => {
+							$latitude = e.detail.lat;
+							$longitude = e.detail.lng;
+						}}
+					/>
+					<button type="button" on:click={() => { $latitude = null; $longitude = null; }}>
+						Clear location
+					</button>
+				{:else}
+					<button type="button" on:click={() => {
+						$latitude = 51.505;
+						$longitude = -0.09;
+					}}>
+						Pick Location
+					</button>
+				{/if}
+				{#if $validationErrors.find(e => ["latitude", "longitude"].includes(e.field) && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => ["latitude", "longitude"].includes(e.field) && e.display).message}
+					</p>
+				{/if}
+
+				<label for="bio">Bio</label>
+				<textarea id="bio" bind:value={$bio}></textarea>
+				{#if $validationErrors.find(e => e.field === "bio" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "bio" && e.display).message}
+					</p>
+				{/if}
+
+				<label for="interests">Interests</label>
 				<select id="interests" multiple bind:value={$selectedInterests}>
 					{#each $allInterests as interest}
 						<option value={interest.id}>{interest.name}</option>
 					{/each}
 				</select>
-
-				<!-- Real-time validation errors -->
-				{#if $validationErrors.length > 0}
-					<ul class="errors">
-						{#each $validationErrors as err}
-							{#if err.display}
-								<li>{err.message}</li>
-							{/if}
-						{/each}
-					</ul>
+				{#if $validationErrors.find(e => e.field === "interests" && e.display)}
+					<p class="error">
+						{$validationErrors.find(e => e.field === "interests" && e.display).message}
+					</p>
 				{/if}
 
-				<button type="submit" disabled={$profileFormState === "submitting" || !$readyToSubmit}>
-					{$profileFormState === "submitting" ? "Creating…" : "Create Profile"}
-				</button>
-			</form>
+				<div class="nav">
+					<button type="button" on:click={() => $currentPage = 0}>← Back</button>
+					<button type="button" on:click={() => $currentPage = 2} disabled={!$readyToSubmit}>Continue →</button>
+				</div>
+			{/if}
+
+			{#if $currentPage === 2}
+				<h3>What your loops will see</h3>
+				<p>Socials, links, contact info</p>
+
+				<div class="nav">
+					<button type="button" on:click={() => $currentPage = 1}>← Back</button>
+					<button type="submit" disabled={$profileFormState === "submitting" || !$readyToSubmit}>
+						{$profileFormState === "submitting" ? "Creating…" : "Create Profile"}
+					</button>
+				</div>
+			{/if}
+		</form>
+
 		{/if}
 	</div>
 </div>
@@ -107,13 +223,6 @@
 	flex-direction: column;
 	gap: 0.5rem;
 	width: 300px;
-}
-.errors {
-	color: red;
-	font-size: 0.9rem;
-	margin: 0;
-	padding-left: 1.2rem;
-	text-align: left;
 }
 .success { color: green; }
 .error { color: red; }
