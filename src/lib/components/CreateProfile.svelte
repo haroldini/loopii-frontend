@@ -202,6 +202,11 @@
 								<div class="social-remove">
 									<button type="button" on:click={() => removeSocial(i)}>−</button>
 								</div>
+								{#if $validationErrors.find(e => e.field === `socials.${i}`)}
+									<p class="error" style="grid-column: 1 / -1;">
+										{$validationErrors.find(e => e.field === `socials.${i}`).message}
+									</p>
+								{/if}
 							{/each}
 						</div>
 					{/if}

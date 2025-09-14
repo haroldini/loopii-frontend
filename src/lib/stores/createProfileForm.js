@@ -33,7 +33,7 @@ export const allPlatforms = writable([]);
 export const pageFields = {
     0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
     1: ["bio", "interests", "latitude", "longitude"],                  // Help others find you
-    2: []                                                              // What your loops will see
+    2: ["socials"]                                                     // What your loops will see
 };
 
 
@@ -65,7 +65,7 @@ export async function initReferences() {
 
 
 ///// --- Validation logic ---
-export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests) {
+export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials) {
     const errors = [];
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     console.log("validating")
@@ -131,16 +131,34 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
         errors.push({ field: "interests", message: "You can select up to 20 interests", display: true });
     }
 
+    // Socials validation
+    if ($socials && $socials.length > 0) {
+        $socials.forEach((s, idx) => {
+            if (!s.handle || !s.handle.trim()) {
+                errors.push({ field: `socials.${idx}`, message: `Handle required`, display: true });
+            }
+            if (s.handle && s.handle.length > 50) {
+                errors.push({ field: `socials.${idx}`, message: `Handle too long`, display: true });
+            }
+            if (!s.platform_id && (!s.custom_platform || !s.custom_platform.trim())) {
+                errors.push({ field: `socials.${idx}`, message: `Platform required`, display: true });
+            }
+            if (s.custom_platform && s.custom_platform.length > 30) {
+                errors.push({ field: `socials.${idx}`, message: `Custom platform too long`, display: true });
+            }
+        });
+    }
+
     validationErrors.set(errors);
     return errors.length === 0;
 }
 
 ///// --- Derived store to check if profile is ready for submission---
 export const readyToSubmit = derived(
-    [currentPage, username, dob, gender, country, name, bio, location, selectedInterests],
-    ([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests]) => {
+    [currentPage, username, dob, gender, country, name, bio, location, selectedInterests, socials],
+    ([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials]) => {
         const allValid = validateProfile(
-            $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests
+            $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials
         );
         if ($currentPage === 2) return allValid;
 
