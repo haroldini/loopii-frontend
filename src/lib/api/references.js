@@ -14,3 +14,10 @@ export function getInterests() {
         method: "GET"
     });
 }
+
+// Get the full list of platforms
+export function getPlatforms() {
+    return request("/references/platforms", {
+        method: "GET"
+    });
+}

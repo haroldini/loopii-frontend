@@ -3,10 +3,10 @@
 	import { get, writable } from "svelte/store";
 	import { user, signOut } from "$lib/stores/auth";
 	import { 
-		allInterests, allCountries, 
-		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests,
+		allInterests, allCountries, allPlatforms,
+		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials,
 		error, readyToSubmit, validationErrors, currentPage,
-		profileFormState, initReferences, submitProfile, resetState
+		profileFormState, initReferences, submitProfile, resetState, removeSocial, updateHandle, updateCustomPlatform
 	} from "$lib/stores/createProfileForm";
 	
 	import MapPicker from "./MapPicker.svelte";
@@ -20,24 +20,8 @@
 <div class="create-profile-container">
 	<h1>loopii</h1>
     <p>Logged in as {$user.email}</p>
-
-	<!-- Debug: show all validation errors -->
-	{#if $validationErrors.length > 0}
-		<div class="debug-errors">
-			<h4>Debug: Validation Errors</h4>
-			<ul>
-				{#each $validationErrors as err}
-					<li>
-						<strong>{err.field}</strong>: {err.message} 
-						(display: {err.display ? "true" : "false"})
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
-
     <button on:click={signOut}>Log Out</button>
-	
+
 	<div class="card">
 
 		{#if $profileFormState === "submitting"}
@@ -187,7 +171,67 @@
 
 			{#if $currentPage === 2}
 				<h3>What your loops will see</h3>
-				<p>Socials, links, contact info</p>
+
+				<!-- Social Media Handles UI -->
+				<label for="">Social Media Handles</label>
+				<div class="socials-box">
+					{#if $socials.length > 0}
+						<div class="socials-grid">
+							{#each $socials as social, i}
+								<div class="social-name">
+									{#if social.platform_id}
+										{social.name}
+									{:else}
+										<input
+											type="text"
+											placeholder="Custom platform"
+											value={social.custom_platform || ""}
+											on:input={(e) => updateCustomPlatform(i, e.target.value)}
+											maxlength="30"
+										/>
+									{/if}
+								</div>
+								<div class="social-handle">
+									<input
+										type="text"
+										placeholder="Enter handle"
+										bind:value={social.handle}
+										on:input={(e) => updateHandle(i, e.target.value)}
+									/>
+								</div>
+								<div class="social-remove">
+									<button type="button" on:click={() => removeSocial(i)}>−</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
+
+					<div class="add-social">
+						<select on:change={(e) => {
+							if (e.target.value === "other") {
+								socials.update(s => [
+									...s,
+									{ platform_id: null, name: null, custom_platform: "", handle: "" }
+								]);
+							} else {
+								const platform = $allPlatforms.find(p => p.id === e.target.value);
+								if (platform) {
+									socials.update(s => [
+										...s,
+										{ platform_id: platform.id, name: platform.name, custom_platform: null, handle: "" }
+									]);
+								}
+							}
+							e.target.value = "";
+						}}>
+							<option value="">+ Add platform</option>
+							{#each $allPlatforms as platform}
+								<option value={platform.id}>{platform.name}</option>
+							{/each}
+							<option value="other">Other</option>
+						</select>
+					</div>
+				</div>
 
 				<div class="nav">
 					<button type="button" on:click={() => $currentPage = 1}>← Back</button>
@@ -224,6 +268,34 @@
 	gap: 0.5rem;
 	width: 300px;
 }
+
+.socials-grid {
+	display: grid;
+	grid-template-columns: 100px 1fr auto;
+	align-items: center;
+	gap: 0.5rem 1rem;
+}
+
+.social-name {
+	text-align: right;
+}
+
+.social-name input {
+	width: 100%;
+}
+
+.social-handle input {
+	width: 100%;
+}
+
+.social-remove button {
+	background: none;
+	border: none;
+	font-size: 1.2rem;
+	cursor: pointer;
+	color: #c00;
+}
+
 .success { color: green; }
 .error { color: red; }
 </style>

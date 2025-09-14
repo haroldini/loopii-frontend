@@ -116,6 +116,13 @@
             {#if $subPage === "signup"}
                 <input placeholder="Confirm Email" value={$confirmEmail} on:input={e => { confirmEmail.set(e.target.value); emailTouched.set(true); }} />
             {/if}
+
+            <!-- Email validation errors -->
+            {#if $validationErrors.find(e => e.field === "email" && e.display)}
+                <p class="error">
+                    {$validationErrors.find(e => e.field === "email" && e.display).message}
+                </p>
+            {/if}
                 
             <!-- Always show password, except requestReset -->
             {#if $subPage != "requestReset"}
@@ -125,6 +132,14 @@
             <!-- Only show confirm password on signup or reset -->
             {#if $subPage === "signup" || $subPage === "reset"}
                 <input type="password" placeholder="Confirm Password" value={$confirmPassword} on:input={e => { confirmPassword.set(e.target.value); passwordTouched.set(true); }} />
+            {/if}
+
+            
+            <!-- Password validation errors -->
+            {#if $validationErrors.find(e => e.field === "password" && e.display)}
+                <p class="error">
+                    {$validationErrors.find(e => e.field === "password" && e.display).message}
+                </p>
             {/if}
 
             <!-- Display the correct buttons -->
@@ -148,13 +163,8 @@
 
 
     <!-- Status / Feedback Box -->
-    {#if $validationErrors.filter(e => e.display).length || $error || $authFormStatus}
+    {#if $error || $authFormStatus}
         <div style="margin-top:1rem; padding:0.75rem; border-radius:6px; background:#f9f9f9;">
-
-            <!-- Validation errors (field-level, usually multiple) -->
-            {#each $validationErrors.filter(e => e.display) as err}
-                <p style="color:#d00; margin:0.25rem 0;">{err.message}</p>
-            {/each}
 
             <!-- Auth status messages -->
 
@@ -250,3 +260,7 @@
         <button type="button" on:click={() => window.location.replace("/")}>Continue to loopii</button>
     {/if}
 </div>
+
+<style>
+    .error { color: red; }
+</style>

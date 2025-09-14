@@ -16,18 +16,19 @@ export function createProfile(data) {
     });
 }
 
-// Update profile
-export function updateProfile(data) {
-    return request("/profile/update", {
+
+// Create profile interests (list)
+export function createProfileInterests(data) {
+    return request("/profile/interests", {
         method: "POST",
         data
     });
 }
 
 
-// Create profile interests
-export function createProfileInterests(data) {
-    return request("/profile/interests", {
+// Create profile socials (list)
+export function createProfileSocials(data) {
+    return request("/profile/socials", {
         method: "POST",
         data
     });

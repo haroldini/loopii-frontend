@@ -34,26 +34,26 @@ export function validateForm($subPage, $email, $confirmEmail = "", $password = "
 
     // Require and validate email for signup, requestReset and login
     if (["signup", "requestReset", "login"].includes($subPage)) {
-        if (!$email) errors.push({ message: "Email is required", display: false });
-        if ($email && !emailRegex.test($email)) errors.push({ message: "Email is not valid", display: true });
+        if (!$email) errors.push({ field: "email", message: "Email is required", display: false });
+        if ($email && !emailRegex.test($email)) errors.push({ field: "email", message: "Email is not valid", display: true });
     }
 
     // Require and validate confirm email on signup
     if (["signup"].includes($subPage)) {
-        if (!$confirmEmail) errors.push({ message: "Confirm Email is required", display: false });
-        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ message: "Emails do not match", display: true });
+        if (!$confirmEmail) errors.push({ field: "email", message: "Confirm Email is required", display: false });
+        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ field: "email", message: "Emails do not match", display: true });
     }
     
     // Require and validate confirm password on signup and reset
     if (["signup", "reset"].includes($subPage)) {
-        if (!$confirmPassword) errors.push({ message: "Confirm Password is required", display: false });
+        if (!$confirmPassword) errors.push({ field: "password", message: "Confirm Password is required", display: false });
         if ($password && $confirmPassword && $password !== $confirmPassword)
-            errors.push({ message: "Passwords do not match", display: true });
+            errors.push({ field: "password", message: "Passwords do not match", display: true });
     }
 
     // Require password on login, signup and reset
     if (["signup", "reset", "login"].includes($subPage)) {
-        if (!$password) errors.push({ message: "Password is required", display: false });
+        if (!$password) errors.push({ field: "password", message: "Password is required", display: false });
     }
     
     // Validate password on signup and reset
@@ -67,7 +67,7 @@ export function validateForm($subPage, $email, $confirmEmail = "", $password = "
             if (reqs.length > 0) {
                 const last = reqs.pop();
                 const message = reqs.length ? reqs.join(", ") + " and " + last : last;
-                errors.push({ message: "Password must contain " + message, display: true });
+                errors.push({ field: "password", message: "Password must contain " + message, display: true });
             }
         }
     }

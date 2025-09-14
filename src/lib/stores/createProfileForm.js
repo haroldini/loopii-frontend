@@ -1,7 +1,7 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createProfile, getProfile } from "$lib/api/profile";
-import { getCountries, getInterests } from "$lib/api/references";
+import { getCountries, getInterests, getPlatforms } from "$lib/api/references";
 import { profile } from "$lib/stores/profile";
 
 ///// --- Form state ---
@@ -12,9 +12,10 @@ export const country = writable(null);
 export const name = writable(null);
 export const bio = writable(null);
 export const location = writable(null);
-export const selectedInterests = writable([]);
 export const latitude = writable(null);
 export const longitude = writable(null);
+export const selectedInterests = writable([]);
+export const socials = writable([]);
 
 ///// --- UI state ---
 export const currentPage = writable(0);
@@ -24,9 +25,10 @@ export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "error"
 
 
-// Stores for reference data
+///// Stores for reference data
 export const allCountries = writable([]);
 export const allInterests = writable([]);
+export const allPlatforms = writable([]);
 
 export const pageFields = {
     0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
@@ -35,12 +37,13 @@ export const pageFields = {
 };
 
 
-// Init function to load references
+////// Init function to load references
 export async function initReferences() {
     try {
-        const [countries, interests] = await Promise.all([
+        const [countries, interests, platforms] = await Promise.all([
             getCountries(),
-            getInterests()
+            getInterests(),
+            getPlatforms(),
         ]);
         allCountries.set(countries);
         allCountries.set(
@@ -53,6 +56,7 @@ export async function initReferences() {
             })
         );
         allInterests.set(interests);
+        allPlatforms.set(platforms);
 
     } catch (err) {
         console.error("Failed to load reference data", err);
@@ -148,7 +152,33 @@ export const readyToSubmit = derived(
     false
 );
 
-``
+
+// Socials UI functions
+export function removeSocial(i) {
+    socials.update(s => {
+        s.splice(i, 1);
+        return [...s];
+    });
+}
+
+export function updateHandle(i, value) {
+    socials.update(s => {
+        s[i].handle = value;
+        return [...s];
+    });
+
+    console.log(get(socials))
+}
+
+export function updateCustomPlatform(i, value) {
+    socials.update(s => {
+        s[i].custom_platform = value;
+        return [...s];
+    });
+    console.log(get(socials))
+}
+
+
 ///// --- Submit function ---
 export async function submitProfile() {
     profileFormState.set("submitting")
@@ -165,6 +195,7 @@ export async function submitProfile() {
         const $latitude = get(latitude);
         const $longitude = get(longitude);
         const $selectedInterests = get(selectedInterests);
+        const $socials = get(socials);
 
         if (!get(readyToSubmit)) {
             error.set("Please fix validation errors");
@@ -181,7 +212,8 @@ export async function submitProfile() {
             location: $location || null,
             latitude: $latitude || null,
             longitude: $longitude || null,
-            interest_ids: $selectedInterests || []
+            interest_ids: $selectedInterests || [],
+            socials: $socials || [] 
         });
 
         profile.set(data);
@@ -232,14 +264,15 @@ function resetFields() {
     name.set(null);
     bio.set(null);
     location.set(null);
-    selectedInterests.set([])
     latitude.set(null)
     longitude.set(null)
+    selectedInterests.set([])
+    socials.set([])
 }
 
 export function resetState() {
     error.set(null);
     validationErrors.set([]);
     currentPage.set(0);
-    profileFormState.set(idle);
+    profileFormState.set("idle");
 }
