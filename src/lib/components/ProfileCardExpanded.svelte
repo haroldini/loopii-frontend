@@ -1,5 +1,7 @@
 
 <script>
+    import { interestMap, platformMap } from "$lib/stores/app";
+
     export let profile;
     export let onBack;
 </script>
@@ -28,8 +30,8 @@
     {/if}
 
     <div class="interests">
-        {#each profile.interests as interest}
-            <span class="tag">{interest}</span>
+        {#each profile.interests as interestId}
+            <span class="tag">{$interestMap[interestId] || interestId}</span>
         {/each}
     </div>
 
@@ -40,7 +42,7 @@
         <div class="socials">
             <h3>Socials</h3>
             {#each profile.socials as social}
-                <p>{social.platform_id}: {social.handle}</p>
+                <p>{ $platformMap[social.platform_id] || social.platform_id }: {social.handle}</p>
             {/each}
         </div>
     {/if}

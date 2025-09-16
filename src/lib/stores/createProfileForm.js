@@ -1,7 +1,7 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createProfile, getProfile } from "$lib/api/profile";
-import { getCountries, getInterests, getPlatforms } from "$lib/api/references";
+import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
 
 ///// --- Form state ---
@@ -24,45 +24,11 @@ export const error = writable(null);
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "error"
 
-
-///// Stores for reference data
-export const allCountries = writable([]);
-export const allInterests = writable([]);
-export const allPlatforms = writable([]);
-
 export const pageFields = {
     0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
     1: ["bio", "interests", "latitude", "longitude"],                  // Help others find you
     2: ["socials"]                                                     // What your loops will see
 };
-
-
-////// Init function to load references
-export async function initReferences() {
-    try {
-        const [countries, interests, platforms] = await Promise.all([
-            getCountries(),
-            getInterests(),
-            getPlatforms(),
-        ]);
-        allCountries.set(countries);
-        allCountries.set(
-            countries.sort((a, b) => {
-                if (a.code === "US") return -1;
-                if (b.code === "US") return 1;
-                if (a.code === "GB") return -1;
-                if (b.code === "GB") return 1;
-                return a.name.localeCompare(b.name);
-            })
-        );
-        allInterests.set(interests);
-        allPlatforms.set(platforms);
-
-    } catch (err) {
-        console.error("Failed to load reference data", err);
-    }
-}
-
 
 ///// --- Validation logic ---
 export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials) {

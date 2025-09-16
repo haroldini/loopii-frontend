@@ -1,6 +1,7 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
+    import { interestMap, platformMap } from "$lib/stores/app";
 
     export let profile;
     const dispatch = createEventDispatcher();
@@ -30,8 +31,8 @@
     {/if}
 
     <div class="interests">
-        {#each profile.interests as interest}
-            <span class="tag">{interest}</span>
+        {#each profile.interests as interestId}
+            <span class="tag">{$interestMap[interestId] || interestId}</span>
         {/each}
     </div>
 </button>

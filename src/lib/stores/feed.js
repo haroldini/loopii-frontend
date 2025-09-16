@@ -91,7 +91,11 @@ export function handleDecision(connect) {
     (async () => {
         try {
             ongoingEvaluations.update(ids => [...ids, peerId])
-            await evaluatePeer(peerId, connect);
+            const result = await evaluatePeer(peerId, connect);
+
+            if (result.looped && result.peer) {
+                console.log("Looped with peer:", result.peer);
+            }
         } catch (err) {
             console.error("Error evaluating peer:", err);
         } finally {

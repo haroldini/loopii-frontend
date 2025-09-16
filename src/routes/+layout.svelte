@@ -1,6 +1,7 @@
 <script>
 	import { get } from "svelte/store";
 	import { onMount } from "svelte";
+	import { initReferences } from "$lib/stores/app.js";
 	import { initAuth, user, signOut, urlNotice, authState } from "$lib/stores/auth";
 	import { initProfile, profile, profileState } from "$lib/stores/profile";
 
@@ -16,6 +17,7 @@
 
 	// Whenever authState changes to authenticated, load profile
 	onMount(() => {
+		initReferences();
         initAuth();
     });
     $effect(() => {

@@ -2,18 +2,14 @@
 	import { onMount } from "svelte";
 	import { get, writable } from "svelte/store";
 	import { user, signOut } from "$lib/stores/auth";
+	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 	import { 
-		allInterests, allCountries, allPlatforms,
 		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials,
 		error, readyToSubmit, validationErrors, currentPage,
-		profileFormState, initReferences, submitProfile, resetState, removeSocial, updateHandle, updateCustomPlatform
+		profileFormState, submitProfile, resetState, removeSocial, updateHandle, updateCustomPlatform
 	} from "$lib/stores/createProfileForm";
 	
 	import MapPicker from "./MapPicker.svelte";
-
-	onMount(() => {
-        initReferences();
-    });
 
 </script>
 
