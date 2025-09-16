@@ -1,53 +1,64 @@
+
 <script>
-    import { onMount } from "svelte";
-    import { getUserLoops } from "$lib/api/loop.js";
-    import { writable } from "svelte/store";
+    import { loops, loopsStatus, initLoopsStore, refreshLoopsStore } from "$lib/stores/loops.js";
+    import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
+    import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
 
-    const loops = writable([]);
-    const status = writable("loading"); // "loading" | "loaded" | "error"
+    let selected = null;
 
-    onMount(async () => {
-        status.set("loading");
-        try {
-            const data = await getUserLoops(); // request.js throws on non-2xx
-            loops.set(data);
-            status.set("loaded");
-        } catch (err) {
-            console.error("Error fetching loops:", err);
-            status.set("error");
-        }
-    });
+    if ($loopsStatus === "unloaded") {
+        initLoopsStore();
+    }
+
+    function open(profile) {
+        selected = profile;
+    }
+
+    function close() {
+        selected = null;
+    }
 </script>
 
 
 <svelte:head>
-  <title>loopii • Loops</title>
+    <title>loopii • Loops</title>
 </svelte:head>
 
 
-<div style="max-width:600px; margin:2rem auto; padding:1rem;">
-    {#if $status === "loading"}
+<div style="max-width:600px; margin:2rem auto; padding:1rem;" id="profile-container">
+    {#if $loopsStatus === "loading"}
         <p>Loading...</p>
 
-    {:else if $status === "error"}
+    {:else if $loopsStatus === "error"}
         <p>Error loading loops</p>
-        <button on:click={() => location.reload()}>Retry</button>
+        <button on:click={refreshLoopsStore}>Retry</button>
 
-    {:else if $loops.length === 0}
+    {:else if $loopsStatus === "loaded" && $loops.length === 0}
         <div style="border:1px solid #ccc; border-radius:8px; padding:1rem; margin-bottom:1rem;">
             <p>You don’t have any loops yet.</p>
+            <button on:click={refreshLoopsStore}>Refresh</button>
         </div>
-    {:else}
-        {#each $loops as loop}
-            <div style="border:1px solid #ccc; border-radius:8px; padding:1rem; margin-bottom:1rem;">
-                <p><strong>Looped at:</strong> {new Date(loop.looped_at).toLocaleString()}</p>
-                <p><strong>Name:</strong> {loop.name}</p>
-                <p><strong>Age:</strong> {loop.age}</p>
-                <p><strong>Gender:</strong> {loop.gender}</p>
-                <p><strong>Country:</strong> {loop.country}</p>
-                {#if loop.location}<p><strong>Location:</strong> {loop.location}</p>{/if}
-                {#if loop.bio}<p><strong>Bio:</strong> {loop.bio}</p>{/if}
-            </div>
-        {/each}
+
+    {:else if selected}
+        <ProfileCardExpanded profile={selected} onBack={close} />
+
+    {:else if $loopsStatus === "loaded"}
+        <div class="grid">
+            {#each $loops as loop}
+                <ProfileCardPreview profile={loop} on:expand={() => open(loop)} />
+            {/each}
+        </div>
+        <div style="margin-top:1rem; text-align:center;">
+            <button on:click={refreshLoopsStore}>Refresh</button>
+        </div>
     {/if}
 </div>
+
+
+<style>
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+</style>

@@ -3,8 +3,8 @@ import { writable, get } from "svelte/store";
 import { getUnseenPeers, evaluatePeer } from "$lib/api/feed.js";
 
 export const peer = writable(null);
-export const peerQueue = writable([]);            // queue[0] is the current peer (not removed until evaluated)
-export const peerStatus = writable("empty");      // "loading" | "loaded" | "empty" | "error"
+export const peerQueue = writable([]);               // queue[0] is the current peer (not removed until evaluated)
+export const peerStatus = writable("unloaded");      // "loading" | "loaded" | "empty" | "error" | "unloaded"
 export const ongoingEvaluations = writable([]);
 
 const QUEUE_BATCH_SIZE = 10;
@@ -13,10 +13,7 @@ const QUEUE_MIN = 5;
 let isFetching = false;
 
 
-/**
- * Fetch a batch of unseen peers from the API and append them to the queue.
- * Does not touch peerStatus directly - only returns result info.
-*/
+// Fetch a batch of unseen peers, excluding those in the queue or currently being evaluated.
 export async function fetchPeerBatch() {
     if (isFetching) return { ok: true, added: 0, skipped: true };
     isFetching = true;
@@ -39,10 +36,8 @@ export async function fetchPeerBatch() {
     }
 }
 
-/**
- * Set the current peer to the first in the queue (without removing it).
- * If queue is running low, silently fetch more in the background.
-*/
+
+// Set the current peer to the first in the queue, and manage fetching more if needed.
 export function setNextPeer() {
     const queue = get(peerQueue);
     if (queue.length === 0) {
@@ -62,11 +57,8 @@ export function setNextPeer() {
     return queue[0];
 }
 
-/**
- * Initialize the peer store from scratch.
- * Sets peerStatus into "loading", fetches peers, then either
- * assigns a peer or sets "empty"/"error" if nothing available.
-*/
+
+// Initialize the peer store by fetching the first batch and setting the first peer.
 export async function initPeerStore() {
     peerStatus.set("loading");
 
@@ -87,10 +79,7 @@ export async function initPeerStore() {
 }
 
 
-/**
- * Handle a decision (connect or pass) on the current peer.
- * Moves on instantly, while evaluating the old peer in the background.
-*/
+// Handle user decision on current peer (connect or skip), advance to next peer instantly.
 export function handleDecision(connect) {
     const current = get(peer);
     console.log("handleDecision", { current, connect });

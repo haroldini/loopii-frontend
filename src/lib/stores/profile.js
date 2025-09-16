@@ -19,6 +19,7 @@ authState.subscribe((state) => {
 });
 
 
+// Initialize the profile by fetching it from the API.
 export async function initProfile() {
     profileState.set("loading");
 
