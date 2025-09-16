@@ -4,6 +4,7 @@
     import { goto } from "$app/navigation";
     import ProfileCard from "$lib/components/ProfileCard.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
+    import Navbar from "$lib/components/Navbar.svelte";
 
     let expanded = false;
 
@@ -23,16 +24,18 @@
 
 
 <!-- Account settings buttons -->
-<div style="display:flex; gap:0.75rem; margin-bottom:0.75rem;">
-    <button type="button" on:click={() => goto("/profile/edit")}>
-        Edit profile details
-    </button>
-    <button type="button" on:click={() => goto("/profile/security")}>
-        Security (email &amp; password)
-    </button>
+<div class="container bordered">
+    <nav>
+        <button type="button" on:click={() => goto("/profile/edit")}>
+            Edit
+        </button>
+        <button type="button" on:click={() => goto("/profile/security")}>
+            Security
+        </button>
+    </nav>
 </div>
 
-<div style="max-width:600px; margin:2rem auto; padding:1rem;">
+<div class="container bordered">
     {#if expanded}
         <ProfileCardExpanded profile={$profile} onBack={close} />
     {:else}

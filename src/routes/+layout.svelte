@@ -1,4 +1,7 @@
 <script>
+	import favicon from "$lib/assets/favicon.svg";
+	import "$lib/styles/app.css";
+
 	import { get } from "svelte/store";
 	import { onMount } from "svelte";
 	import { initReferences } from "$lib/stores/app.js";
@@ -10,8 +13,6 @@
 
 	import Navbar from "$lib/components/Navbar.svelte";
 	import Notice from "$lib/components/Notice.svelte";
-
-	import favicon from "$lib/assets/favicon.svg";
 
 	let { children } = $props();
 
@@ -35,11 +36,6 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<!-- Auth debugging Info -->
-<!-- 
-<p>authState: {$authState}</p>
-<p>profileState: {$profileState}</p>  -->
-
 
 <!-- Render URL notice if present -->
 {#if $urlNotice}
@@ -54,27 +50,35 @@
 
 <!-- Authenticating user or loading profile -->
 {#if $authState === "loading" || $profileState === "loading"}
-	<div style="display:flex; flex-direction: column; align-items:center;">
+<div class="fill fillvh center">
+	<div class="container">
 		<h1>loopii</h1>
 		<p>Loading...</p>
 	</div>
-
+</div>
+	
 <!-- Recovery flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"} 
-    <Auth />
+<div class="container bordered" style="width: 100%; max-width: 500px;">
+	<Auth />
+</div>
 
 <!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
+<div class="container bordered" style="width: 100%; max-width: 500px;">
 	<CreateProfile />
+</div>
 
 <!-- Authentication Passed & Profile Present - Render App -->
 {:else if $authState === "authenticated" && $profileState === "loaded"}
 	<Navbar />
-    {@render children?.()}
+	<div class="flex-vertical">
+		{@render children?.()}
+	</div>
 
 <!-- Unexpected State -->
 {:else}
-	<div style="display:flex; flex-direction: column; align-items:center;">
+	<div class="container bordered">
 		<h1>loopii</h1>
 		<p>Stale session. Try refreshing the page, or log out and log back in.</p>
 		<button onclick={signOut}>Log Out</button>

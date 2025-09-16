@@ -7,90 +7,61 @@
 </script>
 
 
-<div class="expanded">
-    <header class="header">
-        <button
-            type="button"
-            class="back-btn"
-            on:click={onBack}
-            aria-label="Back to profile preview">
-            ← Back
-        </button>
-    </header>
+<nav>
+    <button
+        type="button"
+        on:click={onBack}
+        aria-label="Back to profile preview">
+        ← Back
+    </button>
+</nav>
 
-    <h2>{profile.name ?? profile.username}, {profile.age}</h2>
-    <p>{profile.gender}</p>
+<h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
+{#if profile.name}
+    <p>({profile.name})</p>
+{/if}
 
-    {#if profile.location}
-        <p>{profile.location}</p>
-    {/if}
+{#if profile.location}
+    <p>{profile.location}</p>
+{/if}
 
-    {#if profile.bio}
-        <p class="bio">{profile.bio}</p>
-    {/if}
+{#if profile.latitude && profile.longitude}
+    <p>{Math.round(profile.latitude * 100) / 100}, {Math.round(profile.longitude * 100) / 100}</p>
+{/if}
 
-    <div class="interests">
+{#if profile.bio}
+    <p class="bio">{profile.bio}</p>
+{/if}
+
+{#if profile.interests?.length}
+    <h3>Interests</h3>
+    <div class="tags">
         {#each profile.interests as interestId}
             <span class="tag">{$interestMap[interestId] || interestId}</span>
         {/each}
     </div>
+{/if}
 
-    <p>Latitude: {profile.latitude}</p>
-    <p>Longitude: {profile.longitude}</p>
-
-    {#if profile.socials?.length}
-        <div class="socials">
-            <h3>Socials</h3>
-            {#each profile.socials as social}
-                <p>{ $platformMap[social.platform_id] || social.platform_id }: {social.handle}</p>
-            {/each}
-        </div>
-    {/if}
-</div>
+{#if profile.socials?.length}
+    <h3>Socials</h3>
+    <div class="tags">
+    {#each profile.socials as social}
+        <a 
+            class="tag" 
+            href={social.link} 
+            target="_blank" 
+            rel="noopener noreferrer"
+        >
+            { $platformMap[social.platform_id] || social.platform_id }
+        </a>
+    {/each}
+    </div>
+{/if}
 
 
 <style>
-    .expanded {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-    }
-
-    .header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .back-btn {
-        border: none;
-        border-radius: 0.5rem;
-        background: #eee;
-        cursor: pointer;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-    }
-
     .bio {
-        margin: 1rem 0;
-    }
-
-    .interests {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-        margin-bottom: 1rem;
-    }
-
-    .tag {
-        background: #eee;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.5rem;
-        font-size: 0.8rem;
-    }
-
-    .socials {
-        margin-top: 1rem;
+        color: #555;
+        font-size: 0.9rem;
     }
 </style>

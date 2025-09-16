@@ -13,7 +13,7 @@
 
 <button
     type="button"
-    class="preview"
+    class="bare"
     on:click={open}
     aria-label="Open profile preview">
     <div class="circle">
@@ -24,17 +24,8 @@
 
 
 <style>
-    .preview {
-        border: none;
-        background: none;
-        padding: 0;
-        margin: 0;
-        cursor: pointer;
-    }
-
     .circle {
-        width: 60px;
-        height: 60px;
+        aspect-ratio: 1 / 1;
         border-radius: 50%;
         background: #ddd;
         display: flex;
@@ -50,12 +41,7 @@
 
     .gender {
         position: absolute;
-        bottom: -5px;
-        right: -5px;
-        background: #fff;
-        border: 1px solid #aaa;
-        border-radius: 50%;
-        padding: 0.25rem;
-        font-size: 0.7rem;
+        bottom: -0.25rem;
+        font-size: 0.75rem;
     }
 </style>

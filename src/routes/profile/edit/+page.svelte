@@ -9,8 +9,9 @@
 </svelte:head>
 
 
-<h1>Edit Profile</h1>
-
-<button type="button" on:click={() => goto("/profile")}>
-    ← Back to profile
-</button>
+<div class="container bordered">
+    <h3>Edit Profile</h3>
+    <button type="button" on:click={() => goto("/profile")}>
+        Back to Profile
+    </button>
+</div>

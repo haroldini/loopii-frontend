@@ -179,7 +179,8 @@
     }
     .preview-container {
         width: 100%;
-        height: 200px;
+        aspect-ratio: 16 / 9;
+        max-width: 600px;
         border: 1px solid #ccc;
         border-radius: 8px;
         overflow: hidden;

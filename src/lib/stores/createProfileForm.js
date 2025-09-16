@@ -100,17 +100,34 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
     // Socials validation
     if ($socials && $socials.length > 0) {
         $socials.forEach((s, idx) => {
-            if (!s.handle || !s.handle.trim()) {
-                errors.push({ field: `socials.${idx}`, message: `Handle required`, display: true });
+            // Required
+            if (!s.link || !s.link.trim()) {
+                errors.push({ field: `socials.${idx}`, message: "Link required", display: true });
+            } else {
+                const link = s.link.trim();
+                if (link.length > 150) {
+                    errors.push({ field: `socials.${idx}`, message: "Link too long", display: true });
+                }
+
+                // URL format check
+                try {
+                    const url = new URL(link);
+                    if (!["https:"].includes(url.protocol)) {
+                        errors.push({ field: `socials.${idx}`, message: "Link must start with https://", display: true });
+                    }
+                } catch {
+                    errors.push({ field: `socials.${idx}`, message: "Invalid URL format", display: true });
+                }
             }
-            if (s.handle && s.handle.length > 50) {
-                errors.push({ field: `socials.${idx}`, message: `Handle too long`, display: true });
-            }
+
+            // Platform required
             if (!s.platform_id && (!s.custom_platform || !s.custom_platform.trim())) {
-                errors.push({ field: `socials.${idx}`, message: `Platform required`, display: true });
+                errors.push({ field: `socials.${idx}`, message: "Platform required", display: true });
             }
+
+            // Custom platform length
             if (s.custom_platform && s.custom_platform.length > 30) {
-                errors.push({ field: `socials.${idx}`, message: `Custom platform too long`, display: true });
+                errors.push({ field: `socials.${idx}`, message: "Custom platform too long", display: true });
             }
         });
     }
@@ -145,9 +162,9 @@ export function removeSocial(i) {
     });
 }
 
-export function updateHandle(i, value) {
+export function updateLink(i, value) {
     socials.update(s => {
-        s[i].handle = value;
+        s[i].link = value;
         return [...s];
     });
 
@@ -215,15 +232,15 @@ export async function submitProfile() {
             let validationMsg = "Invalid profile data";
             const detail = err.data?.detail;
 
-            // Handle FastAPI validation errors
+            // Link FastAPI validation errors
             if (Array.isArray(detail) && detail.length > 0) {
             validationMsg = detail.map(d => d.msg || String(d)).join("; ");
 
-            // Handle response = message
+            // Link response = message
             } else if (typeof detail === "string") {
             validationMsg = detail;
 
-            // Handle response contains message
+            // Link response contains message
             } else if (detail?.message) {
             validationMsg = detail.message;
             }

@@ -14,56 +14,38 @@
 
 <button
     type="button"
-    class="card"
+    class="bare"
     on:click={open}
     aria-label="Open profile details">
-    <h2>{profile.name ?? profile.username}, {profile.age}</h2>
-    <p>{profile.gender}</p>
 
-    {#if profile.location}
-        <p>{profile.location}</p>
-    {/if}
-
-    {#if profile.bio}
-        <p class="bio">
-            {profile.bio.length > 100 ? profile.bio.slice(0, 100) + "…" : profile.bio}
-        </p>
-    {/if}
-
-    <div class="interests">
-        {#each profile.interests as interestId}
-            <span class="tag">{$interestMap[interestId] || interestId}</span>
-        {/each}
+    <div class="container">
+        <h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
+        {#if profile.name}
+            <p>({profile.name})</p>
+        {/if}
+    
+        {#if profile.location}
+            <p>{profile.location}</p>
+        {/if}
+    
+        {#if profile.bio}
+            <p class="bio">
+                {profile.bio.length > 100 ? profile.bio.slice(0, 100) + "…" : profile.bio}
+            </p>
+        {/if}
+    
+        <div class="tags">
+            {#each profile.interests as interestId}
+                <span class="tag">{$interestMap[interestId] || interestId}</span>
+            {/each}
+        </div>
     </div>
 </button>
 
 
 <style>
-    .card {
-        border: none;
-        background: none;
-        padding: 0;
-        margin: 0;
-        text-align: left;
-        cursor: pointer;
-        width: 100%;
-    }
-
     .bio {
         color: #555;
-    }
-
-    .interests {
-        margin-top: 0.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.25rem;
-    }
-
-    .tag {
-        background: #eee;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.5rem;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 </style>

@@ -127,3 +127,13 @@ export function handleDecision(connect) {
         setNextPeer();
     }
 }
+
+
+// Reset the peer queue and force a fresh fetch
+export async function refreshPeerStore() {
+    isFetching = false;
+    peer.set(null);
+    peerQueue.set([]);
+    peerStatus.set("loading");
+    await initPeerStore();
+}
