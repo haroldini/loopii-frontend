@@ -43,5 +43,5 @@ export const interestMap = derived(allInterests, list =>
 );
 
 export const platformMap = derived(allPlatforms, list =>
-    Object.fromEntries(list.map(p => [p.id, p.name]))
+    Object.fromEntries(list.map(p => [p.id, p]))
 );

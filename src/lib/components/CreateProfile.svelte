@@ -6,7 +6,8 @@
 	import { 
 		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials,
 		error, readyToSubmit, validationErrors, currentPage,
-		profileFormState, submitProfile, resetState, removeSocial, updateLink, updateCustomPlatform
+		profileFormState, submitProfile, resetState, submissionProgress,
+		updateHandle, updateCustomPlatform, updateCustomLink, removeSocial,
 	} from "$lib/stores/createProfileForm";
 	
 	import MapPicker from "./MapPicker.svelte";
@@ -20,7 +21,7 @@
 </nav>
 
 {#if $profileFormState === "submitting"}
-	<p>Creating profile...</p>
+	<p>{$submissionProgress}...</p>
 
 {:else if $profileFormState === "success"}
 	<p class="green">Profile created successfully!</p>
@@ -30,6 +31,10 @@
 	<p class="green">You already have a profile.</p>
 	<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
 
+{:else if $profileFormState === "partial"}
+	<p class="red">{$error}</p>
+	<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
+	
 {:else if $profileFormState === "error"}
 	<p class="red">{$error}</p>
 	<button on:click={resetState}>Try again</button>
@@ -178,25 +183,40 @@
 						{:else}
 							<input
 								type="text"
-								placeholder="Platform"
+								placeholder="Platform name"
 								value={social.custom_platform || ""}
 								on:input={(e) => updateCustomPlatform(i, e.target.value)}
 								maxlength="30"
 							/>
 						{/if}
 					</div>
+
 					<div class="social-link">
-						<input
-							type="text"
-							placeholder="Enter link"
-							bind:value={social.link}
-							on:input={(e) => updateLink(i, e.target.value)}
-						/>
+						{#if social.platform_id}
+							<!-- Platform → needs handle -->
+							<input
+								type="text"
+								placeholder="Enter handle"
+								value={social.handle || ""}
+								on:input={(e) => updateHandle(i, e.target.value)}
+								maxlength="50"
+							/>
+						{:else}
+							<!-- Custom → needs https:// link -->
+							<input
+								type="text"
+								placeholder="Enter https:// link"
+								bind:value={social.custom_link}
+								on:input={(e) => updateCustomLink(i, e.target.value)}
+								maxlength="150"
+							/>
+						{/if}
 					</div>
+
 					<div class="social-remove">
 						<button type="button" on:click={() => removeSocial(i)}>−</button>
 					</div>
-					{#if $validationErrors.find(e => e.field === `socials.${i}`)}
+					{#if $validationErrors.find(e => e.field === `socials.${i}` && e.display)}
 						<p class="red" style="grid-column: 1 / -1;">
 							{$validationErrors.find(e => e.field === `socials.${i}`).message}
 						</p>
@@ -205,31 +225,29 @@
 			</div>
 		{/if}
 
-		<div class="add-social">
-			<select on:change={(e) => {
-				if (e.target.value === "other") {
+		<select on:change={(e) => {
+			if (e.target.value === "other") {
+				socials.update(s => [
+					...s,
+					{ platform_id: null, name: null, custom_platform: "", custom_link: "" }
+				]);
+			} else {
+				const platform = $allPlatforms.find(p => p.id === e.target.value);
+				if (platform) {
 					socials.update(s => [
 						...s,
-						{ platform_id: null, name: null, custom_platform: "", link: "" }
+						{ platform_id: platform.id, name: platform.name, handle: "" }
 					]);
-				} else {
-					const platform = $allPlatforms.find(p => p.id === e.target.value);
-					if (platform) {
-						socials.update(s => [
-							...s,
-							{ platform_id: platform.id, name: platform.name, custom_platform: null, link: "" }
-						]);
-					}
 				}
-				e.target.value = "";
-			}}>
-				<option value="">+ Add platform</option>
-				{#each $allPlatforms as platform}
-					<option value={platform.id}>{platform.name}</option>
-				{/each}
-				<option value="other">Other</option>
-			</select>
-		</div>
+			}
+			e.target.value = "";
+		}}>
+			<option value="">+ Add platform</option>
+			{#each $allPlatforms as platform}
+				<option value={platform.id}>{platform.name}</option>
+			{/each}
+			<option value="other">Other</option>
+		</select>
 
 		<nav>
 			<button type="button" on:click={() => $currentPage = 1}>← Back</button>

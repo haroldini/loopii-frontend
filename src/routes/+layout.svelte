@@ -59,14 +59,18 @@
 	
 <!-- Recovery flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"} 
-<div class="container bordered" style="width: 100%; max-width: 500px;">
-	<Auth />
+<div class="center fill">
+	<div class="container bordered" style="width: 100%; max-width: 500px;">
+		<Auth />
+	</div>
 </div>
 
 <!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
-<div class="container bordered" style="width: 100%; max-width: 500px;">
-	<CreateProfile />
+<div class="center fill">
+	<div class="container bordered" style="width: 100%; max-width: 500px;">
+		<CreateProfile />
+	</div>
 </div>
 
 <!-- Authentication Passed & Profile Present - Render App -->

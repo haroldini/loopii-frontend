@@ -1,6 +1,6 @@
 
 import { writable, derived, get } from "svelte/store";
-import { createProfile, getProfile } from "$lib/api/profile";
+import { createProfile, getProfile, createProfileInterests, createProfileSocials } from "$lib/api/profile";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
 
@@ -21,8 +21,9 @@ export const socials = writable([]);
 export const currentPage = writable(0);
 export const validationErrors = writable([]);
 export const error = writable(null);
+export const submissionProgress = writable(null);
 export const profileFormState = writable("idle");
-// "idle" | "submitting" | "success" | "exists" | "error"
+// "idle" | "submitting" | "success" | "exists" | "partial" | "error"
 
 export const pageFields = {
     0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
@@ -34,7 +35,6 @@ export const pageFields = {
 export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials) {
     const errors = [];
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    console.log("validating")
 
     // Username required + format
     if (!$username) {
@@ -100,34 +100,45 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
     // Socials validation
     if ($socials && $socials.length > 0) {
         $socials.forEach((s, idx) => {
-            // Required
-            if (!s.link || !s.link.trim()) {
-                errors.push({ field: `socials.${idx}`, message: "Link required", display: true });
-            } else {
-                const link = s.link.trim();
-                if (link.length > 150) {
-                    errors.push({ field: `socials.${idx}`, message: "Link too long", display: true });
+            const field = `socials.${idx}`;
+
+            // Case 1: platform_id + handle
+            if (s.platform_id) {
+                if (!s.handle || !s.handle.trim()) {
+                    errors.push({ field, message: "Handle required", display: true });
+                } else if (s.handle.trim().length > 50) {
+                    errors.push({ field, message: "Handle too long", display: true });
                 }
 
-                // URL format check
-                try {
-                    const url = new URL(link);
-                    if (!["https:"].includes(url.protocol)) {
-                        errors.push({ field: `socials.${idx}`, message: "Link must start with https://", display: true });
+            // Case 2: custom_platform + custom_link
+            } else if (s.custom_platform || s.custom_link) {
+                if (!s.custom_platform || !s.custom_platform.trim()) {
+                    errors.push({ field, message: "Custom platform required", display: true });
+                } else if (s.custom_platform.trim().length > 30) {
+                    errors.push({ field, message: "Custom platform too long", display: true });
+                }
+
+                const link = s.custom_link?.trim();
+                if (!link) {
+                    errors.push({ field, message: "Custom link required", display: true });
+                } else {
+                    if (link.length > 150) {
+                        errors.push({ field, message: "Custom link too long", display: true });
                     }
-                } catch {
-                    errors.push({ field: `socials.${idx}`, message: "Invalid URL format", display: true });
+                    try {
+                        const u = new URL(link);
+                        const domainRegex = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
+                        if (!domainRegex.test(u.hostname)) {
+                            errors.push({ field, message: "Custom link must have a valid domain", display: true });
+                        }
+                    } catch {
+                        errors.push({ field, message: "Custom link must be a valid URL", display: true });
+                    }
                 }
-            }
 
-            // Platform required
-            if (!s.platform_id && (!s.custom_platform || !s.custom_platform.trim())) {
-                errors.push({ field: `socials.${idx}`, message: "Platform required", display: true });
-            }
-
-            // Custom platform length
-            if (s.custom_platform && s.custom_platform.length > 30) {
-                errors.push({ field: `socials.${idx}`, message: "Custom platform too long", display: true });
+            // Neither case satisfied
+            } else {
+                errors.push({ field, message: "Must provide either platform+handle or custom platform+link", display: true });
             }
         });
     }
@@ -162,13 +173,11 @@ export function removeSocial(i) {
     });
 }
 
-export function updateLink(i, value) {
+export function updateHandle(i, value) {
     socials.update(s => {
-        s[i].link = value;
+        s[i].handle = value;
         return [...s];
     });
-
-    console.log(get(socials))
 }
 
 export function updateCustomPlatform(i, value) {
@@ -176,13 +185,24 @@ export function updateCustomPlatform(i, value) {
         s[i].custom_platform = value;
         return [...s];
     });
-    console.log(get(socials))
+}
+
+export function updateCustomLink(i, value) {
+    socials.update(s => {
+        let v = value.trim();
+        if (v && !/^https?:\/\//i.test(v)) {
+            v = "https://" + v;  // normalize automatically
+        }
+        s[i].custom_link = v;
+        return [...s];
+    });
 }
 
 
 ///// --- Submit function ---
 export async function submitProfile() {
     profileFormState.set("submitting")
+    submissionProgress.set("Creating profile");
     error.set(null);
     
     try {
@@ -203,55 +223,106 @@ export async function submitProfile() {
             return;
         }
 
-        const data = await createProfile({
-            username: $username,
-            dob: $dob,
-            gender: $gender,
-            country_code: $country,
-            name: $name || null,
-            bio: $bio || null,
-            location: $location || null,
-            latitude: $latitude || null,
-            longitude: $longitude || null,
-            interest_ids: $selectedInterests || [],
-            socials: $socials || [] 
-        });
+        // Step 1: Create the profile
+        let createdProfile;
+        try {
+            submissionProgress.set("Creating profile");
+            createdProfile = await createProfile({
+                username: $username,
+                dob: $dob,
+                gender: $gender,
+                country_code: $country,
+                name: $name || null,
+                bio: $bio || null,
+                location: $location || null,
+                latitude: $latitude || null,
+                longitude: $longitude || null,
+            });
+        } catch (err) {
+            // Handle profile already exists, proceed to app
+            if (err.status === 409) {
+                error.set("You already have a profile");
+                profileFormState.set("exists");
 
-        profile.set(data);
-        profileFormState.set("success");
+            // Handle validation errors from backend
+            } else if (err.status === 422) {
+                let validationMsg = "Invalid profile data";
+                const detail = err.data?.detail;
 
-    } catch (err) {
+                // Link FastAPI validation errors
+                if (Array.isArray(detail) && detail.length > 0) {
+                validationMsg = detail.map(d => d.msg || String(d)).join("; ");
 
-        // 409 for profile already exists
-        if (err.status === 409) {
-            error.set("You already have a profile");
-            profileFormState.set("exists")
+                // Link response = message
+                } else if (typeof detail === "string") {
+                validationMsg = detail;
 
-        // 422 for invalid payload / FastAPI validation error
-        } else if (err.status === 422) {
-            let validationMsg = "Invalid profile data";
-            const detail = err.data?.detail;
+                // Link response contains message
+                } else if (detail?.message) {
+                validationMsg = detail.message;
+                }
+                error.set(validationMsg);
+                profileFormState.set("error");
 
-            // Link FastAPI validation errors
-            if (Array.isArray(detail) && detail.length > 0) {
-            validationMsg = detail.map(d => d.msg || String(d)).join("; ");
-
-            // Link response = message
-            } else if (typeof detail === "string") {
-            validationMsg = detail;
-
-            // Link response contains message
-            } else if (detail?.message) {
-            validationMsg = detail.message;
+            // Unknown error
+            } else {
+                error.set(err.message || "Unexpected error creating profile");
+                profileFormState.set("error");
             }
-            error.set(validationMsg);
-            profileFormState.set("error")
-        } else {
-            error.set(err.message || "Unexpected error");
-            profileFormState.set("error")
+            return;
         }
+
+        // Step 2: Add interests
+        let interestsError = false;
+        if ($selectedInterests && $selectedInterests.length > 0) {
+            try {
+                submissionProgress.set("Adding interests");
+                await createProfileInterests({ interest_ids: $selectedInterests });
+            } catch {
+                interestsError = true;
+            }
+        }
+
+        // Step 3: Add socials
+        let socialsError = false;
+        if ($socials && $socials.length > 0) {
+            try {
+                submissionProgress.set("Adding socials");
+                await createProfileSocials({ socials: $socials });
+            } catch {
+                socialsError = true;
+            }
+        }
+
+        // Step 4: Handle successful profile creation but interest/social errors - Proceed to app
+        if (interestsError || socialsError) {
+            let msg = "Profile created, but failed to add ";
+            if (interestsError) msg += "interests ";
+            if (interestsError && socialsError) msg += "and ";
+            if (socialsError) msg += "socials ";
+            msg += "— please try adding them later from your profile page.";
+            error.set(msg);
+            profileFormState.set("partial");
+        } else {
+            profileFormState.set("success");
+        }
+
+        // Step 5: Fetch and set the new profile in global store
+        try {
+            submissionProgress.set("Done. Getting your profile");
+            const fetchedProfile = await getProfile();
+            profile.set(fetchedProfile);
+        } catch {
+            // Ignore fetch errors, user can refresh to get profile
+        }
+
+    // Handle unexpected errors
+    } catch (err) {
+        error.set(err.message || "Unexpected error");
+        profileFormState.set("error")
     } finally {
-        if (["exists", "success"].includes(profileFormState)) {
+        submissionProgress.set(null);
+        if (["exists", "success", "partial"].includes(get(profileFormState))) {
             resetFields();
         }
     }

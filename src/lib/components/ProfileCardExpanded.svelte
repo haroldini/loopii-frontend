@@ -1,6 +1,7 @@
 
 <script>
     import { interestMap, platformMap } from "$lib/stores/app";
+    import { buildSocialLink } from "$lib/utils/urls";
 
     export let profile;
     export let onBack;
@@ -46,14 +47,16 @@
     <h3>Socials</h3>
     <div class="tags">
     {#each profile.socials as social}
-        <a 
-            class="tag" 
-            href={social.link} 
-            target="_blank" 
-            rel="noopener noreferrer"
-        >
-            { $platformMap[social.platform_id] || social.platform_id }
-        </a>
+        {#if buildSocialLink(social, $platformMap)}
+            <a
+                class="tag"
+                href={buildSocialLink(social, $platformMap)}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                { social.custom_platform || $platformMap[social.platform_id]?.name || "Unknown" }
+            </a>
+        {/if}
     {/each}
     </div>
 {/if}
