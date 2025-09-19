@@ -1,21 +1,19 @@
 
 <script>
-    import { loops, loopsStatus, initLoopsStore, refreshLoopsStore } from "$lib/stores/loops.js";
+    import { loops, loopsStatus, initLoopsStore, refreshLoopsStore, selectedLoop } from "$lib/stores/loops.js";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
-
-    let selected = null;
 
     if ($loopsStatus === "unloaded") {
         initLoopsStore();
     }
 
     function open(profile) {
-        selected = profile;
+        selectedLoop.set(profile);
     }
 
     function close() {
-        selected = null;
+        selectedLoop.set(null);
     }
 </script>
 
@@ -37,13 +35,15 @@
             <p>You don’t have any loops yet.</p>
         </div>
 
-    {:else if selected}
-        <ProfileCardExpanded profile={selected} onBack={close} />
+    {:else if $selectedLoop}
+        <ProfileCardExpanded profile={$selectedLoop} onBack={close} />
 
     {:else if $loopsStatus === "loaded"}
         <div class="grid grid-3">
             {#each $loops as loop}
+            <div style="aspect-ratio: 1 / 1;">
                 <ProfileCardPreview profile={loop} on:expand={() => open(loop)} />
+            </div>
             {/each}
         </div>
     {/if}

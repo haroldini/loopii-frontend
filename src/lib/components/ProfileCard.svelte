@@ -15,6 +15,7 @@
 <button
     type="button"
     class="bare"
+    style="width: 100%;"
     on:click={open}
     aria-label="Open profile details">
 

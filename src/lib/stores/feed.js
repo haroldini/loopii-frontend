@@ -1,6 +1,7 @@
 
 import { writable, get } from "svelte/store";
 import { getUnseenPeers, evaluatePeer } from "$lib/api/feed.js";
+import { loopNotification } from "./app";
 
 export const peer = writable(null);
 export const peerQueue = writable([]);               // queue[0] is the current peer (not removed until evaluated)
@@ -95,6 +96,7 @@ export function handleDecision(connect) {
 
             if (result.looped && result.peer) {
                 console.log("Looped with peer:", result.peer);
+                loopNotification.set({"profile": result.peer})
             }
         } catch (err) {
             console.error("Error evaluating peer:", err);

@@ -123,6 +123,12 @@ span.button {
     cursor: pointer;
     text-decoration: underline;
 }
+span.clickable {
+    cursor: pointer;
+}
+span.clickable:hover {
+    background: #e5e5e5;
+}
 
 /* Buttons */
 button {
@@ -170,6 +176,8 @@ button.bare {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
 }
 
 /* Tags */

@@ -32,6 +32,9 @@
         <button type="button" on:click={() => goto("/profile/security")}>
             Security
         </button>
+        <button type="button" on:click={signOut}>
+            Log Out
+        </button>
     </nav>
 </div>
 

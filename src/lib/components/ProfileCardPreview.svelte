@@ -13,7 +13,7 @@
 
 <button
     type="button"
-    class="bare"
+    class="bare fill preview-container"
     on:click={open}
     aria-label="Open profile preview">
     <div class="circle">
@@ -24,9 +24,19 @@
 
 
 <style>
+    .preview-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .circle {
         aspect-ratio: 1 / 1;
         border-radius: 50%;
+        height: 100%;
+        width: auto;
         background: #ddd;
         display: flex;
         align-items: center;

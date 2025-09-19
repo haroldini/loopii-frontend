@@ -48,14 +48,19 @@
     <div class="tags">
     {#each profile.socials as social}
         {#if buildSocialLink(social, $platformMap)}
-            <a
-                class="tag"
-                href={buildSocialLink(social, $platformMap)}
-                target="_blank"
-                rel="noopener noreferrer"
+            <span 
+                class="tag clickable"
+                role="button"
+                tabindex="0"
+                on:click={() =>
+                    window.open(buildSocialLink(social, $platformMap), "_blank", "noopener,noreferrer")
+                }
+                on:keydown={(e) =>
+                    e.key === "Enter" && window.open(buildSocialLink(social, $platformMap), "_blank", "noopener,noreferrer")
+                }
             >
                 { social.custom_platform || $platformMap[social.platform_id]?.name || "Unknown" }
-            </a>
+            </span>
         {/if}
     {/each}
     </div>

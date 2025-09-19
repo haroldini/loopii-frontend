@@ -2,11 +2,16 @@
 import { writable, get, derived } from "svelte/store";
 import { getCountries, getInterests, getPlatforms } from "$lib/api/references";
 
+// Stores for app-wide notifications
+export const loopNotification = writable(null); 
+
+
 // Reference data stores, loader and maps
 export const allCountries = writable([]);
 export const allInterests = writable([]);
 export const allPlatforms = writable([]);
 export const referencesLoaded = writable(false);
+
 
 export async function initReferences() {
     if (get(referencesLoaded)) return; // already loaded

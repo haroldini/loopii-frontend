@@ -13,6 +13,7 @@
 
 	import Navbar from "$lib/components/Navbar.svelte";
 	import Notice from "$lib/components/Notice.svelte";
+	import LoopPopup from "$lib/components/LoopPopup.svelte";
 
 	let { children } = $props();
 
@@ -47,6 +48,9 @@
 		/>
 {/if}
 
+<!-- Render Popups if present -->
+<LoopPopup />
+
 
 <!-- Authenticating user or loading profile -->
 {#if $authState === "loading" || $profileState === "loading"}
@@ -60,7 +64,7 @@
 <!-- Recovery flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"} 
 <div class="center fill">
-	<div class="container bordered" style="width: 100%; max-width: 500px;">
+	<div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
 		<Auth />
 	</div>
 </div>
@@ -68,7 +72,7 @@
 <!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
 <div class="center fill">
-	<div class="container bordered" style="width: 100%; max-width: 500px;">
+	<div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
 		<CreateProfile />
 	</div>
 </div>
