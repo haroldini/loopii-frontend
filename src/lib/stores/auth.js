@@ -4,8 +4,10 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env";
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
+import { addNotification } from "$lib/stores/app";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 // --- Auth state stores ---
 export const user = writable(null);
@@ -19,8 +21,6 @@ export const expectedPhrase = derived(user, ($user) => {
     const email = $user?.email ?? "";
     return `DELETE ${email}`;
 });
-
-export const urlNotice = writable(null);
 
 
 // --- Auth initialisation ---
@@ -43,7 +43,11 @@ export async function initAuth() {
             queryParams.get("error_description");
         if (urlMsg) {
             const kind = /error|fail|denied/i.test(urlMsg) ? "error" : "success";
-            urlNotice.set({ text: urlMsg, type: kind });
+            addNotification({
+                type: kind,
+                variant: "banner",
+                text: urlMsg,
+            });
             history.replaceState(null, "", window.location.pathname + window.location.search);
         }
 

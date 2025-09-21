@@ -7,3 +7,10 @@ export function getUserLoops() {
         method: "GET"
     });
 }
+
+// Get the LoopProfile for a given loop ID (the profile of the non-logged-in user in the loop)
+export function getProfileFromLoop(loopId) {
+    return request(`/loop/get-profile-from-loop/${loopId}`, {
+        method: "GET"
+    });
+}

@@ -26,7 +26,6 @@
 <style>
     .preview-container {
         width: 100%;
-        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -35,8 +34,8 @@
     .circle {
         aspect-ratio: 1 / 1;
         border-radius: 50%;
-        height: 100%;
-        width: auto;
+        width: 100%;
+        height: auto;
         background: #ddd;
         display: flex;
         align-items: center;

@@ -23,7 +23,6 @@ export function buildSocialLink(social, platformMap) {
         if (platform?.url_pattern) {
             // e.g. "https://twitter.com/{handle}"
             const url = platform.url_pattern.replace("{handle}", encodeURIComponent(social.handle));
-            console.log("Built URL:", url);
             return url;
         }
     }

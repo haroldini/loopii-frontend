@@ -4,10 +4,6 @@
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
 
-    if ($loopsStatus === "unloaded") {
-        initLoopsStore();
-    }
-
     function open(profile) {
         selectedLoop.set(profile);
     }

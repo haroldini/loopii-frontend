@@ -4,33 +4,45 @@
 
 	import { get } from "svelte/store";
 	import { onMount } from "svelte";
-	import { initReferences } from "$lib/stores/app.js";
-	import { initAuth, user, signOut, urlNotice, authState } from "$lib/stores/auth";
+
+	import { initReferences, initLoopSub, clearLoopSub } from "$lib/stores/app.js";
+	import { initAuth, user, signOut, authState } from "$lib/stores/auth";
 	import { initProfile, profile, profileState } from "$lib/stores/profile";
+	import { initLoopsStore } from "$lib/stores/loops.js";
+	import { initPeerStore } from "$lib/stores/feed";
 
 	import Auth from "$lib/components/Auth.svelte";
 	import CreateProfile from "$lib/components/CreateProfile.svelte";
 
 	import Navbar from "$lib/components/Navbar.svelte";
-	import Notice from "$lib/components/Notice.svelte";
-	import LoopPopup from "$lib/components/LoopPopup.svelte";
+	import Notifications from "$lib/components/Notifications.svelte";
 
 	let { children } = $props();
 
-	// Whenever authState changes to authenticated, load profile
+	// Initial setup
 	onMount(() => {
 		initReferences();
         initAuth();
     });
-    $effect(() => {
+
+	// Load profile when authenticated
+	$effect(() => {
         if ($authState === "authenticated") {
             initProfile();
         }
     });
 
-	async function handleLogout() {
-		await signOut();
-	}
+	// Load profile-dependent stores when profile is loaded
+	$effect(() => {
+		if ($authState === "authenticated" && $profileState === "loaded") {
+			initLoopsStore();		
+			initPeerStore();
+			initLoopSub();
+		} else if ($authState === "unauthenticated") {
+			clearLoopSub();
+		}
+	});
+
 </script>
 
 <svelte:head>
@@ -38,18 +50,8 @@
 </svelte:head>
 
 
-<!-- Render URL notice if present -->
-{#if $urlNotice}
-	<Notice
-			text={$urlNotice.text}
-			type={$urlNotice.type}
-			autoHideMs={$urlNotice.type === "success" ? 6000 : null}
-			on:dismiss={() => urlNotice.set(null)}
-		/>
-{/if}
-
-<!-- Render Popups if present -->
-<LoopPopup />
+<!-- Render notifications if present -->
+<Notifications />
 
 
 <!-- Authenticating user or loading profile -->
@@ -61,7 +63,7 @@
 	</div>
 </div>
 	
-<!-- Recovery flow -->
+<!-- Recovery / account creation flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"} 
 <div class="center fill">
 	<div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
