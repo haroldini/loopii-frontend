@@ -4,13 +4,15 @@
 	import { user, signOut } from "$lib/stores/auth";
 	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 	import { 
-		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials,
+		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
 		error, readyToSubmit, validationErrors, currentPage,
-		profileFormState, submitProfile, resetState, submissionProgress,
+		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
 		updateHandle, updateCustomPlatform, updateCustomLink, removeSocial,
 	} from "$lib/stores/createProfileForm";
 	
 	import MapPicker from "./MapPicker.svelte";
+	import ImagePicker from "$lib/components/ImagePicker.svelte";
+	let avatarPicker;
 
 </script>
 
@@ -45,13 +47,55 @@
 
 	{#if $currentPage === 0}
 		<h3>Create your profile</h3>
-		<label for="username">Username*</label>
+		<label for="username">Username *</label>
 		<input id="username" bind:value={$username} required />
 		{#if $validationErrors.find(e => e.field === "username" && e.display)}
 			<p class="red">
 				{$validationErrors.find(e => e.field === "username" && e.display).message}
 			</p>
 		{/if}
+
+		<!-- Avatar Picker // Always mounted so external controls work -->
+		<label for="avatar">Avatar *</label>
+		<ImagePicker
+			bind:this={avatarPicker}
+			initialOriginalUrl={$avatarOriginalUrl}
+			initialEditedUrl={$avatarUrl}
+			initialCropState={$avatarCropState}
+			on:confirm={(e) => {
+				avatarUrl.set(e.detail.url);
+				avatarFile.set(e.detail.file);
+				avatarOriginalUrl.set(e.detail.originalUrl);
+				avatarCropState.set(e.detail.cropState);
+			}}
+			on:back={() => {
+				// User hit back without confirming – do nothing
+			}}
+		/>
+
+		{#if $avatarUrl}
+			<button type="button" on:click={() => {
+				if ($avatarUrl?.startsWith("blob:")) {
+					try { URL.revokeObjectURL($avatarUrl); } catch {}
+				}
+				if ($avatarOriginalUrl?.startsWith("blob:")) {
+					try { URL.revokeObjectURL($avatarOriginalUrl); } catch {}
+				}
+				avatarUrl.set(null);
+				avatarFile.set(null);
+				avatarOriginalUrl.set(null);
+				avatarCropState.set(null);
+				avatarPicker.reset();
+			}}>
+				Clear Avatar
+			</button>
+		{:else}
+			<button type="button" on:click={() => avatarPicker.open()}>
+				Pick Avatar
+			</button>
+		{/if}
+
+
 
 		<label for="name">Display Name</label>
 		<input id="name" bind:value={$name} />
@@ -61,7 +105,7 @@
 			</p>
 		{/if}
 
-		<label for="dob">Date of Birth*</label>
+		<label for="dob">Date of Birth *</label>
 		<input id="dob" type="date" bind:value={$dob} required />
 		{#if $validationErrors.find(e => e.field === "dob" && e.display)}
 			<p class="red">
@@ -69,7 +113,7 @@
 			</p>
 		{/if}
 
-		<label for="gender">Gender*</label>
+		<label for="gender">Gender *</label>
 		<select id="gender" bind:value={$gender} required>
 			<option value="" disabled>Select Gender</option>
 			<option value="male">Male</option>
@@ -82,7 +126,7 @@
 			</p>
 		{/if}
 
-		<label for="country">Country*</label>
+		<label for="country">Country *</label>
 		<select id="country" bind:value={$country} required>
 			<option value="" disabled>Select Country</option>
 			{#each $allCountries as country}

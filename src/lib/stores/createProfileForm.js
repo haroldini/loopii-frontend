@@ -16,6 +16,12 @@ export const latitude = writable(null);
 export const longitude = writable(null);
 export const selectedInterests = writable([]);
 export const socials = writable([]);
+export const avatarUrl = writable(null);
+export const avatarFile = writable(null);
+
+// Image helpers
+export const avatarOriginalUrl = writable(null);
+export const avatarCropState = writable(null);
 
 ///// --- UI state ---
 export const currentPage = writable(0);
@@ -330,6 +336,7 @@ export async function submitProfile() {
 
 function resetFields() {
     name.set(null);
+    username.set(null);
     dob.set(null);
     gender.set(null);
     country.set(null);
@@ -340,6 +347,12 @@ function resetFields() {
     longitude.set(null)
     selectedInterests.set([])
     socials.set([])
+    avatarUrl.set(null);
+    avatarFile.set(null);
+
+    // Image helpers
+    avatarOriginalUrl.set(null);
+    avatarCropState.set(null);
 }
 
 export function resetState() {

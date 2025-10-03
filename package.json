@@ -19,6 +19,7 @@
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.55.0",
+		"cropperjs": "^1.6.2",
 		"leaflet": "^1.9.4"
 	}
 }

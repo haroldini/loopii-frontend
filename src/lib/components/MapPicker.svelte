@@ -1,3 +1,4 @@
+
 <script>
     import { onMount, tick } from "svelte";
     import { createEventDispatcher } from "svelte";
@@ -192,6 +193,7 @@
         background: white;
         display: flex;
         flex-direction: column;
+        z-index: 1000;
     }
     .map-header {
         display: flex;
