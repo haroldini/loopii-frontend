@@ -16,12 +16,20 @@ export const latitude = writable(null);
 export const longitude = writable(null);
 export const selectedInterests = writable([]);
 export const socials = writable([]);
-export const avatarUrl = writable(null);
-export const avatarFile = writable(null);
 
-// Image helpers
+// Avatar image state
+export const avatarFile = writable(null);
 export const avatarOriginalUrl = writable(null);
 export const avatarCropState = writable(null);
+export const avatarUrl = derived(avatarFile, ($file, set) => {
+    if ($file) {
+        const url = URL.createObjectURL($file);
+        set(url);
+        return () => URL.revokeObjectURL(url);
+    } else {
+        set(null);
+    }
+});
 
 ///// --- UI state ---
 export const currentPage = writable(0);
@@ -32,13 +40,13 @@ export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "partial" | "error"
 
 export const pageFields = {
-    0: ["username", "dob", "gender", "country", "name", "location"],   // Create your profile
-    1: ["bio", "interests", "latitude", "longitude"],                  // Help others find you
+    0: ["username", "dob", "gender", "country", "name", "avatar"],               // Create your profile
+    1: ["bio", "interests", "latitude", "longitude", "location"],      // Help others find you
     2: ["socials"]                                                     // What your loops will see
 };
 
 ///// --- Validation logic ---
-export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials) {
+export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile) {
     const errors = [];
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
@@ -72,6 +80,36 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
             errors.push({ field: "dob", message: "You must be at least 13 years old", display: true });
         }
     }
+
+    // Avatar validation
+    if (!$avatarFile) {
+        errors.push({ field: "avatar", message: "Profile picture is required", display: false });
+    } else {
+        // File type check
+        const allowedTypes = ["image/jpeg"];
+        if (!allowedTypes.includes($avatarFile.type)) {
+            errors.push({ field: "avatar", message: "Profile picture must be a JPEG", display: true });
+        }
+
+        // File size check (max 5 MB)
+        const maxSize = 5 * 1024 * 1024; // 5 MB in bytes
+        const size = $avatarFile.size;
+
+        const formatted = size < 1024 * 1024
+        ? (size / 1024).toFixed(2) + " KB"
+        : (size / (1024 * 1024)).toFixed(2) + " MB";
+
+        console.log(formatted, "/ 5 MB");
+
+        if (size > maxSize) {
+        errors.push({
+            field: "avatar",
+            message: `Profile picture must be smaller than 5 MB (current: ${formatted})`,
+            display: true
+        });
+        }
+    }
+
 
     // Gender required
     if (!$gender) {
@@ -155,10 +193,10 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
 
 ///// --- Derived store to check if profile is ready for submission---
 export const readyToSubmit = derived(
-    [currentPage, username, dob, gender, country, name, bio, location, selectedInterests, socials],
-    ([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials]) => {
+    [currentPage, username, dob, gender, country, name, bio, location, selectedInterests, socials, avatarFile],
+    ([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile]) => {
         const allValid = validateProfile(
-            $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials
+            $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile
         );
         if ($currentPage === 2) return allValid;
 
@@ -347,7 +385,6 @@ function resetFields() {
     longitude.set(null)
     selectedInterests.set([])
     socials.set([])
-    avatarUrl.set(null);
     avatarFile.set(null);
 
     // Image helpers

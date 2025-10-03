@@ -55,16 +55,23 @@
 			</p>
 		{/if}
 
+		<label for="name">Display Name</label>
+		<input id="name" bind:value={$name} />
+		{#if $validationErrors.find(e => e.field === "name" && e.display)}
+			<p class="red">
+				{$validationErrors.find(e => e.field === "name" && e.display).message}
+			</p>
+		{/if}
+
 		<!-- Avatar Picker // Always mounted so external controls work -->
-		<label for="avatar">Avatar *</label>
+		<label for="avatar">Profile Picture *</label>
 		<ImagePicker
 			bind:this={avatarPicker}
 			initialOriginalUrl={$avatarOriginalUrl}
 			initialEditedUrl={$avatarUrl}
 			initialCropState={$avatarCropState}
 			on:confirm={(e) => {
-				avatarUrl.set(e.detail.url);
-				avatarFile.set(e.detail.file);
+				avatarFile.set(e.detail.editedFile);
 				avatarOriginalUrl.set(e.detail.originalUrl);
 				avatarCropState.set(e.detail.cropState);
 			}}
@@ -75,33 +82,24 @@
 
 		{#if $avatarUrl}
 			<button type="button" on:click={() => {
-				if ($avatarUrl?.startsWith("blob:")) {
-					try { URL.revokeObjectURL($avatarUrl); } catch {}
+				if (typeof $avatarFile === "string" && $avatarFile.startsWith("blob:")) {
+					try { URL.revokeObjectURL($avatarFile); } catch {}
 				}
-				if ($avatarOriginalUrl?.startsWith("blob:")) {
-					try { URL.revokeObjectURL($avatarOriginalUrl); } catch {}
-				}
-				avatarUrl.set(null);
 				avatarFile.set(null);
 				avatarOriginalUrl.set(null);
 				avatarCropState.set(null);
 				avatarPicker.reset();
 			}}>
-				Clear Avatar
+				Clear Image
 			</button>
 		{:else}
 			<button type="button" on:click={() => avatarPicker.open()}>
-				Pick Avatar
+				Upload Image
 			</button>
 		{/if}
-
-
-
-		<label for="name">Display Name</label>
-		<input id="name" bind:value={$name} />
-		{#if $validationErrors.find(e => e.field === "name" && e.display)}
+		{#if $validationErrors.find(e => e.field === "avatar" && e.display)}
 			<p class="red">
-				{$validationErrors.find(e => e.field === "name" && e.display).message}
+				{$validationErrors.find(e => e.field === "avatar" && e.display).message}
 			</p>
 		{/if}
 
@@ -136,14 +134,6 @@
 		{#if $validationErrors.find(e => e.field === "country" && e.display)}
 			<p class="red">
 				{$validationErrors.find(e => e.field === "country" && e.display).message}
-			</p>
-		{/if}
-
-		<label for="location">City</label>
-		<input id="location" bind:value={$location} />
-		{#if $validationErrors.find(e => e.field === "location" && e.display)}
-			<p class="red">
-				{$validationErrors.find(e => e.field === "location" && e.display).message}
 			</p>
 		{/if}
 
@@ -184,6 +174,14 @@
 		{#if $validationErrors.find(e => ["latitude", "longitude"].includes(e.field) && e.display)}
 			<p class="red">
 				{$validationErrors.find(e => ["latitude", "longitude"].includes(e.field) && e.display).message}
+			</p>
+		{/if}
+
+		<label for="location">City</label>
+		<input id="location" bind:value={$location} />
+		{#if $validationErrors.find(e => e.field === "location" && e.display)}
+			<p class="red">
+				{$validationErrors.find(e => e.field === "location" && e.display).message}
 			</p>
 		{/if}
 

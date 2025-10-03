@@ -9,6 +9,8 @@
     export let initialOriginalUrl = null;
     export let initialEditedUrl = null;
     export let initialCropState = null;
+    export let imageSize = 1080; // max size for cropped image
+    export let imageQuality = 0.9; // JPEG quality for cropped image (0 to 1)
 
     // --- State ---
     let originalUrl = null;   // last confirmed raw image
@@ -89,12 +91,12 @@
 
             // get cropped image for preview
             const canvas = cropper.getCroppedCanvas({
-                width: 600,
-                height: 600,
+                width: imageSize,
+                height: imageSize,
                 imageSmoothingQuality: "high"
             });
 
-            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.9));
+            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", imageQuality));
             if (blob) {
                 const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
                 revokeUrl(editedUrl);
@@ -109,8 +111,8 @@
 
                 saveCropStateFor(originalUrl);
                 dispatch("confirm", { 
-                    url: editedUrl, 
-                    file, 
+                    editedUrl, 
+                    editedFile: file, 
                     originalUrl, 
                     cropState: lastStates.get(originalUrl) 
                 });
@@ -150,19 +152,46 @@
         }
         cropper = new Cropper(imgElement, {
             aspectRatio: 1,
-            viewMode: 1,
+            viewMode: 2,
             autoCropArea: 1,
             responsive: true,
+            center: true,
             background: false,
             dragMode: "move",
             movable: true,
             zoomable: true,
             zoomOnWheel: true,
+            wheelZoomRatio: 0.2,
             cropBoxMovable: false,
             cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
+            checkOrientation: true,
+            highlight: false,
+            guides: false,
             ready() {
                 const key = currentSourceKey();
                 restoreCropStateFor(key);
+            },
+            zoom(event) {
+                const imageData = cropper.getImageData();
+                const cropBoxData = cropper.getCropBoxData();
+
+                // Calculate the minimum zoom ratio: image must cover crop box
+                const minZoom = Math.max(
+                    cropBoxData.width / imageData.naturalWidth,
+                    cropBoxData.height / imageData.naturalHeight
+                );
+
+                // Define a reasonable max zoom (e.g. 4× natural resolution)
+                const maxZoom = 4;
+
+                if (event.detail.ratio < minZoom) {
+                    event.preventDefault();
+                    cropper.zoomTo(minZoom); // snap back to min
+                } else if (event.detail.ratio > maxZoom) {
+                    event.preventDefault();
+                    cropper.zoomTo(maxZoom); // snap back to max
+                }
             }
         });
     }
