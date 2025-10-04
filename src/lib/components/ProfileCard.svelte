@@ -2,6 +2,7 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import { interestMap, platformMap } from "$lib/stores/app";
+    import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
     const dispatch = createEventDispatcher();
@@ -11,20 +12,20 @@
     }
 </script>
 
-
 <button
     type="button"
-    class="bare"
-    style="width: 100%;"
+    class="bare card"
+    style={`background-image: url('${getAvatarUrl(profile)}');`}
     on:click={open}
     aria-label="Open profile details">
 
     <div class="container">
         <h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
+
         {#if profile.name}
             <p>({profile.name})</p>
         {/if}
-    
+        
         {#if profile.location}
             <p>{profile.location}</p>
         {/if}
@@ -45,6 +46,22 @@
 
 
 <style>
+    .card {
+        width: 100%;
+        aspect-ratio: 1;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    .container h2,
+    .container p,
+    .container .tag {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
     .bio {
         color: #555;
         font-size: 0.9rem;

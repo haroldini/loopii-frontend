@@ -1,6 +1,7 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createProfile, getProfile, createProfileInterests, createProfileSocials } from "$lib/api/profile";
+import { uploadProfileImage, setProfileAvatar } from "$lib/api/image";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
 
@@ -40,7 +41,7 @@ export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "partial" | "error"
 
 export const pageFields = {
-    0: ["username", "dob", "gender", "country", "name", "avatar"],               // Create your profile
+    0: ["username", "dob", "gender", "country", "name", "avatar"],     // Create your profile
     1: ["bio", "interests", "latitude", "longitude", "location"],      // Help others find you
     2: ["socials"]                                                     // What your loops will see
 };
@@ -98,8 +99,6 @@ export function validateProfile($username, $dob, $gender, $country, $name, $bio,
         const formatted = size < 1024 * 1024
         ? (size / 1024).toFixed(2) + " KB"
         : (size / (1024 * 1024)).toFixed(2) + " MB";
-
-        console.log(formatted, "/ 5 MB");
 
         if (size > maxSize) {
         errors.push({
@@ -338,20 +337,45 @@ export async function submitProfile() {
             }
         }
 
-        // Step 4: Handle successful profile creation but interest/social errors - Proceed to app
-        if (interestsError || socialsError) {
+        // Step 4: Upload and set avatar
+        let avatarError = false;
+        try {
+            const $avatarFile = get(avatarFile);
+            if ($avatarFile) {
+                submissionProgress.set("Uploading profile picture");
+                const uploadRes = await uploadProfileImage($avatarFile);
+                const imageId = uploadRes.id;
+                await setProfileAvatar(imageId);
+            }
+        } catch (err) {
+            console.error("Avatar upload failed:", err);
+            avatarError = true;
+        }
+
+        // Step 5: Handle successful profile creation but interest/social errors - Proceed to app
+        if (interestsError || socialsError || avatarError) {
+            const parts = [];
+            if (interestsError) parts.push("interests");
+            if (socialsError) parts.push("socials");
+            if (avatarError) parts.push("profile picture");
+
             let msg = "Profile created, but failed to add ";
-            if (interestsError) msg += "interests ";
-            if (interestsError && socialsError) msg += "and ";
-            if (socialsError) msg += "socials ";
-            msg += "— please try adding them later from your profile page.";
+            if (parts.length === 1) {
+                msg += parts[0];
+            } else if (parts.length === 2) {
+                msg += parts.join(" and ");
+            } else {
+                msg += parts.slice(0, -1).join(", ") + " and " + parts.at(-1);
+            }
+
+            msg += " — please try adding them later from your profile page.";
             error.set(msg);
             profileFormState.set("partial");
         } else {
             profileFormState.set("success");
         }
 
-        // Step 5: Fetch and set the new profile in global store
+        // Step 6: Fetch and set the new profile in global store
         try {
             submissionProgress.set("Done. Getting your profile");
             const fetchedProfile = await getProfile();

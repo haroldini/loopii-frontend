@@ -2,6 +2,7 @@
 <script>
     import { interestMap, platformMap } from "$lib/stores/app";
     import { buildSocialLink } from "$lib/utils/urls";
+    import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
     export let onBack;
@@ -17,14 +18,23 @@
     </button>
 </nav>
 
-<h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
-{#if profile.name}
-    <p>({profile.name})</p>
-{/if}
+<div 
+    class="card center" 
+    style={`background-image: url('${getAvatarUrl(profile)}');`}>
 
-{#if profile.location}
-    <p>{profile.location}</p>
-{/if}
+    <div class="container">
+        <h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
+
+        {#if profile.name}
+            <p>({profile.name})</p>
+        {/if}
+        
+        {#if profile.location}
+            <p>{profile.location}</p>
+        {/if}
+    </div>
+</div>
+
 
 {#if profile.latitude && profile.longitude}
     <p>{Math.round(profile.latitude * 100) / 100}, {Math.round(profile.longitude * 100) / 100}</p>
@@ -68,6 +78,20 @@
 
 
 <style>
+    .card {
+        width: 100%;
+        aspect-ratio: 1;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    .container h2,
+    .container p {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
     .bio {
         color: #555;
         font-size: 0.9rem;

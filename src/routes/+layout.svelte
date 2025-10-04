@@ -17,20 +17,34 @@
 	import Navbar from "$lib/components/Navbar.svelte";
 	import Notifications from "$lib/components/Notifications.svelte";
 
+	const LOADING_TIMEOUT = 8000; // 8 seconds
+
 	let { children } = $props();
 
 	// Initial setup
 	onMount(() => {
 		initReferences();
-        initAuth();
-    });
+		initAuth();
+		setTimeout(() => {
+			if ($authState === "loading") {
+				console.warn("Auth loading timeout → forcing timeout");
+				authState.set("timeout");
+			}
+		}, LOADING_TIMEOUT);
+	});
 
 	// Load profile when authenticated
 	$effect(() => {
-        if ($authState === "authenticated") {
-            initProfile();
-        }
-    });
+		if ($authState === "authenticated") {
+			initProfile();
+			setTimeout(() => {
+				if ($profileState === "loading") {
+					console.warn("Profile loading timeout → forcing timeout");
+					profileState.set("timeout");
+				}
+			}, LOADING_TIMEOUT);
+		}
+	});
 
 	// Load profile-dependent stores when profile is loaded
 	$effect(() => {
@@ -54,8 +68,19 @@
 <Notifications />
 
 
+<!-- Timeout -->
+{#if $authState === "timeout" || $profileState === "timeout"}
+<div class="fill fillvh center">
+	<div class="container">
+		<h1>loopii</h1>
+		<p>Loading is taking longer than expected.</p>
+		<p>Please try refreshing the page, or log out and log back in.</p>
+		<button onclick={signOut}>Log Out</button>
+	</div>
+</div>
+
 <!-- Authenticating user or loading profile -->
-{#if $authState === "loading" || $profileState === "loading"}
+{:else if $authState === "loading" || $profileState === "loading"}
 <div class="fill fillvh center">
 	<div class="container">
 		<h1>loopii</h1>

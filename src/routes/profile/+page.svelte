@@ -4,6 +4,7 @@
     import { goto } from "$app/navigation";
     import ProfileCard from "$lib/components/ProfileCard.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
+    import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
 
     let expanded = false;

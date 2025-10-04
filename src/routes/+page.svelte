@@ -27,6 +27,7 @@
 
 
 <div class="container bordered">
+    
     {#if $peerStatus === "loading"}
         <p>Loading next profile...</p>
 
@@ -54,3 +55,4 @@
 <div class="container">
     <button on:click={refreshPeerStore}>Refresh</button>
 </div>
+

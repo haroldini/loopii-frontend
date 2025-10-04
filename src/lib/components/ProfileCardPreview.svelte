@@ -1,6 +1,7 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
+    import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
     const dispatch = createEventDispatcher();
@@ -16,7 +17,10 @@
     class="bare fill preview-container"
     on:click={open}
     aria-label="Open profile preview">
-    <div class="circle">
+    <div
+        class="circle"
+        style={`background-image: url('${getAvatarUrl(profile)}'); background-size: cover; background-position: center;`}
+    >
         <span class="age">{profile.age}</span>
         <span class="gender">{profile.gender.slice(0, 1).toUpperCase()}</span>
     </div>
