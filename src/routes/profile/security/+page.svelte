@@ -1,8 +1,8 @@
 
 <script>
     import { goto } from "$app/navigation";
-    import ChangeAuthField from "$lib/components/ChangeAuthField.svelte";
-    import { mode, setMode, status } from "$lib/stores/changeauthform";
+    import AuthSettings from "$lib/components/AuthSettings.svelte";
+    import { mode, setMode, status } from "$lib/stores/authSettings";
 
     import { user } from "$lib/stores/auth";
 
@@ -19,11 +19,14 @@
 
 <div class="container bordered">
     <h3>Account</h3>
-    
-    <p>Currently logged in as {$user?.email}</p>
-    <button type="button" on:click={() => goto("/profile")}>
-        Back to Profile
-    </button>
+    <nav>
+        <button type="button" on:click={() => goto("/profile")}>
+            Back to Profile
+        </button>
+        <button type="button" on:click={signOut}>
+            Log Out
+        </button>
+    </nav>
 </div>
 
 <div class="container bordered">
@@ -56,5 +59,5 @@
         </button>
     </div>
 
-    <ChangeAuthField />
+    <AuthSettings />
 </div>

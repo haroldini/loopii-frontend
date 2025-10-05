@@ -8,7 +8,7 @@
 		error, readyToSubmit, validationErrors, currentPage,
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
 		updateHandle, updateCustomPlatform, updateCustomLink, removeSocial,
-	} from "$lib/stores/createProfileForm";
+	} from "$lib/stores/createProfile";
 	
 	import MapPicker from "./MapPicker.svelte";
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
@@ -145,7 +145,7 @@
 	{/if}
 
 	{#if $currentPage === 1}
-		<h3>Help others find you</h3>
+		<h3>Help others discover you</h3>
 
 		<label for="">Location</label>
 		{#if $latitude && $longitude}

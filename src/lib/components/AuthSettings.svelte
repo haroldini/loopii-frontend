@@ -5,7 +5,7 @@
         newEmail, confirmNewEmail, confirmPhrase, isSubmitting,
         validationErrors, error, status, readyToSubmit, 
         resetSensitive, resetTransient, resetValidation, resetState
-    } from "$lib/stores/changeAuthForm";
+    } from "$lib/stores/authSettings";
 
     import { updatePassword, updateEmail, deleteAccount, requestPasswordReset, signOut, user, expectedPhrase } from "$lib/stores/auth";
     import { email } from "$lib/stores/authForm";
@@ -129,6 +129,7 @@
         </span> if you've forgotten your current password.
     </p>
 {:else if $mode === "email"}
+    <p>Current email: <strong>{$user?.email}</strong></p>
     <input
         type="email"
         placeholder="New email"

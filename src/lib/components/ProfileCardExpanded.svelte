@@ -5,18 +5,8 @@
     import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
-    export let onBack;
 </script>
 
-
-<nav>
-    <button
-        type="button"
-        on:click={onBack}
-        aria-label="Back to profile preview">
-        ← Back
-    </button>
-</nav>
 
 <div 
     class="card center" 

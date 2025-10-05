@@ -4,6 +4,7 @@ import { createProfile, getProfile, createProfileInterests, createProfileSocials
 import { uploadProfileImage, setProfileAvatar } from "$lib/api/image";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
+import { validateProfileFields } from "$lib/utils/validators";
 
 ///// --- Form state ---
 export const username = writable(null);
@@ -47,147 +48,17 @@ export const pageFields = {
 };
 
 ///// --- Validation logic ---
-export function validateProfile($username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile) {
-    const errors = [];
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-
-    // Username required + format
-    if (!$username) {
-        errors.push({ field: "username", message: "Username is required", display: false });
-    } else {
-        if ($username.length < 3 || $username.length > 30) {
-            errors.push({ field: "username", message: "Username must be 3–30 characters", display: true });
-        }
-        if (!usernameRegex.test($username)) {
-            errors.push({ field: "username", message: "Username may only contain letters, numbers, underscores", display: true });
-        }
-    }
-
-    // DOB required + range
-    if (!$dob) {
-        errors.push({ field: "dob", message: "Date of birth is required", display: false });
-    } else {
-        const d = new Date($dob);
-        const today = new Date();
-        const minDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
-
-        if (d > today) {
-            errors.push({ field: "dob", message: "Date of birth cannot be in the future", display: true });
-        }
-        if (d < new Date("1900-01-01")) {
-            errors.push({ field: "dob", message: "Date of birth must be after 1900", display: true });
-        }
-        if (d > minDate) {
-            errors.push({ field: "dob", message: "You must be at least 13 years old", display: true });
-        }
-    }
-
-    // Avatar validation
-    if (!$avatarFile) {
-        errors.push({ field: "avatar", message: "Profile picture is required", display: false });
-    } else {
-        // File type check
-        const allowedTypes = ["image/jpeg"];
-        if (!allowedTypes.includes($avatarFile.type)) {
-            errors.push({ field: "avatar", message: "Profile picture must be a JPEG", display: true });
-        }
-
-        // File size check (max 5 MB)
-        const maxSize = 5 * 1024 * 1024; // 5 MB in bytes
-        const size = $avatarFile.size;
-
-        const formatted = size < 1024 * 1024
-        ? (size / 1024).toFixed(2) + " KB"
-        : (size / (1024 * 1024)).toFixed(2) + " MB";
-
-        if (size > maxSize) {
-        errors.push({
-            field: "avatar",
-            message: `Profile picture must be smaller than 5 MB (current: ${formatted})`,
-            display: true
-        });
-        }
-    }
-
-
-    // Gender required
-    if (!$gender) {
-        errors.push({ field: "gender", message: "Gender is required", display: false });
-    }
-
-    // Country required
-    if (!$country) {
-        errors.push({ field: "country", message: "Country is required", display: false });
-    }
-
-    // Display Name length (optional)
-    if ($name && $name.length > 30) {
-        errors.push({ field: "name", message: "Display name must be 30 characters or fewer", display: true });
-    }
-
-    // Bio length (optional)
-    if ($bio && $bio.length > 500) {
-        errors.push({ field: "bio", message: "Bio must be 500 characters or fewer", display: true });
-    }
-
-    // Location length (optional)
-    if ($location && $location.length > 50) {
-        errors.push({ field: "location", message: "Location must be 50 characters or fewer", display: true });
-    }
-
-    // Interests max count
-    if ($selectedInterests && $selectedInterests.length > 20) {
-        errors.push({ field: "interests", message: "You can select up to 20 interests", display: true });
-    }
-
-    // Socials validation
-    if ($socials && $socials.length > 0) {
-        $socials.forEach((s, idx) => {
-            const field = `socials.${idx}`;
-
-            // Case 1: platform_id + handle
-            if (s.platform_id) {
-                if (!s.handle || !s.handle.trim()) {
-                    errors.push({ field, message: "Handle required", display: true });
-                } else if (s.handle.trim().length > 50) {
-                    errors.push({ field, message: "Handle too long", display: true });
-                }
-
-            // Case 2: custom_platform + custom_link
-            } else if (s.custom_platform || s.custom_link) {
-                if (!s.custom_platform || !s.custom_platform.trim()) {
-                    errors.push({ field, message: "Custom platform required", display: true });
-                } else if (s.custom_platform.trim().length > 30) {
-                    errors.push({ field, message: "Custom platform too long", display: true });
-                }
-
-                const link = s.custom_link?.trim();
-                if (!link) {
-                    errors.push({ field, message: "Custom link required", display: true });
-                } else {
-                    if (link.length > 150) {
-                        errors.push({ field, message: "Custom link too long", display: true });
-                    }
-                    try {
-                        const u = new URL(link);
-                        const domainRegex = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
-                        if (!domainRegex.test(u.hostname)) {
-                            errors.push({ field, message: "Custom link must have a valid domain", display: true });
-                        }
-                    } catch {
-                        errors.push({ field, message: "Custom link must be a valid URL", display: true });
-                    }
-                }
-
-            // Neither case satisfied
-            } else {
-                errors.push({ field, message: "Must provide either platform+handle or custom platform+link", display: true });
-            }
-        });
-    }
-
-    validationErrors.set(errors);
-    return errors.length === 0;
+export function validateProfile(
+	username, dob, gender, country, name, bio,
+	location, selectedInterests, socials, avatarFile
+) {
+	const errors = validateProfileFields({
+		username, dob, gender, country, name, bio,
+		location, interests: selectedInterests, 
+        socials, avatarFile
+	});
+	validationErrors.set(errors);
+	return errors.length === 0;
 }
 
 ///// --- Derived store to check if profile is ready for submission---
@@ -331,7 +202,14 @@ export async function submitProfile() {
         if ($socials && $socials.length > 0) {
             try {
                 submissionProgress.set("Adding socials");
-                await createProfileSocials({ socials: $socials });
+                const sanitizedSocials = $socials.map(({ platform_id, handle, custom_platform, custom_link }) => ({
+                    platform_id,
+                    handle,
+                    custom_platform,
+                    custom_link
+                })); // Remove any extraneous fields (name)
+
+                await createProfileSocials({ socials: sanitizedSocials });
             } catch {
                 socialsError = true;
             }

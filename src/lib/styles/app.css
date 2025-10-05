@@ -14,6 +14,11 @@ html, body {
     line-height: 1;
     min-height: 100vh;
 }
+body::after {
+    content: "";
+    display: block;
+    height: 100px; /* extra scroll space */
+}
 
 /* Form fields */
 input, textarea, select {
