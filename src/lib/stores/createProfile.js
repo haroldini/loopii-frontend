@@ -5,6 +5,8 @@ import { uploadProfileImage, setProfileAvatar } from "$lib/api/image";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
 import { validateProfileFields } from "$lib/utils/validators";
+import { normalizeProfile } from "$lib/utils/normalizers";
+
 
 ///// --- Form state ---
 export const username = writable(null);
@@ -103,11 +105,7 @@ export function updateCustomPlatform(i, value) {
 
 export function updateCustomLink(i, value) {
     socials.update(s => {
-        let v = value.trim();
-        if (v && !/^https?:\/\//i.test(v)) {
-            v = "https://" + v;  // normalize automatically
-        }
-        s[i].custom_link = v;
+        s[i].custom_link = normalizeLink(value);
         return [...s];
     });
 }
@@ -123,7 +121,7 @@ export async function submitProfile() {
         const $username = get(username);
         const $dob = get(dob);
         const $gender = get(gender);
-        const $country = get(country).toUpperCase();
+        const $country = get(country);
         const $name = get(name);
         const $bio = get(bio);
         const $location = get(location);
@@ -137,20 +135,35 @@ export async function submitProfile() {
             return;
         }
 
+        // Step 0: Normalize all fields
+        const normalized = normalizeProfile({
+            username: get(username),
+            dob: get(dob),
+            gender: get(gender),
+            country_id: get(country),
+            name: get(name),
+            bio: get(bio),
+            location: get(location),
+            latitude: get(latitude),
+            longitude: get(longitude),
+            socials: get(socials),
+            interests: get(selectedInterests),
+        });
+
         // Step 1: Create the profile
         let createdProfile;
         try {
             submissionProgress.set("Creating profile");
             createdProfile = await createProfile({
-                username: $username,
-                dob: $dob,
-                gender: $gender,
-                country_code: $country,
-                name: $name || null,
-                bio: $bio || null,
-                location: $location || null,
-                latitude: $latitude || null,
-                longitude: $longitude || null,
+                username: normalized.username,
+                dob: normalized.dob,
+                gender: normalized.gender,
+                country_id: normalized.country_id,
+                name: normalized.name,
+                bio: normalized.bio,
+                location: normalized.location,
+                latitude: normalized.latitude,
+                longitude: normalized.longitude,
             });
         } catch (err) {
             // Handle profile already exists, proceed to app
@@ -188,10 +201,10 @@ export async function submitProfile() {
 
         // Step 2: Add interests
         let interestsError = false;
-        if ($selectedInterests && $selectedInterests.length > 0) {
+        if (normalized.interests && normalized.interests.length > 0) {
             try {
                 submissionProgress.set("Adding interests");
-                await createProfileInterests({ interest_ids: $selectedInterests });
+                await createProfileInterests({ interest_ids: normalized.interests });
             } catch {
                 interestsError = true;
             }
@@ -199,17 +212,10 @@ export async function submitProfile() {
 
         // Step 3: Add socials
         let socialsError = false;
-        if ($socials && $socials.length > 0) {
+        if (normalized.socials && normalized.socials.length > 0) {
             try {
                 submissionProgress.set("Adding socials");
-                const sanitizedSocials = $socials.map(({ platform_id, handle, custom_platform, custom_link }) => ({
-                    platform_id,
-                    handle,
-                    custom_platform,
-                    custom_link
-                })); // Remove any extraneous fields (name)
-
-                await createProfileSocials({ socials: sanitizedSocials });
+                await createProfileSocials({ socials: normalized.socials });
             } catch {
                 socialsError = true;
             }

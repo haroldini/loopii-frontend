@@ -128,7 +128,7 @@
 		<select id="country" bind:value={$country} required>
 			<option value="" disabled>Select Country</option>
 			{#each $allCountries as country}
-				<option value={country.code}>{country.name}</option>
+				<option value={country.id}>{country.name}</option>
 			{/each}
 		</select>
 		{#if $validationErrors.find(e => e.field === "country" && e.display)}
@@ -165,8 +165,8 @@
 			</button>
 		{:else}
 			<button type="button" on:click={() => {
-				$latitude = 51.505;
-				$longitude = -0.09;
+				$latitude = 51.505000;
+				$longitude = -0.090000;
 			}}>
 				Pick Location
 			</button>
@@ -248,7 +248,7 @@
 							<input
 								type="text"
 								placeholder="Enter https:// link"
-								bind:value={social.custom_link}
+								value={social.custom_link || ""}
 								on:input={(e) => updateCustomLink(i, e.target.value)}
 								maxlength="150"
 							/>

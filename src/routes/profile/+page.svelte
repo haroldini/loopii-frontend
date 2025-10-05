@@ -26,18 +26,29 @@
 
 <!-- Account settings buttons -->
 <div class="container bordered">
-    <h3>{$profile?.username}'s Profile</h3>
+    {#if $profile?.username?.slice(-1) === "s"}
+        <h3>{$profile?.username}' Profile</h3>
+    {:else}
+        <h3>{$profile?.username}'s Profile</h3>
+    {/if}
     <nav>
         <button type="button" on:click={() => goto("/profile/edit")}>
-            Edit Profile
+            Edit
+        </button>
+        <button type="button">
+            Photos
+        </button>
+        <button type="button">
+            Customization
         </button>
         <button type="button" on:click={() => goto("/profile/security")}>
             Account Settings
         </button>
+        
     </nav>
 </div>
 
-<div class="container bordered">
+<div class="container">
     {#if expanded}
         <nav>
             <button
@@ -52,3 +63,5 @@
         <ProfileCard profile={$profile} on:expand={open} />
     {/if}
 </div>
+
+

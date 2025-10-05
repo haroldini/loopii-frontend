@@ -6,7 +6,7 @@
 	import { profile } from "$lib/stores/profile";
 	import {
 		saveEdits, cancelEditing, startEditing,
-		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials,
+		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
 		validationErrors, profileEditState, error, readyToSubmit, submissionProgress,
         removeSocial, updateCustomLink, updateCustomPlatform, updateHandle
 	} from "$lib/stores/editProfile";
@@ -42,9 +42,15 @@
 	<h3>Edit Profile</h3>
 
 	<nav>
-		<button type="button" on:click={cancelEditingAndGoBack}>
-			Cancel
-		</button>
+        <button type="button" on:click={cancelEditingAndGoBack}>
+            {#if $profileEditState === "editing"}
+                Discard Changes
+            {:else if $profileEditState === "saving"}
+                Saving...
+            {:else}
+                Back to Profile
+            {/if}
+        </button>
 
 		<button
 			type="button"
@@ -91,6 +97,14 @@
         </p>
     {/if}
 
+    <label for="username">Username *</label>
+    <input id="username" bind:value={$username} required />
+    {#if $validationErrors.find(e => e.field === "username" && e.display)}
+        <p class="red">
+            {$validationErrors.find(e => e.field === "username" && e.display).message}
+        </p>
+    {/if}
+
     <label for="dob">Date of Birth *</label>
     <input id="dob" type="date" bind:value={$dob} required />
     {#if $validationErrors.find(e => e.field === "dob" && e.display)}
@@ -116,7 +130,7 @@
     <select id="country" bind:value={$country} required>
         <option value="" disabled>Select Country</option>
         {#each $allCountries as country}
-            <option value={country.code}>{country.name}</option>
+            <option value={country.id}>{country.name}</option>
         {/each}
     </select>
     {#if $validationErrors.find(e => e.field === "country" && e.display)}
@@ -233,7 +247,7 @@
                         <input
                             type="text"
                             placeholder="Enter https:// link"
-                            bind:value={social.custom_link}
+                            value={social.custom_link || ""}
                             on:input={(e) => updateCustomLink(i, e.target.value)}
                             maxlength="150"
                         />

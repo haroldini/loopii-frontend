@@ -33,3 +33,11 @@ export function createProfileSocials(data) {
         data
     });
 }
+
+// Update profile (partial fields)
+export function updateProfile(data) {
+    return request("/profile/update", {
+        method: "PATCH",
+        data
+    });
+}

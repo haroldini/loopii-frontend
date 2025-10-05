@@ -76,6 +76,10 @@ export const platformMap = derived(allPlatforms, list =>
     Object.fromEntries(list.map(p => [p.id, p]))
 );
 
+export const countryMap = derived(allCountries, list =>
+    Object.fromEntries(list.map(c => [c.id, c]))
+);
+
 
 
 // ----- Real-time loop notifications -----

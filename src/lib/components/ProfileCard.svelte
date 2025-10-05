@@ -1,7 +1,7 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
-    import { interestMap, platformMap } from "$lib/stores/app";
+    import { interestMap, platformMap, countryMap } from "$lib/stores/app";
     import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
@@ -41,6 +41,10 @@
                 <span class="tag">{$interestMap[interestId] || interestId}</span>
             {/each}
         </div>
+
+        <p>
+            {$countryMap[profile.country_id]?.name || profile.country_id}
+        </p>
     </div>
 </button>
 

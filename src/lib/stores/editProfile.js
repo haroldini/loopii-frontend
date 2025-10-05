@@ -2,11 +2,13 @@
 import { writable, get, derived } from "svelte/store";
 import { profile } from "$lib/stores/profile";
 import { validateProfileFields } from "$lib/utils/validators";
+import { normalizeProfile } from "$lib/utils/normalizers";
 import { allCountries, allInterests, allPlatforms } from "./app";
 
 
 // --- Form state ---
 export const name = writable(null);
+export const username = writable(null);
 export const dob = writable(null);
 export const gender = writable(null);
 export const country = writable(null);
@@ -31,14 +33,6 @@ export function startEditing() {
     const current = get(profile);
     if (!current) return;
 
-    // find the country code matching the stored id
-    let countryCode = null;
-    const countries = get(allCountries);
-    if (current.country_id) {
-        const match = countries.find(c => c.id === current.country_id);
-        if (match) countryCode = match.code;
-    }
-
     const platforms = get(allPlatforms);
 
     // Clone socials deeply to avoid leaks
@@ -57,8 +51,9 @@ export function startEditing() {
     // preload existing profile fields
     name.set(current.name || "");
     dob.set(current.dob || "");
+    username.set(current.username || "");
     gender.set(current.gender || null);
-    country.set(countryCode || null);
+    country.set(current.country_id || null);
     latitude.set(current.latitude || null);
     longitude.set(current.longitude || null);
     location.set(current.location || null);
@@ -74,6 +69,7 @@ export function cancelEditing() {
     // clear all fields
     name.set(null);
     dob.set(null);
+    username.set(null);
     gender.set(null);
     country.set(null);
     latitude.set(null);
@@ -96,6 +92,7 @@ export function validateEditProfile() {
     const errors = validateProfileFields({
         name: get(name),
         dob: get(dob),
+        username: get(username),
         gender: get(gender),
         country: get(country),
         latitude: get(latitude),
@@ -111,8 +108,8 @@ export function validateEditProfile() {
 
 // --- Derived: auto-validate on change ---
 export const readyToSubmit = derived(
-    [name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
-    ([$name, $dob, $gender, $country, $latitude, $longitude, $location, $bio, $selectedInterests, $socials], set) => {
+    [name, dob, username, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
+    ([$name, $dob, $username, $gender, $country, $latitude, $longitude, $location, $bio, $selectedInterests, $socials], set) => {
         const ok = validateEditProfile();
         set(ok);
     },
@@ -120,50 +117,79 @@ export const readyToSubmit = derived(
 );
 
 
+// Helper for comparing new vs old profile data for partial updates
+function valuesEqual(a, b) {
+    // Handle nullish
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+
+    // Handle floats (lat/lon)
+    if (typeof a === "number" && typeof b === "number") {
+        return Math.abs(a - b) < 1e-6; // small tolerance
+    }
+
+    // Handle dates (compare ISO only)
+    if (a instanceof Date || b instanceof Date || /^\d{4}-\d{2}-\d{2}$/.test(a) || /^\d{4}-\d{2}-\d{2}$/.test(b)) {
+        const da = typeof a === "string" ? a : a.toISOString().slice(0, 10);
+        const db = typeof b === "string" ? b : b.toISOString().slice(0, 10);
+        return da === db;
+    }
+
+    // Deep compare arrays/objects
+    if (typeof a === "object" && typeof b === "object") {
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    return a === b;
+}
+
+
 // --- Save changes ---
 export async function saveEdits() {
-	if (!get(readyToSubmit)) {
-		error.set("Please fix errors before saving.");
-		return;
-	}
+    if (!get(readyToSubmit)) {
+        error.set("Please fix errors before saving.");
+        return;
+    }
 
     profileEditState.set("saving");
     error.set(null);
 
     try {
+        // Normalize
+		const current = normalizeProfile(get(profile) || {});
+		const fields = normalizeProfile({
+			name: get(name),
+			dob: get(dob),
+			username: get(username),
+			gender: get(gender),
+			country_id: get(country),
+			latitude: get(latitude),
+			longitude: get(longitude),
+			location: get(location),
+			bio: get(bio),
+			interests: get(selectedInterests),
+			socials: get(socials),
+		});
 
-        const sanitizedSocials = get(socials).map(({ platform_id, handle, custom_platform, custom_link }) => ({
-            platform_id,
-            handle,
-            custom_platform,
-            custom_link
-        }));
+        // Filter out unchanged fields
+        const changed = {};
+        for (const key in fields) {
+            const newVal = fields[key];
+            const oldVal = current[key] ?? null;
+            if (!valuesEqual(newVal, oldVal)) {
+                changed[key] = newVal;
+            }
+        }
+        
+        console.log("Profile:", current);
+        console.log("New Fields:", fields);
+        console.log("To Update:", changed);
 
-        // TODO: replace with real API call
-        console.log("Saving profile edits:", {
-            name: get(name),
-            dob: get(dob),
-            gender: get(gender),
-            country: get(country),
-            latitude: get(latitude),
-            longitude: get(longitude),
-            location: get(location),
-            bio: get(bio),
-            interests: get(selectedInterests),
-            socials: get(socials),
-        });
+        console.log("Skipping actual update in demo.");
+        // const updated = await updateProfile(changed);
 
-        // // Simulate successful save
-        // await new Promise((r) => setTimeout(r, 500));
-
-        // Get a fresh copy of the current profile
-
-        // // Update the global profile store
-        // profile.set({
-        //     ...current,
-        //     name: $name,
-        // });
-
+        // // Update global store
+        // profile.set(updated);
         profileEditState.set("success");
     } catch (err) {
         error.set(err.message || "Unexpected error saving profile");
