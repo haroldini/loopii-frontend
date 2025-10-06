@@ -152,7 +152,7 @@
         }
         cropper = new Cropper(imgElement, {
             aspectRatio: 1,
-            viewMode: 2,
+            viewMode: 1,
             autoCropArea: 1,
             responsive: true,
             center: true,
@@ -176,21 +176,19 @@
                 const imageData = cropper.getImageData();
                 const cropBoxData = cropper.getCropBoxData();
 
-                // Calculate the minimum zoom ratio: image must cover crop box
-                const minZoom = Math.max(
+                const minZoom = Math.min(
                     cropBoxData.width / imageData.naturalWidth,
                     cropBoxData.height / imageData.naturalHeight
                 );
 
-                // Define a reasonable max zoom (e.g. 4× natural resolution)
                 const maxZoom = 4;
 
                 if (event.detail.ratio < minZoom) {
                     event.preventDefault();
-                    cropper.zoomTo(minZoom); // snap back to min
+                    cropper.zoomTo(minZoom);
                 } else if (event.detail.ratio > maxZoom) {
                     event.preventDefault();
-                    cropper.zoomTo(maxZoom); // snap back to max
+                    cropper.zoomTo(maxZoom);
                 }
             }
         });
@@ -270,7 +268,6 @@
     .preview-button {
         width: 100%;
         aspect-ratio: 1 / 1;
-        border: 2px solid #ccc;
         padding: 0;
         margin: 0;
         overflow: hidden;
@@ -279,11 +276,18 @@
         align-items: center;
         justify-content: center;
         background: #f7f7f7;
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .preview-button:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
     .preview-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        pointer-events: none;
     }
     .no-image-placeholder {
         color: #666;
@@ -319,7 +323,6 @@
         max-width: 90%;
         max-height: 70vh;
         aspect-ratio: 1/1;
-        border: 1px solid #ccc;
         border-radius: 8px;
         background: #fafafa;
         display: flex;
@@ -331,6 +334,7 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
+        pointer-events: none;
     }
 
     :global(.cropper-view-box) {

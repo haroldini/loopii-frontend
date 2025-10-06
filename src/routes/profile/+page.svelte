@@ -35,33 +35,20 @@
         <button type="button" on:click={() => goto("/profile/edit")}>
             Edit
         </button>
-        <button type="button">
-            Photos
+        <button type="button" on:click={() => goto("/profile/photos")}>
+            Edit Photos
         </button>
-        <button type="button">
+        <button type="button" on:click={() => goto("/profile/customization")}>
             Customization
         </button>
         <button type="button" on:click={() => goto("/profile/security")}>
             Account Settings
         </button>
-        
     </nav>
 </div>
 
-<div class="container">
-    {#if expanded}
-        <nav>
-            <button
-                type="button"
-                on:click={close}
-                aria-label="Back to profile preview">
-                ← Back
-            </button>
-        </nav>
-        <ProfileCardExpanded profile={$profile} />
-    {:else}
-        <ProfileCard profile={$profile} on:expand={open} />
-    {/if}
-</div>
-
-
+{#if expanded}
+    <ProfileCardExpanded profile={$profile} onAvatarClick={close} />
+{:else}
+    <ProfileCard profile={$profile} on:expand={open} />
+{/if}

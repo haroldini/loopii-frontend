@@ -15,7 +15,7 @@
 
 <button
     type="button"
-    class="bare fill preview-container"
+    class="bare fill preview-container clickableImg"
     on:click={open}
     aria-label="Open profile preview">
     <div
@@ -60,7 +60,10 @@
         font-size: 1rem;
     }
 
-    
+    .clickableImg:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
 
     .gender {
         position: absolute;

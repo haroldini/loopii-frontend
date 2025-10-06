@@ -5,12 +5,19 @@
     import { getAvatarUrl } from "../utils/profile";
 
     export let profile;
+    export let onAvatarClick = null;
 </script>
 
 
-<div 
-    class="card center" 
-    style={`background-image: url('${getAvatarUrl(profile)}');`}>
+<div class="container">
+    <button
+    type="button"
+    class={"bare card" + (onAvatarClick ? " clickableImg" : "")}
+    style={`background-image: url('${getAvatarUrl(profile)}');`}
+    on:click={() => onAvatarClick && onAvatarClick()}
+    aria-label={onAvatarClick ? "Close expanded profile view" : "Profile photo"}
+    disabled={!onAvatarClick}
+    ></button>
 </div>
 
 
@@ -78,6 +85,17 @@
     </div>
 {/if}
 
+{#if profile.images && profile.images.length > 1}
+    <div class="container bordered">
+        <h3>Photos</h3>
+        {#each profile.images.filter(img => !img.is_avatar) as img}
+            <div class="photo-wrapper">
+                <img src={img.urls.medium} alt="" loading="lazy" class="photo" />
+            </div>
+        {/each}
+    </div>
+{/if}
+
 
 <style>
     .card {
@@ -97,5 +115,15 @@
     .bio {
         color: #555;
         font-size: 0.9rem;
+    }
+    .photo {
+		width: 100%;
+		height: auto;
+		border-radius: 8px;
+        pointer-events: none;
+	}
+    .clickableImg:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 </style>

@@ -12,41 +12,43 @@
     }
 </script>
 
-<button
-    type="button"
-    class="bare card"
-    style={`background-image: url('${getAvatarUrl(profile)}');`}
-    on:click={open}
-    aria-label="Open profile details">
+<div class="container">
+    <button
+        type="button"
+        class="bare card clickableImg"
+        style={`background-image: url('${getAvatarUrl(profile)}');`}
+        on:click={open}
+        aria-label="Open profile details">
 
-    <div class="container">
-        <h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
+        <div class="container">
+            <h2>{profile.username}, {profile.age}{profile.gender[0].toUpperCase()}</h2>
 
-        {#if profile.name}
-            <p>({profile.name})</p>
-        {/if}
+            {#if profile.name}
+                <p>({profile.name})</p>
+            {/if}
+            
+            {#if profile.location}
+                <p>{profile.location}</p>
+            {/if}
         
-        {#if profile.location}
-            <p>{profile.location}</p>
-        {/if}
-    
-        {#if profile.bio}
-            <p class="bio">
-                {profile.bio.length > 100 ? profile.bio.slice(0, 100) + "…" : profile.bio}
-            </p>
-        {/if}
-    
-        <div class="tags">
-            {#each profile.interests as interestId}
-                <span class="tag">{$interestMap[interestId] || interestId}</span>
-            {/each}
-        </div>
+            {#if profile.bio}
+                <p class="bio">
+                    {profile.bio.length > 100 ? profile.bio.slice(0, 100) + "…" : profile.bio}
+                </p>
+            {/if}
+        
+            <div class="tags">
+                {#each profile.interests as interestId}
+                    <span class="tag">{$interestMap[interestId] || interestId}</span>
+                {/each}
+            </div>
 
-        <p>
-            {$countryMap[profile.country_id]?.name || profile.country_id}
-        </p>
-    </div>
-</button>
+            <p>
+                {$countryMap[profile.country_id]?.name || profile.country_id}
+            </p>
+        </div>
+    </button>
+</div>
 
 
 <style>
@@ -69,5 +71,10 @@
     .bio {
         color: #555;
         font-size: 0.9rem;
+    }
+
+    .clickableImg:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 </style>
