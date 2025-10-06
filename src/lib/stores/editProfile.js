@@ -3,6 +3,7 @@ import { writable, get, derived } from "svelte/store";
 import { profile } from "$lib/stores/profile";
 import { validateProfileFields } from "$lib/utils/validators";
 import { normalizeProfile } from "$lib/utils/normalizers";
+import { updateProfile } from "$lib/api/profile";
 import { allCountries, allInterests, allPlatforms } from "./app";
 
 
@@ -25,7 +26,6 @@ export const validationErrors = writable([]);
 export const profileEditState = writable("idle");
 // "idle" | "editing" | "saving" | "success" | "error"
 export const error = writable(null);
-export const submissionProgress = writable([]); // array of strings of fields being submitted
 
 
 // --- Begin editing ---
@@ -154,46 +154,47 @@ export async function saveEdits() {
     profileEditState.set("saving");
     error.set(null);
 
-    try {
-        // Normalize
-		const current = normalizeProfile(get(profile) || {});
-		const fields = normalizeProfile({
-			name: get(name),
-			dob: get(dob),
-			username: get(username),
-			gender: get(gender),
-			country_id: get(country),
-			latitude: get(latitude),
-			longitude: get(longitude),
-			location: get(location),
-			bio: get(bio),
-			interests: get(selectedInterests),
-			socials: get(socials),
-		});
+    // Normalize
+    const current = normalizeProfile(get(profile) || {});
+    const fields = normalizeProfile({
+        name: get(name),
+        dob: get(dob),
+        username: get(username),
+        gender: get(gender),
+        country_id: get(country),
+        latitude: get(latitude),
+        longitude: get(longitude),
+        location: get(location),
+        bio: get(bio),
+        interests: get(selectedInterests),
+        socials: get(socials),
+    });
 
-        // Filter out unchanged fields
-        const changed = {};
-        for (const key in fields) {
-            const newVal = fields[key];
-            const oldVal = current[key] ?? null;
-            if (!valuesEqual(newVal, oldVal)) {
-                changed[key] = newVal;
-            }
+    // Filter out unchanged fields
+    const changed = {};
+    for (const key in fields) {
+        const newVal = fields[key];
+        const oldVal = current[key] ?? null;
+        if (!valuesEqual(newVal, oldVal)) {
+            changed[key] = newVal;
         }
-        
-        console.log("Profile:", current);
-        console.log("New Fields:", fields);
-        console.log("To Update:", changed);
+    }
+    if (Object.keys(changed).length === 0) {
+        // Nothing changed, just exit
+        profileEditState.set("idle");
+        return;
+    }
 
-        console.log("Skipping actual update in demo.");
-        // const updated = await updateProfile(changed);
-
-        // // Update global store
-        // profile.set(updated);
+    // Submit update
+    try {
+        const updated = await updateProfile(changed);
+        profile.set(updated);
         profileEditState.set("success");
+
     } catch (err) {
-        error.set(err.message || "Unexpected error saving profile");
         profileEditState.set("error");
+        error.set(err.message || "Unexpected error saving profile");
+        console.error("Error updating profile:", err);
     }
 }
 

@@ -28,7 +28,13 @@ export function normalizeLink(v) {
         link = "https://" + link;
     }
 
-    return link;
+    try {
+        const url = new URL(link);
+        url.hostname = url.hostname.toLowerCase();
+        return url.toString();
+    } catch {
+        return link;
+    }
 }
 
 export function normalizeSocial(social) {
@@ -62,7 +68,7 @@ export function normalizeProfile(profile = {}) {
         out.gender = normalizeString(profile.gender, { lower: true });
 
     if ("country_id" in profile)
-        out.country_id = normalizeString(profile.country_id);
+        out.country_id = profile.country_id;
 
     if ("latitude" in profile)
         out.latitude = normalizeNumber(profile.latitude);

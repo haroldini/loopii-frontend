@@ -54,11 +54,11 @@ async function request(endpoint, { method = "GET", data, body } = {}) {
         const err = new Error(message);
         err.status = res.status;
         err.data = payload;
-        console.error("API error:", { endpoint, status: res.status, payload, err });
+        console.error("API error:", { endpoint, status: res.status, payload, options, err });
         throw err;
     }
 
-    console.debug("API success:", { endpoint, status: res.status, payload });
+    console.debug("API success:", { endpoint, status: res.status, payload, options });
     return payload ?? {};
 }
 

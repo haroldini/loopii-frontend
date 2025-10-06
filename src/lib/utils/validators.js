@@ -29,7 +29,10 @@ export function validateDOB(dob) {
 		return { field: "dob", message: "Date of birth must be after 1900", display: true };
 	}
 	if (d > minDate) {
-		return { field: "dob", message: "You must be at least 13 years old", display: true };
+		const age = today.getFullYear() - d.getFullYear();
+		if (age < 13 || (age === 13 && today < new Date(d.getFullYear() + 13, d.getMonth(), d.getDate()))) {
+			return { field: "dob", message: "You must be at least 13 years old", display: true };
+		}
 	}
 	return null;
 }

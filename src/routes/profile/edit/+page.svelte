@@ -7,7 +7,7 @@
 	import {
 		saveEdits, cancelEditing, startEditing,
 		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
-		validationErrors, profileEditState, error, readyToSubmit, submissionProgress,
+		validationErrors, profileEditState, error, readyToSubmit,
         removeSocial, updateCustomLink, updateCustomPlatform, updateHandle
 	} from "$lib/stores/editProfile";
 	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
@@ -63,26 +63,26 @@
 </div>
 
 
-{#if $profileEditState === 'idle'}
+{#if $profileEditState === "idle"}
     <p>Loading profile...</p>
 
-{:else if $profileEditState === 'success'}
+{:else if $profileEditState === "success"}
     <p class="green">Profile updated successfully!</p>
     <button type="button" on:click={() => goto("/profile")}>
         Back to profile
     </button>
 
+{:else if $profileEditState === "error"}
+    <p class="red">Error updating profile: {$error}</p>
+    <button type="button" on:click={() => $profileEditState = "editing"}>
+        Try Again
+    </button>
+
+
 {:else if $profileEditState === "saving"}
     <p>Saving profile...</p>
-    {#if $submissionProgress.length > 0}
-        <ul>
-            {#each $submissionProgress as step}
-                <li>{step}</li>
-            {/each}
-        </ul>
-    {/if}
 
-{:else if $profileEditState === 'editing'}
+{:else if $profileEditState === "editing"}
 
 <div class="container bordered">
 
