@@ -146,6 +146,19 @@
     }
 
 
+    // Watch "Set as Avatar" checkbox and sync dropdown dynamically
+    function handleAvatarToggle() {
+        const checkbox = document.getElementById("newImageAsAvatar");
+        const select = document.getElementById("newImageAccessLevel");
+        if (checkbox?.checked) {
+            select.value = "0";
+            select.disabled = true;
+        } else {
+            select.disabled = false;
+        }
+    }
+
+
     // Helper to format ISO date strings
 	function formatDate(isoString) {
 		try {
@@ -216,11 +229,18 @@
     <nav>
         {#if $newImageUrl}
             <div>
-                <input type="checkbox" id="newImageAsAvatar" />
+                <input
+                    type="checkbox"
+                    id="newImageAsAvatar"
+                    on:change={handleAvatarToggle}
+                />
                 <label for="newImageAsAvatar">Set as Avatar</label>
             </div>
             <div class="access-select">
-                <select id="newImageAccessLevel">
+                <select
+                    id="newImageAccessLevel"
+                    disabled={document.getElementById("newImageAsAvatar")?.checked}
+                >
                     <option value={0} selected>Public</option>
                     <option value={1}>Loops</option>
                     <option value={2}>Only You</option>
@@ -273,16 +293,16 @@
 
             <!-- Access level edit -->
             <div class="access-select">
-                <select
-                    id="accessLevel{img.id}"
-                    bind:value={img.access_level}
-                    disabled={$updatingAccess.has(img.id)}
-                    on:change={(e) => handleAccessLevelChange(img.id, +e.target.value)}
-                >
-                    <option value={0}>Public</option>
-                    <option value={1}>Loops</option>
-                    <option value={2}>Only You</option>
-                </select>
+            <select
+                id="accessLevel{img.id}"
+                bind:value={img.access_level}
+                disabled={img.is_avatar || $updatingAccess.has(img.id)}
+                on:change={(e) => handleAccessLevelChange(img.id, +e.target.value)}
+            >
+                <option value={0}>Public</option>
+                <option value={1}>Loops</option>
+                <option value={2}>Only You</option>
+            </select>
 
                 {#if $updatingAccess.has(img.id)}
                     <span class="spinner"></span>
