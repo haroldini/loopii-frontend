@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { notifications, inboxState, loadInitialNotifications, loadMoreNotifications, markAsRead } from "$lib/stores/notifications";
+    import { notifications, inboxState, loadInitialNotifications, loadMoreNotifications, markAsRead, markAllReadHandler, deleteAllReadHandler } from "$lib/stores/notifications";
     import { goto } from "$app/navigation";
     import { selectedLoop } from "$lib/stores/loops";
     import { getProfileFromLoop } from "$lib/api/loop";
@@ -55,6 +55,13 @@
 
 <!-- Notification List -->
 {:else}
+
+    <div class="container bordered">
+        <nav>
+            <button on:click={markAllReadHandler}>Mark all as read</button>
+            <button on:click={deleteAllReadHandler}>Delete all read</button>
+        </nav>
+    </div>
 
     {#each $notifications as n (n.id)}
         <div

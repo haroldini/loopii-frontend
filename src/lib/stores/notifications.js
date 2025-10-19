@@ -4,7 +4,7 @@ import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { supabase } from "$lib/stores/auth";
 
-import { getNotifications, markNotificationRead } from "$lib/api/notifications";
+import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteAllReadNotifications } from "$lib/api/notifications";
 import { getProfileFromLoop, getProfilesFromLoops } from "$lib/api/loop";
 import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
@@ -16,11 +16,11 @@ export const notifications = writable([]);
 // Structure: [{ id, type, data, is_read, created_at, profile_id?, showPopup, autoHideMs, variant, component?, props?, onAction? }]
 
 export const inboxState = writable({
-    limit: 20,
-    offset: 0,
+    limit: 1,
     end: false,
     loading: false,
-    initialized: false
+    initialized: false,
+    cursorId: null,
 });
 
 export const unreadCount = derived(notifications, (list) =>
@@ -79,29 +79,26 @@ export async function loadInitialNotifications() {
     inboxState.set({ ...s, loading: true });
 
     try {
-        const limit = s.limit;
-        const list = await getNotifications({ limit, offset: 0 });
+        const { items, has_more, next_cursor } = await getNotifications({ limit: s.limit });
 
-        const enriched = await hydrateLoopNotifications(
-            list.map((n) => ({
-                ...n,
-                showPopup: false,
-                autoHideMs: null,
-                variant: n.type === "loop" ? "popup" : "banner",
-                component: null,
-                props: null,
-                onAction: null
-            }))
-        );
+        const enriched = await hydrateLoopNotifications(items.map((n) => ({
+            ...n,
+            showPopup: false,
+            autoHideMs: null,
+            variant: n.type === "loop" ? "popup" : "banner",
+            component: null,
+            props: null,
+            onAction: null,
+        })));
 
         notifications.set(enriched);
 
         inboxState.set({
-            limit,
-            offset: list.length,
-            end: list.length < limit,
+            ...s,
+            end: !has_more,
             loading: false,
-            initialized: true
+            initialized: true,
+            cursorId: next_cursor,
         });
     } catch (e) {
         console.error("Failed to load notifications:", e);
@@ -109,17 +106,18 @@ export async function loadInitialNotifications() {
     }
 }
 
-
 export async function loadMoreNotifications() {
     const s = get(inboxState);
     if (s.loading || s.end) return;
     inboxState.set({ ...s, loading: true });
 
     try {
-        const list = await getNotifications({ limit: s.limit, offset: s.offset });
+        const { items, has_more, next_cursor } = await getNotifications({
+            limit: s.limit,
+            after_id: s.cursorId,
+        });
 
-        // Map to hydrate structure
-        const mapped = list.map((n) => ({
+        const mapped = items.map((n) => ({
             ...n,
             showPopup: false,
             autoHideMs: null,
@@ -129,17 +127,14 @@ export async function loadMoreNotifications() {
             onAction: null,
         }));
 
-        // Hydrate any loop-type notifications with profile data
         const enriched = await hydrateLoopNotifications(mapped);
-
-        // Append them to the store
         notifications.update((prev) => [...prev, ...enriched]);
 
         inboxState.set({
             ...s,
-            offset: s.offset + list.length,
-            end: list.length < s.limit,
-            loading: false
+            end: !has_more,
+            loading: false,
+            cursorId: next_cursor ?? s.cursorId,
         });
     } catch (e) {
         console.error("Failed to load more notifications:", e);
@@ -175,6 +170,39 @@ export async function markAsRead(notificationId) {
     } catch (e) {
         console.error("Failed to mark notification as read:", e);
         notifications.set(prev);
+    }
+}
+
+
+// ---------------- Bulk Actions ---------------- //
+
+export async function markAllReadHandler() {
+    let prev = get(notifications);
+
+    // Optimistically mark everything as read
+    notifications.update((list) =>
+        list.map((n) => ({ ...n, is_read: true, showPopup: false }))
+    );
+
+    try {
+        await markAllNotificationsRead();
+    } catch (err) {
+        console.error("Failed to mark all as read:", err);
+        notifications.set(prev); // rollback
+    }
+}
+
+export async function deleteAllReadHandler() {
+    let prev = get(notifications);
+
+    // Optimistically remove all read notifications
+    notifications.update((list) => list.filter((n) => !n.is_read));
+
+    try {
+        await deleteAllReadNotifications();
+    } catch (err) {
+        console.error("Failed to delete all read:", err);
+        notifications.set(prev); // rollback
     }
 }
 
