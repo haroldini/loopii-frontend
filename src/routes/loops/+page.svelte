@@ -29,6 +29,8 @@
 
 
 <div class="container bordered">
+    <h3>Your Loops</h3>
+
     {#if $loopsStatus === "loading"}
         <p>Loading...</p>
 
@@ -44,6 +46,7 @@
         <ProfileCardExpanded profile={$selectedLoop} onAvatarClick={close} />
 
     {:else if $loopsStatus === "loaded"}
+        <button on:click={refreshLoopsStore}>Refresh</button>
 
         <!-- Profile Cards Grid -->
         <div class="grid grid-3">
@@ -59,8 +62,6 @@
             <button on:click={loadMoreLoops} disabled={$loopsState.loading}>
                 {$loopsState.loading ? "Loading…" : "Load More"}
             </button>
-        {:else}
-            <button on:click={refreshLoopsStore}>Refresh</button>
         {/if}
     {/if}
 </div>

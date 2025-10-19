@@ -50,15 +50,17 @@
         </button>
 
         <button type="button" class="dismiss" on:click={dismiss} aria-label="Dismiss">
-            <svg viewBox="0 0 36 36" class="progress">
-                <path
-                    class="circle"
-                    d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                    stroke-dasharray="{progress * 100}, 100"
-                />
-            </svg>
+            {#if autoHideMs}
+                <svg viewBox="0 0 36 36" class="progress">
+                    <path
+                        class="circle"
+                        d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                        stroke-dasharray="{progress * 100}, 100"
+                    />
+                </svg>
+            {/if}
             ✕
         </button>
     </div>
@@ -75,7 +77,7 @@
     >
         <div class="popup-header">
             {#if text}
-                <span class="popup-title">{text}</span>
+                <p class="popup-title">{text}</p>
             {/if}
 
             <button
@@ -87,39 +89,41 @@
                 }}
                 aria-label="Dismiss popup"
             >
-                <svg viewBox="0 0 36 36" class="progress">
-                    <path
-                        class="circle"
-                        d="M18 2.0845
-                            a 15.9155 15.9155 0 0 1 0 31.831
-                            a 15.9155 15.9155 0 0 1 0 -31.831"
-                        stroke-dasharray="{progress * 100}, 100"
-                    />
-                </svg>
+                {#if autoHideMs}
+                    <svg viewBox="0 0 36 36" class="progress">
+                        <path
+                            class="circle"
+                            d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                            stroke-dasharray="{progress * 100}, 100"
+                        />
+                    </svg>
+                {/if}
                 ✕
             </button>
         </div>
 
         <div class="popup-body">
             {#if component}
-                <svelte:component
-                    this={component}
-                    {...props}
-                    on:expand={() => onAction?.(id)}
-                    on:click={() => onAction?.(id)}
-                />
+                <div class="popup-inner">
+                    <svelte:component
+                        this={component}
+                        {...props}
+                        on:expand={() => onAction?.(id)}
+                        on:click={() => onAction?.(id)}
+                    />
+                </div>
             {/if}
 
             {#if description || text}
                 <div class="popup-textblock">
-                    {#if text && component}<p class="popup-text">{text}</p>{/if}
                     {#if description}<p class="popup-detail">{description}</p>{/if}
                 </div>
             {/if}
         </div>
     </div>
 {/if}
-
 
 <style>
     /* --- Shared --- */
@@ -134,9 +138,15 @@
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        transition: background 0.15s ease;
+        transition: background 0.15s ease, transform 0.15s ease;
+        flex-shrink: 0;
+        z-index: 2;
     }
-    .dismiss:hover { background: rgba(0, 0, 0, 0.05); }
+
+    .dismiss:hover {
+        background: rgba(0, 0, 0, 0.07);
+        transform: scale(1.05);
+    }
 
     .dismiss svg.progress {
         position: absolute;
@@ -153,32 +163,6 @@
         transition: stroke-dasharray 0.1s linear;
     }
 
-    /* --- Banner --- */
-    .banner {
-        width: 300px;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .banner-text {
-        all: unset;
-        flex: 1;
-        text-align: left;
-        cursor: pointer;
-    }
-
-    .banner-title { font-weight: 600; display: block; }
-    .banner-detail {
-        display: block;
-        font-size: 0.85em;
-        color: #555;
-        margin-top: 0.25rem;
-    }
-
     /* --- Popup --- */
     .popup {
         display: flex;
@@ -187,19 +171,20 @@
         background: white;
         border: 1px solid #ddd;
         border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         padding: 0.75rem 0.75rem 0.9rem;
         width: fit-content;
         max-width: 480px;
         cursor: pointer;
-        transition: background 0.15s ease, box-shadow 0.15s ease;
+        transition: background 0.15s ease;
+        position: relative;
     }
 
-    .popup:hover:not(:has(.dismiss:hover)) {
+    /* Main hover effect: light background + highlight */
+    .popup:hover {
         background: #f7f9ff;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
+    /* Focus accessibility */
     .popup:focus-visible {
         outline: 2px solid #0070f3;
         outline-offset: 2px;
@@ -207,12 +192,16 @@
 
     .popup-header {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
+        text-align: center;
         gap: 0.5rem;
     }
 
-    .popup-title { font-weight: 600; margin: 0; }
+    .popup-title {
+        font-weight: 600;
+        margin: 0;
+    }
 
     .popup-body {
         display: flex;
@@ -222,11 +211,6 @@
 
     .popup-textblock {
         margin-top: 0.25rem;
-    }
-
-    .popup-text {
-        margin: 0;
-        font-weight: 500;
     }
 
     .popup-detail {
