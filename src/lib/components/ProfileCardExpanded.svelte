@@ -3,6 +3,7 @@
     import { interestMap, platformMap, countryMap } from "$lib/stores/app";
     import { buildSocialLink } from "$lib/utils/urls";
     import { getAvatarUrl } from "../utils/profile";
+    import { timeAgo } from "$lib/utils/misc";
 
     export let profile;
     export let onAvatarClick = null;
@@ -89,8 +90,22 @@
     <div class="container bordered">
         <h3>Photos</h3>
         {#each profile.images.filter(img => !img.is_avatar) as img}
-            <div class="photo-wrapper">
-                <img src={img.urls.medium} alt="" loading="lazy" class="photo" />
+            <div class="photo-section">
+                <div class="photo-wrapper">
+                    <img src={img.urls.medium} alt="" loading="lazy" class="photo" />
+                </div>
+                <div class="info-wrapper">
+                    <p>{timeAgo(img.created_at)}</p>
+                    <p>
+                        {img.access_level === 0
+                            ? "Public"
+                            : img.access_level === 1
+                            ? "Loops only"
+                            : img.access_level === 2
+                            ? "Only you"
+                            : "Unknown"}
+                    </p>
+                </div>
             </div>
         {/each}
     </div>
@@ -98,6 +113,19 @@
 
 
 <style>
+    .photo-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .info-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 0.5rem;
+    }
     .card {
         width: 100%;
         aspect-ratio: 1;

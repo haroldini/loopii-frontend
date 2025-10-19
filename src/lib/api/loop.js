@@ -14,3 +14,11 @@ export function getProfileFromLoop(loopId) {
         method: "GET"
     });
 }
+
+// Get the LoopProfile for a list of loop IDs (the profile of the non-logged-in user in each loop)
+export function getProfilesFromLoops(loopIds) {
+    return request(`/loop/get-profiles-from-loops`, {
+        method: "POST",
+        data: { loop_ids: loopIds }
+    });
+}

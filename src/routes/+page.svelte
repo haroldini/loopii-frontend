@@ -38,7 +38,7 @@
         <p>No peers available at the moment.</p>
         
         {:else if expanded}
-        <ProfileCardExpanded profile={$peer} onBack={close} />
+        <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
         <nav>
             <button style="flex:1;" on:click={() => {handleDecision(false); close()}}>Pass</button>
             <button style="flex:1;" on:click={() => {handleDecision(true); close()}}>Connect</button>

@@ -1,9 +1,34 @@
 <script>
     import { user, signOut } from "$lib/stores/auth";
     import { page } from "$app/stores";
+    import { unreadCount } from "$lib/stores/notifications";
 
     const isActive = (path) => $page.url.pathname === path;
 </script>
+
+
+<nav class="nav">
+    <!-- Brand -->
+    <div class="brand">
+        <a href="/">loopii</a>
+    </div>
+
+    <!-- Navigation Links -->
+    <ul class="nav-links">
+        <li><a href="/" class:active={isActive("/")}>Find Loops</a></li>
+        <li><a href="/loops" class:active={isActive("/loops")}>Loops</a></li>
+        <li>
+            <a href="/notifications" class:active={isActive("/notifications")} style="position: relative;">
+                Notifications
+                {#if $unreadCount > 0}
+                    <span class="badge">{$unreadCount}</span>
+                {/if}
+            </a>
+        </li>
+        <li><a href="/profile" class:active={isActive("/profile")}>Your Profile</a></li>
+    </ul>
+</nav>
+
 
 <style>
     .nav {
@@ -60,18 +85,18 @@
         border-bottom: 2px solid #0070f3;
         font-weight: 600;
     }
+    .badge {
+        position: absolute;
+        top: 8px;
+        right: -10px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #ff3b30;
+        color: white;
+        font-size: 12px;
+        line-height: 18px;
+        text-align: center;
+    }
 </style>
-
-<nav class="nav">
-    <!-- Brand -->
-    <div class="brand">
-        <a href="/">loopii</a>
-    </div>
-
-    <!-- Navigation Links -->
-    <ul class="nav-links">
-        <li><a href="/" class:active={isActive("/")}>Find Loops</a></li>
-        <li><a href="/loops" class:active={isActive("/loops")}>Loops</a></li>
-        <li><a href="/profile" class:active={isActive("/profile")}>Your Profile</a></li>
-    </ul>
-</nav>

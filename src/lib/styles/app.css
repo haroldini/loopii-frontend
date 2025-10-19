@@ -104,6 +104,14 @@ select {
     gap: 1rem;
     padding-block: 1rem;
 }
+.flex-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1rem;
+}
 
 /* Typography */
 h1, h2, h3 {

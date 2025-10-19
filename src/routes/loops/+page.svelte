@@ -32,7 +32,7 @@
         </div>
 
     {:else if $selectedLoop}
-        <ProfileCardExpanded profile={$selectedLoop} onBack={close} />
+        <ProfileCardExpanded profile={$selectedLoop} onAvatarClick={close} />
 
     {:else if $loopsStatus === "loaded"}
         <div class="grid grid-3">

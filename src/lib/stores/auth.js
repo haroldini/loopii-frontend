@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env";
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
-import { addNotification } from "$lib/stores/app";
+import { addToast } from "$lib/stores/popups.js";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -43,10 +43,11 @@ export async function initAuth() {
             queryParams.get("error_description");
         if (urlMsg) {
             const kind = /error|fail|denied/i.test(urlMsg) ? "error" : "success";
-            addNotification({
+            addToast({
                 type: kind,
                 variant: "banner",
                 text: urlMsg,
+                autoHideMs: 5000,
             });
             history.replaceState(null, "", window.location.pathname + window.location.search);
         }

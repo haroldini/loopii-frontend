@@ -7,6 +7,7 @@
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	import { uploadProfileImage, setProfileAvatar, deleteProfileImage, setImageAccessLevel } from "$lib/api/image";
 	import { writable, derived } from "svelte/store";
+    import { timeAgo } from "$lib/utils/misc";
 
 
     // State
@@ -314,7 +315,7 @@
                 disabled={img.is_avatar}>
                 {img.is_avatar ? "Cannot Delete Avatar" : "Delete"}
             </button>
-            <p>Uploaded: {formatDate(img.created_at)}</p>
+            <p>{timeAgo(img.created_at)}</p>
         </nav>
     </div>
 	{/each}
