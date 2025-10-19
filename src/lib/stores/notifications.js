@@ -16,16 +16,16 @@ export const notifications = writable([]);
 // Structure: [{ id, type, data, is_read, created_at, profile_id?, showPopup, autoHideMs, variant, component?, props?, onAction? }]
 
 export const inboxState = writable({
-    limit: 1,
+    limit: 20,
     end: false,
     loading: false,
     initialized: false,
     cursorId: null,
 });
 
-export const unreadCount = derived(notifications, (list) =>
-    list.reduce((acc, n) => acc + (n.is_read ? 0 : 1), 0)
-);
+
+export const totalCount = writable(0);
+export const totalUnread = writable(0);
 
 
 // ---------------- Inbox Management ---------------- //
@@ -79,17 +79,12 @@ export async function loadInitialNotifications() {
     inboxState.set({ ...s, loading: true });
 
     try {
-        const { items, has_more, next_cursor } = await getNotifications({ limit: s.limit });
+        const { items, has_more, next_cursor, total_count, unread_count } = await getNotifications({ limit: s.limit });
 
-        const enriched = await hydrateLoopNotifications(items.map((n) => ({
-            ...n,
-            showPopup: false,
-            autoHideMs: null,
-            variant: n.type === "loop" ? "popup" : "banner",
-            component: null,
-            props: null,
-            onAction: null,
-        })));
+        totalCount.set(total_count ?? 0);
+        totalUnread.set(unread_count ?? 0);
+
+        const enriched = await hydrateLoopNotifications(items.map(resolveNotificationBehavior));
 
         notifications.set(enriched);
 
@@ -106,28 +101,23 @@ export async function loadInitialNotifications() {
     }
 }
 
+
 export async function loadMoreNotifications() {
     const s = get(inboxState);
     if (s.loading || s.end) return;
     inboxState.set({ ...s, loading: true });
 
     try {
-        const { items, has_more, next_cursor } = await getNotifications({
+        const { items, has_more, next_cursor, total_count, unread_count } = await getNotifications({
             limit: s.limit,
             after_id: s.cursorId,
         });
 
-        const mapped = items.map((n) => ({
-            ...n,
-            showPopup: false,
-            autoHideMs: null,
-            variant: n.type === "loop" ? "popup" : "banner",
-            component: null,
-            props: null,
-            onAction: null,
-        }));
+        totalCount.set(total_count ?? get(totalCount));
+        totalUnread.set(unread_count ?? get(totalUnread));
 
-        const enriched = await hydrateLoopNotifications(mapped);
+        const enriched = await hydrateLoopNotifications(items.map(resolveNotificationBehavior));
+
         notifications.update((prev) => [...prev, ...enriched]);
 
         inboxState.set({
@@ -141,6 +131,7 @@ export async function loadMoreNotifications() {
         inboxState.update((x) => ({ ...x, loading: false }));
     }
 }
+
 
 export function resetInbox() {
     notifications.set([]);
@@ -157,19 +148,31 @@ export function resetInbox() {
 // ---------------- Mark as Read ---------------- //
 
 export async function markAsRead(notificationId) {
-    let prev;
-    notifications.update((list) => {
-        prev = list;
-        return list.map((n) =>
-            n.id === notificationId ? { ...n, is_read: true, showPopup: false } : n
-        );
-    });
+    const prev = get(notifications);
+    const current = prev.find((n) => n.id === notificationId);
+
+    
+    notifications.update((list) =>
+        list.map((n) =>
+            n.id === notificationId
+                ? { ...n, is_read: true, showPopup: false }
+                : n
+        )
+    );
+
+    // If it’s already read, skip the API entirely
+    if (!current || current.is_read) return;
+
+    // Optimistically update unread count
+    totalUnread.update((count) => Math.max(0, count - 1));
 
     try {
         await markNotificationRead(notificationId);
+        // success — nothing more to do
     } catch (e) {
         console.error("Failed to mark notification as read:", e);
         notifications.set(prev);
+        totalUnread.update((count) => count + 1); // rollback
     }
 }
 
@@ -177,44 +180,80 @@ export async function markAsRead(notificationId) {
 // ---------------- Bulk Actions ---------------- //
 
 export async function markAllReadHandler() {
-    let prev = get(notifications);
+    const prev = get(notifications);
+    const unreadBefore = get(totalUnread);
 
-    // Optimistically mark everything as read
+    // Optimistically mark all read
     notifications.update((list) =>
         list.map((n) => ({ ...n, is_read: true, showPopup: false }))
     );
+    totalUnread.set(0);
 
     try {
         await markAllNotificationsRead();
     } catch (err) {
         console.error("Failed to mark all as read:", err);
-        notifications.set(prev); // rollback
+        notifications.set(prev);
+        totalUnread.set(unreadBefore);
     }
 }
 
 export async function deleteAllReadHandler() {
-    let prev = get(notifications);
+    const prev = get(notifications);
+    const totalBefore = get(totalCount);
 
-    // Optimistically remove all read notifications
+    // Optimistically remove read notifications
     notifications.update((list) => list.filter((n) => !n.is_read));
+    const remaining = get(notifications).length;
+    totalCount.set(remaining);
 
     try {
         await deleteAllReadNotifications();
     } catch (err) {
         console.error("Failed to delete all read:", err);
-        notifications.set(prev); // rollback
+        notifications.set(prev);
+        totalCount.set(totalBefore);
     }
 }
 
 
-// ---------------- Popup visibility ---------------- //
+// ---------------- Notification Type Resolver ---------------- //
 
-export function dismissNotification(notificationId) {
-    notifications.update((list) =>
-        list.map((n) =>
-            n.id === notificationId ? { ...n, showPopup: false } : n
-        )
-    );
+function resolveNotificationBehavior(n) {
+    const resolved = {
+        ...n,
+        text: n.data?.message ?? "You have a new notification.",
+        description: null,
+        variant: "banner",
+        autoHideMs: 5000,
+        showPopup: false,
+        component: null,
+        props: {},
+        onAction: () => markAsRead(n.id),
+        onDismiss: () => markAsRead(n.id),
+    };
+
+    if (n.type === "loop") {
+        const loopId = n.data?.loop_id ?? null;
+        const username =
+            n.props?.profile?.username ?? n.data?.profile_username ?? "someone";
+
+        resolved.text = `You looped with ${username}!`;
+        resolved.description = "Click to view their profile.";
+
+        resolved.variant = "popup";
+        resolved.autoHideMs = null;
+        resolved.component = ProfileCardPreview;
+        resolved.showPopup = false;
+
+        resolved.onAction = async () => {
+            selectedLoop.set(n.props?.profile ?? null);
+            markAsRead(n.id);
+            goto("/loops");
+        };
+    }
+
+    return resolved;
 }
 
 
@@ -261,52 +300,55 @@ export async function initNotificationSub() {
                 console.log("New notification received:", n);
 
                 try {
-                    // Insert new notification into store with popup display defaults.
-                    const newNotif = {
-                        ...n,
-                        showPopup: true,
-                        autoHideMs: n.type === "loop" ? null : 5000,
-                        variant: n.type === "loop" ? "popup" : "banner",
-                        component: null,
-                        props: null,
-                        onAction: null
-                    };
+                    // Base notification (no popup yet)
+                    let newNotif = resolveNotificationBehavior(n);
+                    newNotif = { ...newNotif, showPopup: false };
 
+                    // Insert into store so inbox updates immediately
                     notifications.update((prev) => [
                         newNotif,
                         ...prev.filter((x) => x.id !== n.id)
                     ]);
 
-                    // Handle display logic
-                    if (n.type === "loop") {
-                        const profile = await getProfileFromLoop(n.data?.loop_id ?? null);
+                    // Update total counts
+                    totalCount.update((c) => c + 1);
+                    if (!n.is_read) totalUnread.update((c) => c + 1);
 
-                        // Define the action once so both component-driven and popup-click paths can use it. // NEW
+                    // If it's a loop, wait for profile before showing popup
+                    if (n.type === "loop" && n.data?.loop_id) {
+                        const profile = await getProfileFromLoop(n.data.loop_id);
+
                         const openLoop = () => {
                             selectedLoop.set(profile);
                             goto("/loops");
                             markAsRead(n.id);
                         };
 
-                        // Render popup with profile preview and wire action.
                         notifications.update((list) =>
                             list.map((x) =>
                                 x.id === n.id
                                     ? {
                                           ...x,
                                           component: ProfileCardPreview,
-                                          props: {
-                                              profile,
-                                          },
-                                          onAction: openLoop
+                                          props: { profile },
+                                          onAction: openLoop,
+                                          showPopup: true
                                       }
                                     : x
                             )
                         );
 
                         refreshLoopsStore(false);
+                    } else {
+                        // Non-loop notifications show immediately
+                        notifications.update((list) =>
+                            list.map((x) =>
+                                x.id === n.id
+                                    ? { ...x, showPopup: true }
+                                    : x
+                            )
+                        );
                     }
-
                 } catch (err) {
                     console.error("Error handling notification payload:", err);
                 }
@@ -327,3 +369,4 @@ export function clearNotificationSub() {
         notificationChannel = null;
     }
 }
+

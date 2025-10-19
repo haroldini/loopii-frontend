@@ -1,12 +1,11 @@
 <script>
     import { onMount } from "svelte";
-    import { notifications, inboxState, loadInitialNotifications, loadMoreNotifications, markAsRead, markAllReadHandler, deleteAllReadHandler } from "$lib/stores/notifications";
+    import { notifications, inboxState, loadInitialNotifications, loadMoreNotifications, markAsRead, markAllReadHandler, deleteAllReadHandler, resetInbox, totalCount, totalUnread } from "$lib/stores/notifications";
     import { goto } from "$app/navigation";
     import { selectedLoop } from "$lib/stores/loops";
     import { getProfileFromLoop } from "$lib/api/loop";
     import { timeAgo } from "$lib/utils/misc";
     import { getAvatarUrl } from "$lib/utils/profile";
-    import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
     let loading = false;
 
@@ -20,22 +19,30 @@
 
     // Open a notification (per type)
     async function handleNotificationClick(n) {
-        if (n.type === "loop" && n.props?.profile) {
-            selectedLoop.set(n.props.profile);
-            markAsRead(n.id);
-            goto("/loops");
-        } else {
-            markAsRead(n.id);
-        }
+        n.onAction?.();
     }
 
     // Load more
-    async function loadMore() {
+    async function loadMoreHandler() {
         if ($inboxState.loading || $inboxState.end) return;
         loading = true;
         await loadMoreNotifications();
         loading = false;
     }
+
+    async function refreshNotificationsHandler() {
+        const s = $inboxState;
+        if (s.loading) return;
+
+        loading = true;
+        resetInbox();
+        try {
+            await loadInitialNotifications();
+        } finally {
+            loading = false;
+        }
+    }
+
 </script>
 
 
@@ -47,19 +54,32 @@
 
 <!-- No Notifications -->
 {:else if $notifications.length === 0}
-<p>You don't have any notifications yet.</p>
+<div class="container bordered">
+    <p>You don't have any notifications yet.</p>
+    <button on:click={refreshNotificationsHandler}>Refresh</button>
+</div>
+
 
 <!-- Error -->
 {:else if $inboxState.error}
-<p class="red">Error loading notifications: {$inboxState.error.message}</p>
+<div class="container bordered">
+    <p class="red">Error loading notifications: {$inboxState.error.message}</p>
+    <button on:click={refreshNotificationsHandler}>Refresh</button>
+</div>
 
 <!-- Notification List -->
 {:else}
 
     <div class="container bordered">
+        <h3>Notifications</h3>
+        <p>Showing {$notifications.length} of {$totalCount} total</p>
+        {#if $totalUnread > 0}
+            <p>You have {$totalUnread} unread notification{$totalUnread === 1 ? '' : 's'}.</p>
+        {/if}
         <nav>
             <button on:click={markAllReadHandler}>Mark all as read</button>
             <button on:click={deleteAllReadHandler}>Delete all read</button>
+            <button on:click={refreshNotificationsHandler}>Refresh</button>
         </nav>
     </div>
 
@@ -72,22 +92,16 @@
             on:keydown={(e) => e.key === "Enter" && handleNotificationClick(n)}
             aria-label="Open notification"
         >
-            {#if n.props.profile}
+            {#if n.props?.profile?.images && getAvatarUrl(n.props.profile)}
                 <img
                     class="avatar"
-                    src={getAvatarUrl(n.props?.profile)}
-                    alt="{n.props?.profile?.username}'s avatar"
+                    src={getAvatarUrl(n.props.profile)}
+                    alt="{n.props.profile.username ?? 'unknown user'}'s avatar"
                     loading="lazy"
                 />
             {/if}
             <div class="content">
-                <p>
-                    {#if n.type === "loop"}
-                        New loop from {n.props?.profile?.username ?? "someone"}!
-                    {:else}
-                        {n.data?.message ?? "You have a new notification."}
-                    {/if}
-                </p>
+                <p>{n.text}</p>
                 <p>{timeAgo(n.created_at)}</p>
             </div>
 
@@ -108,7 +122,7 @@
 
 
     {#if !$inboxState.end}
-        <button on:click={loadMore} disabled={loading}>
+        <button on:click={loadMoreHandler} disabled={loading}>
             {loading ? "Loading…" : "Load More"}
         </button>
     {/if}

@@ -1,7 +1,7 @@
 <script>
     import { user, signOut } from "$lib/stores/auth";
     import { page } from "$app/stores";
-    import { unreadCount } from "$lib/stores/notifications";
+    import { totalUnread } from "$lib/stores/notifications";
 
     const isActive = (path) => $page.url.pathname === path;
 </script>
@@ -20,8 +20,8 @@
         <li>
             <a href="/notifications" class:active={isActive("/notifications")} style="position: relative;">
                 Notifications
-                {#if $unreadCount > 0}
-                    <span class="badge">{$unreadCount}</span>
+                {#if $totalUnread > 0}
+                    <span class="badge">{$totalUnread}</span>
                 {/if}
             </a>
         </li>

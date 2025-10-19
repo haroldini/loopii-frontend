@@ -3,7 +3,6 @@ import { writable, derived } from "svelte/store";
 
 
 // Local toasts (frontend-only)
-
 const toasts = writable([]);
 let nextId = 0;
 
@@ -28,7 +27,6 @@ export function dismissToast(id) {
 
 
 // Unified popup stream (starts with toasts only)
-
 const basePopups = derived(toasts, ($t) =>
     $t.map((t) => ({
         ...t,
@@ -37,35 +35,44 @@ const basePopups = derived(toasts, ($t) =>
     }))
 );
 
-// exported store that the UI listens to
+// Exported store that the UI listens to
 export const allPopups = writable([]);
 basePopups.subscribe((v) => allPopups.set(v));
 
 
 // Notifications integration on app data load
+let notificationsSub;
 
-let notificationsSub; // teardown handle
-
-export function initPopupsWithNotifications({ notifications, markAsRead }) {
+export function initPopupsWithNotifications({ notifications }) {
     if (!notifications) return;
 
-    // clean up previous subscription if re-called
     if (notificationsSub) notificationsSub();
 
-    const combined = derived([notifications, toasts], ([$n, $t]) => [
-        ...$t.map((t) => ({
+    const combined = derived([notifications, toasts], ([$n, $t]) => {
+        const toastPopups = $t.map((t) => ({
             ...t,
             onDismiss: () => dismissToast(t.id),
             onAction: t.onAction ?? null,
-        })),
-        ...$n
+        }));
+
+        const notificationPopups = $n
             .filter((n) => n.showPopup)
-            .map((n) => ({
-                ...n,
-                onDismiss: () => markAsRead(n.id),
-                onAction: n.onAction ?? null,
-            })),
-    ]);
+            .map((n) => {
+                const hasValidProps =
+                    !n.component ||
+                    (n.props && Object.keys(n.props).length > 0);
+
+                return {
+                    ...n,
+                    component: hasValidProps ? n.component : null,
+                    props: hasValidProps ? n.props : {},
+                    onDismiss: n.onDismiss,
+                    onAction: n.onAction,
+                };
+            });
+
+        return [...toastPopups, ...notificationPopups];
+    });
 
     notificationsSub = combined.subscribe((v) => allPopups.set(v));
 }

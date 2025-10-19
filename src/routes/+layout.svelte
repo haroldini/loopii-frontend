@@ -9,7 +9,7 @@
     import { initAuth, user, signOut, authState } from "$lib/stores/auth";
     import { initProfile, profile, profileState } from "$lib/stores/profile";
 	import { initPopupsWithNotifications } from "$lib/stores/popups";
-	import { loadInitialNotifications, resetInbox, initNotificationSub, clearNotificationSub, notifications, markAsRead } from "$lib/stores/notifications";
+	import { loadInitialNotifications, resetInbox, initNotificationSub, clearNotificationSub, notifications } from "$lib/stores/notifications";
     import { initLoopsStore } from "$lib/stores/loops.js";
     import { initPeerStore } from "$lib/stores/feed";
 
@@ -56,7 +56,7 @@
             initPeerStore();
             initNotificationSub();
 			loadInitialNotifications();
-			initPopupsWithNotifications({ notifications, markAsRead });
+			initPopupsWithNotifications({ notifications });
 
         } else if ($authState === "unauthenticated") {
             clearNotificationSub();

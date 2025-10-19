@@ -1,11 +1,12 @@
 
 import request from "$lib/utils/request.js";
 
-// Get all loops for the logged-in user
-export function getUserLoops() {
-    return request("/loop/get-user-loops", {
-        method: "GET"
-    });
+// Get paginated loops for the logged-in user
+export function getUserLoops({ limit = 20, after_id = null } = {}) {
+    const query = new URLSearchParams();
+    query.set("limit", String(limit));
+    if (after_id) query.set("after_id", after_id);
+    return request(`/loop/get-user-loops?${query.toString()}`, { method: "GET" });
 }
 
 // Get the LoopProfile for a given loop ID (the profile of the non-logged-in user in the loop)

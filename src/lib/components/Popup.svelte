@@ -1,32 +1,23 @@
+
 <script>
     import { onMount } from "svelte";
 
-    // Props (works for both notifications and toasts)
     export let id;
-    export let type = "info";        // "loop" | "message" | "system" | "error" | "success" | etc.
-    export let variant = null;       // "banner" | "popup" | null (store sets it; fallback stays safe)
-    export let text = null;          // message override
-    export let autoHideMs = null;    // ms to auto-hide (usually for banners)
-    export let onDismiss = null;     // required: parent wires to dismissToast or markAsRead
-    export let onAction = null;      // optional click/action for the popup itself
-    export let component = null;     // optional Svelte component
-    export let props = {};           // props for component
-    export let data = {};            // raw payload
+    export let type = "info";          // "loop" | "message" | "system" | "error" | etc.
+    export let variant = "banner";     // "banner" | "popup"
+    export let text = "";              // main title or headline
+    export let description = null;     // secondary detail text
+    export let autoHideMs = null;      // banner auto-dismiss timeout
+    export let onDismiss = null;       // called when dismissed
+    export let onAction = null;        // called on main click
+    export let component = null;       // optional content component
+    export let props = {};             // props for component
 
-    const inferredVariant = variant ?? "banner";
-
-    const inferredText =
-        text ??
-        data?.message ??
-        (type === "loop" ? "You have a new loop!" : "You have a new notification");
-
-    let timer;
-    let interval;
-    let progress = 1; // 1..0 radial countdown
+    let timer, interval;
+    let progress = 1;
 
     onMount(() => {
-        // Auto-hide is owned by the component (no store timers)
-        if (autoHideMs && inferredVariant === "banner") {
+        if (autoHideMs && variant === "banner") {
             const start = Date.now();
             timer = setTimeout(() => dismiss(), autoHideMs);
             interval = setInterval(() => {
@@ -41,25 +32,24 @@
     });
 
     function dismiss() {
-        if (onDismiss) onDismiss(id);
+        onDismiss?.(id);
     }
 
     function action() {
-        if (onAction) onAction(id);
+        onAction?.(id);
     }
 </script>
 
-<!-- Banner -->
-{#if inferredVariant === "banner"}
+
+{#if variant === "banner"}
+    <!-- Simple inline banner -->
     <div class="banner {type}" role="group">
-        <button
-            type="button"
-            class="banner-text"
-            on:click={action}
-        >
-            {inferredText}
+        <button type="button" class="banner-text" on:click={action}>
+            {#if text}<span class="banner-title">{text}</span>{/if}
+            {#if description}<span class="banner-detail">{description}</span>{/if}
         </button>
-        <button class="dismiss" on:click={dismiss} aria-label="Dismiss banner">
+
+        <button type="button" class="dismiss" on:click={dismiss} aria-label="Dismiss">
             <svg viewBox="0 0 36 36" class="progress">
                 <path
                     class="circle"
@@ -73,18 +63,30 @@
         </button>
     </div>
 
-<!-- Popup -->
 {:else}
-    <div class="popup" role="group">
+    <!-- Rich popup -->
+    <div
+        role="button"
+        tabindex="0"
+        class="popup"
+        on:click={action}
+        on:keydown={(e) => e.key === "Enter" && action()}
+        aria-label="Open popup"
+    >
         <div class="popup-header">
+            {#if text}
+                <span class="popup-title">{text}</span>
+            {/if}
+
             <button
                 type="button"
-                class="popup-title"
-                on:click={action}
+                class="dismiss"
+                on:click={(e) => {
+                    e.stopPropagation();
+                    dismiss();
+                }}
+                aria-label="Dismiss popup"
             >
-                {inferredText}
-            </button>
-            <button class="dismiss" on:click={dismiss} aria-label="Dismiss popup">
                 <svg viewBox="0 0 36 36" class="progress">
                     <path
                         class="circle"
@@ -106,16 +108,21 @@
                     on:expand={() => onAction?.(id)}
                     on:click={() => onAction?.(id)}
                 />
-            {:else}
-                <button type="button" class="popup-text" on:click={action}>
-                    {inferredText}
-                </button>
+            {/if}
+
+            {#if description || text}
+                <div class="popup-textblock">
+                    {#if text && component}<p class="popup-text">{text}</p>{/if}
+                    {#if description}<p class="popup-detail">{description}</p>{/if}
+                </div>
             {/if}
         </div>
     </div>
 {/if}
 
+
 <style>
+    /* --- Shared --- */
     .dismiss {
         position: relative;
         width: 32px;
@@ -126,79 +133,105 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 50%;
+        transition: background 0.15s ease;
     }
+    .dismiss:hover { background: rgba(0, 0, 0, 0.05); }
+
     .dismiss svg.progress {
         position: absolute;
         width: 100%;
         height: 100%;
         transform: rotate(-90deg);
     }
+
     .dismiss .circle {
         fill: none;
-        stroke: rgba(0,0,0,0.2);
+        stroke: rgba(0, 0, 0, 0.2);
         stroke-width: 2.5;
         stroke-linecap: round;
         transition: stroke-dasharray 0.1s linear;
     }
 
+    /* --- Banner --- */
     .banner {
         width: 300px;
         padding: 0.75rem 1rem;
         border-radius: 8px;
-        font-weight: 500;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
     .banner-text {
         all: unset;
         flex: 1;
-        margin-right: 0.75rem;
+        text-align: left;
         cursor: pointer;
-        color: inherit;
-        font: inherit;
     }
-    .banner.success { background: #eef9f0; color: #0b5e2b; }
-    .banner.error   { background: #fdecea; color: #811d1d; }
-    .banner.info    { background: #eef3ff; color: #1c3c86; }
 
+    .banner-title { font-weight: 600; display: block; }
+    .banner-detail {
+        display: block;
+        font-size: 0.85em;
+        color: #555;
+        margin-top: 0.25rem;
+    }
+
+    /* --- Popup --- */
     .popup {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
         background: white;
         border: 1px solid #ddd;
         border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         padding: 0.75rem 0.75rem 0.9rem;
-        animation: slideDown 0.3s ease;
         width: fit-content;
         max-width: 480px;
+        cursor: pointer;
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .popup:hover:not(:has(.dismiss:hover)) {
+        background: #f7f9ff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .popup:focus-visible {
+        outline: 2px solid #0070f3;
+        outline-offset: 2px;
     }
 
     .popup-header {
         display: flex;
-        align-items: start;
+        align-items: flex-start;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
-    .popup-title {
-        all: unset;
-        cursor: pointer;
-        font-weight: 600;
-        line-height: 1.2;
-    }
+    .popup-title { font-weight: 600; margin: 0; }
 
     .popup-body {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .popup-textblock {
+        margin-top: 0.25rem;
     }
 
     .popup-text {
-        all: unset;
-        cursor: pointer;
-        color: inherit;
-        font: inherit;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .popup-detail {
+        color: #555;
+        font-size: 0.9em;
+        margin-top: 0.2rem;
     }
 </style>
