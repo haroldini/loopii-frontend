@@ -5,7 +5,7 @@
 	import { goto } from "$app/navigation";
 	import { profile } from "$lib/stores/profile";
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
-	import { uploadProfileImage, setProfileAvatar, deleteProfileImage, setImageAccessLevel } from "$lib/api/image";
+	import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image";
 	import { writable, derived } from "svelte/store";
     import { timeAgo } from "$lib/utils/misc";
 
@@ -13,10 +13,9 @@
     // State
     const photosState = writable("idle");
     // "idle" 
-    // "settingAvatar" | "deleting" | "uploading" | "settingAccess"
-    // "avatarSet" | "deleted" | "uploaded" | "accessSet"
-    // "errorSettingAvatar" | "errorDeleting" | "errorUploading" | "errorSettingAccess"
-    const updatingAccess = writable(new Set()); 
+    // "settingAvatar" | "deleting" | "uploading"
+    // "avatarSet" | "deleted" | "uploaded"
+    // "errorSettingAvatar" | "errorDeleting" | "errorUploading"
 
     // Store for uploading new images
 	let imagePicker;
@@ -55,7 +54,6 @@
                     (p.images || []).map(img => ({
                         ...img,
                         is_avatar: img.id === imageId,
-                        access_level: img.id === imageId ? 0 : img.access_level
                     }))
                 )
             }));
@@ -91,12 +89,11 @@
     async function handleUpload() {
         const file = get(newImageFile);
         const setAsAvatar = document.getElementById("newImageAsAvatar")?.checked;
-        const accessLevel = parseInt(document.getElementById("newImageAccessLevel")?.value ?? "0");
 
         if (!file) return;
         try {
             photosState.set("uploading");
-            const uploaded = await uploadProfileImage(file, accessLevel);
+            const uploaded = await uploadProfileImage(file);
 
             profile.update(p => {
                 if (!p) return p;
@@ -104,58 +101,17 @@
                 return { ...p, images: updatedImages };
             });
 
-            // Optionally set as avatar
             if (setAsAvatar) {
                 photosState.set("settingAvatar");
                 await handleSetAvatar(uploaded.id);
             } else {
                 photosState.set("uploaded");
             }
-
         } catch (err) {
             console.error("Upload failed:", err);
             photosState.set("errorUploading");
         } finally {
             resetPicker();
-        }
-    }
-
-
-    // Handle access level change
-    async function handleAccessLevelChange(imageId, newLevel) {
-        updatingAccess.update(s => new Set(s).add(imageId));
-        try {
-            photosState.set("settingAccess");
-            await setImageAccessLevel(imageId, newLevel);
-            profile.update(p => ({
-                ...p,
-                images: p.images.map(i =>
-                    i.id === imageId ? { ...i, access_level: newLevel } : i
-                )
-            }));
-            photosState.set("accessSet");
-        } catch (err) {
-            console.error("Error updating access level:", err);
-            photosState.set("errorSettingAccess");
-        } finally {
-            updatingAccess.update(s => {
-                const newSet = new Set(s);
-                newSet.delete(imageId);
-                return newSet;
-            });
-        }
-    }
-
-
-    // Watch "Set as Avatar" checkbox and sync dropdown dynamically
-    function handleAvatarToggle() {
-        const checkbox = document.getElementById("newImageAsAvatar");
-        const select = document.getElementById("newImageAccessLevel");
-        if (checkbox?.checked) {
-            select.value = "0";
-            select.disabled = true;
-        } else {
-            select.disabled = false;
         }
     }
 
@@ -233,20 +189,10 @@
                 <input
                     type="checkbox"
                     id="newImageAsAvatar"
-                    on:change={handleAvatarToggle}
                 />
                 <label for="newImageAsAvatar">Set as Avatar</label>
             </div>
-            <div class="access-select">
-                <select
-                    id="newImageAccessLevel"
-                    disabled={document.getElementById("newImageAsAvatar")?.checked}
-                >
-                    <option value={0} selected>Public</option>
-                    <option value={1}>Loops</option>
-                    <option value={2}>Only You</option>
-                </select>
-            </div>
+
             <button type="button" on:click={handleUpload} disabled={$photosState === "uploading"}>
                 { $photosState === "uploading" ? "Uploading..." : "Upload Photo" }
             </button>
@@ -292,24 +238,6 @@
                 <button class="green" disabled>Current Avatar</button>
             {/if}
 
-            <!-- Access level edit -->
-            <div class="access-select">
-            <select
-                id="accessLevel{img.id}"
-                bind:value={img.access_level}
-                disabled={img.is_avatar || $updatingAccess.has(img.id)}
-                on:change={(e) => handleAccessLevelChange(img.id, +e.target.value)}
-            >
-                <option value={0}>Public</option>
-                <option value={1}>Loops</option>
-                <option value={2}>Only You</option>
-            </select>
-
-                {#if $updatingAccess.has(img.id)}
-                    <span class="spinner"></span>
-                {/if}
-            </div>
-
             <button
                 on:click={() => handleDelete(img.id)}
                 disabled={img.is_avatar}>
@@ -336,24 +264,4 @@
 		color: #666;
 	}
 
-    .access-select {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .spinner {
-        display: inline-block;
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid #ccc;
-        border-top-color: #333;
-        border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-        flex-shrink: 0;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
 </style>

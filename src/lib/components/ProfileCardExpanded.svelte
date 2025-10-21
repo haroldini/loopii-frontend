@@ -96,15 +96,6 @@
                 </div>
                 <div class="info-wrapper">
                     <p>{timeAgo(img.created_at)}</p>
-                    <p>
-                        {img.access_level === 0
-                            ? "Public"
-                            : img.access_level === 1
-                            ? "Loops only"
-                            : img.access_level === 2
-                            ? "Only you"
-                            : "Unknown"}
-                    </p>
                 </div>
             </div>
         {/each}

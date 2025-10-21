@@ -2,11 +2,9 @@
 import request from "$lib/utils/request.js";
 
 // Upload a new profile image
-export function uploadProfileImage(file, accessLevel = 0) {
+export function uploadProfileImage(file) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("access_level", accessLevel);
-
     return request("/image/upload", {
         method: "POST",
         body: formData,
@@ -17,14 +15,6 @@ export function uploadProfileImage(file, accessLevel = 0) {
 export function setProfileAvatar(imageId) {
     return request(`/image/${imageId}/set-avatar`, {
         method: "PUT",
-    });
-}
-
-// Set access level for a profile image
-export function setImageAccessLevel(imageId, accessLevel) {
-    return request(`/image/${imageId}/set-access-level`, {
-        method: "PUT",
-        data: { access_level: accessLevel },
     });
 }
 
