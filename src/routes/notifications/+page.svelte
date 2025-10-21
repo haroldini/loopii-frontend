@@ -1,7 +1,21 @@
 <script>
     import { onMount } from "svelte";
-    import { notifications, inboxState, loadInitialNotifications, loadMoreNotifications, markAsRead, markAllReadHandler, deleteAllReadHandler, resetInbox, totalCount, totalUnread } from "$lib/stores/notifications";
     import { goto } from "$app/navigation";
+
+    import {
+        notifications,
+        inboxState,
+        loadInitialNotifications,
+        loadMoreNotifications,
+        markAsRead,
+        markAllReadHandler,
+        deleteAllReadHandler,
+        deleteNotificationHandler,
+        resetInbox,
+        totalCount,
+        totalUnread
+    } from "$lib/stores/notifications";
+
     import { selectedLoop } from "$lib/stores/loops";
     import { getProfileFromLoop } from "$lib/api/loop";
     import { timeAgo } from "$lib/utils/misc";
@@ -105,18 +119,31 @@
                 <p>{timeAgo(n.created_at)}</p>
             </div>
 
-            {#if !n.is_read}
+            <div class="actions">
+                {#if !n.is_read}
+                    <button
+                        type="button"
+                        class="mark-read"
+                        on:click={(e) => {
+                            e.stopPropagation();
+                            markAsRead(n.id);
+                        }}
+                    >
+                        Mark as read
+                    </button>
+                {/if}
+
                 <button
                     type="button"
-                    class="mark-read"
+                    class="delete"
                     on:click={(e) => {
                         e.stopPropagation();
-                        markAsRead(n.id);
+                        deleteNotificationHandler(n.id);
                     }}
                 >
-                    Mark as read
+                    Delete
                 </button>
-            {/if}
+            </div>
         </div>
     {/each}
 
@@ -186,4 +213,25 @@
     .notification-item:hover:has(.mark-read:hover) {
         background: inherit !important;
     }
+
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .actions button {
+        cursor: pointer;
+    }
+
+    .delete {
+        color: #c00;
+        background: none;
+        border: none;
+    }
+
+    .delete:hover {
+        text-decoration: underline;
+    }
+
 </style>

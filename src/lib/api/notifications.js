@@ -16,6 +16,13 @@ export function markNotificationRead(notificationId) {
     });
 }
 
+// Delete a single notification by ID
+export function deleteNotification(notificationId) {
+    return request(`/notifications/delete/${notificationId}`, {
+        method: "DELETE"
+    });
+}
+
 // Mark all notifications as read
 export function markAllNotificationsRead() {
     return request("/notifications/mark-all-read", {

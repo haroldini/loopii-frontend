@@ -4,7 +4,7 @@ import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { supabase } from "$lib/stores/auth";
 
-import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteAllReadNotifications } from "$lib/api/notifications";
+import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteAllReadNotifications, deleteNotification } from "$lib/api/notifications";
 import { getProfileFromLoop, getProfilesFromLoops } from "$lib/api/loop";
 import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
@@ -145,7 +145,7 @@ export function resetInbox() {
 }
 
 
-// ---------------- Mark as Read ---------------- //
+// ---------------- Individual Actions ---------------- //
 
 export async function markAsRead(notificationId) {
     const prev = get(notifications);
@@ -173,6 +173,29 @@ export async function markAsRead(notificationId) {
         console.error("Failed to mark notification as read:", e);
         notifications.set(prev);
         totalUnread.update((count) => count + 1); // rollback
+    }
+}
+
+export async function deleteNotificationHandler(notificationId) {
+    const prev = get(notifications);
+    const n = prev.find((x) => x.id === notificationId);
+    if (!n) return;
+
+    const wasUnread = !n.is_read;
+
+    // Optimistically remove it
+    notifications.update((list) => list.filter((x) => x.id !== notificationId));
+    totalCount.update((c) => Math.max(0, c - 1));
+    if (wasUnread) totalUnread.update((c) => Math.max(0, c - 1));
+
+    try {
+        await deleteNotification(notificationId);
+    } catch (e) {
+        console.error("Failed to delete notification:", e);
+        // Roll back if the request fails
+        notifications.set(prev);
+        totalCount.update((c) => c + 1);
+        if (wasUnread) totalUnread.update((c) => c + 1);
     }
 }
 
