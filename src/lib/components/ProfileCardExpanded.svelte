@@ -64,24 +64,66 @@
 {#if profile.socials?.length}
     <div class="container bordered">
         <h3>Socials</h3>
-        <div class="tags">
-        {#each profile.socials as social}
-            {#if buildSocialLink(social, $platformMap)}
-                <span 
-                    class="tag clickable"
-                    role="button"
-                    tabindex="0"
-                    on:click={() =>
-                        window.open(buildSocialLink(social, $platformMap), "_blank", "noopener,noreferrer")
-                    }
-                    on:keydown={(e) =>
-                        e.key === "Enter" && window.open(buildSocialLink(social, $platformMap), "_blank", "noopener,noreferrer")
-                    }
-                >
-                    { social.custom_platform || $platformMap[social.platform_id]?.name || "Unknown" }
-                </span>
-            {/if}
-        {/each}
+        <div class="social-list">
+            {#each profile.socials as social}
+                {#if buildSocialLink(social, $platformMap)}
+                    {#if $platformMap[social.platform_id]}
+                        <div class="social-item">
+                            <div class="social-icon">
+                                {#if $platformMap[social.platform_id].icon_url}
+                                    <img
+                                        src={$platformMap[social.platform_id].icon_url}
+                                        alt={$platformMap[social.platform_id].name}
+                                        loading="lazy"
+                                    />
+                                {:else}
+                                    <div class="social-icon-placeholder">
+                                        {$platformMap[social.platform_id].name?.[0] || "?"}
+                                    </div>
+                                {/if}
+                            </div>
+
+                            <a
+                                class="social-username"
+                                href={buildSocialLink(social, $platformMap)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={buildSocialLink(social, $platformMap)}
+                            >
+                                @{social.handle}
+                            </a>
+
+                            <div class="copy-buttons">
+                                <button
+                                    class="copy-btn copy-url"
+                                    title="Copy profile URL"
+                                    on:click={() => {
+                                        const url = buildSocialLink(social, $platformMap);
+                                        navigator.clipboard.writeText(url);
+                                    }}
+                                >
+                                    🌐
+                                </button>
+
+                                <button
+                                    class="copy-btn copy-handle"
+                                    title="Copy username"
+                                    on:click={() => {
+                                        navigator.clipboard.writeText(social.handle);
+                                    }}
+                                >
+                                    @
+                                </button>
+                            </div>
+                        </div>
+                    {:else}
+                        <div class="social-item">
+                            <div class="social-icon-placeholder">?</div>
+                            <span class="social-username">Unknown Platform</span>
+                        </div>
+                    {/if}
+                {/if}
+            {/each}
         </div>
     </div>
 {/if}
@@ -145,4 +187,107 @@
         transform: scale(1.03);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
+
+    .social-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .social-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        transition: background 0.2s ease;
+    }
+
+    .social-item:hover {
+        background: #f0f0f0;
+    }
+
+    .social-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .social-icon img {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
+
+    .social-icon-placeholder {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ccc;
+        color: white;
+        font-size: 0.8rem;
+        border-radius: 4px;
+    }
+
+    .social-username {
+        flex-grow: 1;
+        text-decoration: none;
+        color: #0070f3;
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    .social-username:hover {
+        text-decoration: underline;
+    }
+
+    .copy-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .copy-btn {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 1rem;
+        color: #666;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .copy-btn:hover {
+        color: #000;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+
+    .copy-url {
+        color: #0070f3;
+    }
+    .copy-url:hover {
+        background: rgba(0, 112, 243, 0.1);
+    }
+
+    .copy-handle {
+        color: #888;
+    }
+    .copy-handle:hover {
+        background: rgba(136, 136, 136, 0.1);
+    }
+
 </style>

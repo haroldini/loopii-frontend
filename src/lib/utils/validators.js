@@ -121,50 +121,37 @@ export function validateSocials(socials) {
 	socials.forEach((s, idx) => {
 		const field = `socials.${idx}`;
 
-		// Case 1: predefined platform
-		if (s.platform_id) {
-			if (!s.handle || !s.handle.trim()) {
-				errors.push({ field, message: "Handle required", display: true });
-			} else if (s.handle.trim().length > 50) {
-				errors.push({ field, message: "Handle too long", display: true });
-			}
+		// Only predefined platforms now
+		if (!s.platform_id) {
+			errors.push({
+				field,
+				message: "Platform missing or invalid",
+				display: true
+			});
 			return;
 		}
 
-		// Case 2: custom platform
-		if (s.custom_platform || s.custom_link) {
-			if (!s.custom_platform || !s.custom_platform.trim()) {
-				errors.push({ field, message: "Custom platform required", display: true });
-			} else if (s.custom_platform.trim().length > 30) {
-				errors.push({ field, message: "Custom platform too long", display: true });
-			}
+		const handle = s.handle?.trim();
 
-			const link = s.custom_link?.trim();
-			if (!link) {
-				errors.push({ field, message: "Custom link required", display: true });
-			} else {
-				if (link.length > 150) {
-					errors.push({ field, message: "Custom link too long", display: true });
-				}
-				try {
-					const u = new URL(link);
-					const domainRegex = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
-					if (!domainRegex.test(u.hostname)) {
-						errors.push({ field, message: "Custom link must have a valid domain", display: true });
-					}
-				} catch {
-					errors.push({ field, message: "Custom link must be a valid URL", display: true });
-				}
-			}
+		if (!handle) {
+			errors.push({ field, message: "Handle required", display: true });
 			return;
 		}
 
-		// Neither case satisfied
-		errors.push({
-			field,
-			message: "Must provide either platform+handle or custom platform+link",
-			display: true
-		});
+		if (handle.length > 50) {
+			errors.push({ field, message: "Handle must be at most 50 characters", display: true });
+			return;
+		}
+
+		if (handle.startsWith("@") || handle.startsWith("/")) {
+			errors.push({ field, message: "Handle cannot start with '@' or '/'", display: true });
+			return;
+		}
+
+		if (/\s/.test(handle)) {
+			errors.push({ field, message: "Handle cannot contain spaces", display: true });
+			return;
+		}
 	});
 
 	return errors;

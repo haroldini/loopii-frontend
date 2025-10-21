@@ -34,11 +34,9 @@ export function startEditing() {
     if (!current) return;
 
     const platforms = get(allPlatforms);
-
-    // Clone socials deeply to avoid leaks
     const clonedSocials = current.socials ? structuredClone(current.socials) : [];
 
-    // --- Enrich socials with platform names
+    // attach platform names for display
     clonedSocials.forEach(social => {
         if (social.platform_id) {
             const platform = platforms.find(p => p.id === social.platform_id);
@@ -48,7 +46,6 @@ export function startEditing() {
         }
     });
 
-    // preload existing profile fields
     name.set(current.name || "");
     dob.set(current.dob || "");
     username.set(current.username || "");
@@ -66,7 +63,6 @@ export function startEditing() {
 
 // --- Cancel editing ---
 export function cancelEditing() {
-    // clear all fields
     name.set(null);
     dob.set(null);
     username.set(null);
@@ -78,8 +74,6 @@ export function cancelEditing() {
     bio.set(null);
     selectedInterests.set([]);
     socials.set([]);
-
-    // clear state
     validationErrors.set([]);
     error.set(null);
     profileEditState.set("idle");
@@ -88,7 +82,6 @@ export function cancelEditing() {
 
 // --- Validation ---
 export function validateEditProfile() {
-
     const errors = validateProfileFields({
         name: get(name),
         dob: get(dob),
@@ -106,6 +99,7 @@ export function validateEditProfile() {
     return errors.length === 0;
 }
 
+
 // --- Derived: auto-validate on change ---
 export const readyToSubmit = derived(
     [name, dob, username, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
@@ -117,25 +111,21 @@ export const readyToSubmit = derived(
 );
 
 
-// Helper for comparing new vs old profile data for partial updates
+// --- Comparison helper ---
 function valuesEqual(a, b) {
-    // Handle nullish
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
 
-    // Handle floats (lat/lon)
     if (typeof a === "number" && typeof b === "number") {
-        return Math.abs(a - b) < 1e-6; // small tolerance
+        return Math.abs(a - b) < 1e-6;
     }
 
-    // Handle dates (compare ISO only)
     if (a instanceof Date || b instanceof Date || /^\d{4}-\d{2}-\d{2}$/.test(a) || /^\d{4}-\d{2}-\d{2}$/.test(b)) {
         const da = typeof a === "string" ? a : a.toISOString().slice(0, 10);
         const db = typeof b === "string" ? b : b.toISOString().slice(0, 10);
         return da === db;
     }
 
-    // Deep compare arrays/objects
     if (typeof a === "object" && typeof b === "object") {
         return JSON.stringify(a) === JSON.stringify(b);
     }
@@ -154,7 +144,6 @@ export async function saveEdits() {
     profileEditState.set("saving");
     error.set(null);
 
-    // Normalize
     const current = normalizeProfile(get(profile) || {});
     const fields = normalizeProfile({
         name: get(name),
@@ -170,7 +159,6 @@ export async function saveEdits() {
         socials: get(socials),
     });
 
-    // Filter out unchanged fields
     const changed = {};
     for (const key in fields) {
         const newVal = fields[key];
@@ -179,18 +167,16 @@ export async function saveEdits() {
             changed[key] = newVal;
         }
     }
+
     if (Object.keys(changed).length === 0) {
-        // Nothing changed, just exit
         profileEditState.set("idle");
         return;
     }
 
-    // Submit update
     try {
         const updated = await updateProfile(changed);
         profile.set(updated);
         profileEditState.set("success");
-
     } catch (err) {
         profileEditState.set("error");
         error.set(err.message || "Unexpected error saving profile");
@@ -198,7 +184,8 @@ export async function saveEdits() {
     }
 }
 
-// Socials UI functions
+
+// --- Socials helpers ---
 export function removeSocial(i) {
     socials.update(s => {
         s.splice(i, 1);
@@ -209,24 +196,6 @@ export function removeSocial(i) {
 export function updateHandle(i, value) {
     socials.update(s => {
         s[i].handle = value;
-        return [...s];
-    });
-}
-
-export function updateCustomPlatform(i, value) {
-    socials.update(s => {
-        s[i].custom_platform = value;
-        return [...s];
-    });
-}
-
-export function updateCustomLink(i, value) {
-    socials.update(s => {
-        let v = value.trim();
-        if (v && !/^https?:\/\//i.test(v)) {
-            v = "https://" + v;  // normalize automatically
-        }
-        s[i].custom_link = v;
         return [...s];
     });
 }

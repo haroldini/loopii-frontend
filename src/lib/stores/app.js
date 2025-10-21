@@ -9,6 +9,20 @@ import { getProfileFromLoop } from "$lib/api/loop";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 
+// ---------------- Icons ---------------- //
+
+const ICONS = {
+	"discord": "/icons/discord.svg",
+	"twitter / x": "/icons/twitter.svg",
+	"tiktok": "/icons/tiktok.svg",
+	"snapchat": "/icons/snapchat.svg",
+	"reddit": "/icons/reddit.svg",
+	"instagram": "/icons/instagram.svg",
+	"threads": "/icons/threads.svg",
+	"bluesky": "/icons/bluesky.svg",
+};
+
+
 // ---------------- Reference Data ---------------- //
 
 export const allCountries = writable([]);
@@ -35,9 +49,18 @@ export async function initReferences() {
             return a.name.localeCompare(b.name);
         });
 
+		// Attach static icons by normalized name
+		const platformsWithIcons = platforms.map(p => {
+			const key = p.name.trim().toLowerCase();
+			return {
+				...p,
+				icon_url: ICONS[key] || null,
+			};
+		});
+
         allCountries.set(sortedCountries);
         allInterests.set(interests);
-        allPlatforms.set(platforms);
+        allPlatforms.set(platformsWithIcons);
         referencesLoaded.set(true);
     } catch (err) {
         console.error("Failed to load reference data", err);

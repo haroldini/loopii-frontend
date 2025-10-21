@@ -8,7 +8,7 @@
 		saveEdits, cancelEditing, startEditing,
 		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
 		validationErrors, profileEditState, error, readyToSubmit,
-        removeSocial, updateCustomLink, updateCustomPlatform, updateHandle
+        removeSocial, updateHandle
 	} from "$lib/stores/editProfile";
 	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
@@ -213,81 +213,73 @@
 <div class="container bordered">
     <h3>What your Loops see</h3>
 
-    <!-- Social Media Links UI -->
-    <label for="">Social Media Links</label>
     {#if $socials.length > 0}
-        <div class="socials-grid">
+        <div class="socials-list">
             {#each $socials as social, i}
-                <div class="social-name">
-                    {#if social.platform_id}
-                        {social.name}
-                    {:else}
-                        <input
-                            type="text"
-                            placeholder="Platform name"
-                            value={social.custom_platform || ""}
-                            on:input={(e) => updateCustomPlatform(i, e.target.value)}
-                            maxlength="30"
-                        />
-                    {/if}
-                </div>
+                {@const platform = $allPlatforms.find(p => p.id === social.platform_id)}
+                {#if platform}
+                    {@const pattern = social.url_pattern || platform.url_pattern}
+                    {@const [before, after] = pattern ? pattern.split("{handle}") : ["", ""]}
+                    <div class="social-row">
+                        <div class="social-icon">
+                            {#if platform.icon_url}
+                                <img src={platform.icon_url} alt={platform.name} loading="lazy" />
+                            {:else}
+                                <div class="social-icon-placeholder">
+                                    {platform.name?.[0] || "?"}
+                                </div>
+                            {/if}
+                        </div>
 
-                <div class="social-link">
-                    {#if social.platform_id}
-                        <!-- Platform → needs handle -->
-                        <input
-                            type="text"
-                            placeholder="Enter handle"
-                            value={social.handle || ""}
-                            on:input={(e) => updateHandle(i, e.target.value)}
-                            maxlength="50"
-                        />
-                    {:else}
-                        <!-- Custom → needs https:// link -->
-                        <input
-                            type="text"
-                            placeholder="Enter https:// link"
-                            value={social.custom_link || ""}
-                            on:input={(e) => updateCustomLink(i, e.target.value)}
-                            maxlength="150"
-                        />
-                    {/if}
-                </div>
+                        <div class="social-preview">
+                            <span class="social-base">
+                                {before.replace(/^https?:\/\//, "")}
+                            </span>
+                            <input
+                                class="social-handle-input"
+                                type="text"
+                                placeholder="handle"
+                                value={social.handle || ""}
+                                on:input={(e) => updateHandle(i, e.target.value)}
+                                maxlength="50"
+                            />
+                            <span class="social-base">{after}</span>
+                        </div>
 
-                <div class="social-remove">
-                    <button type="button" on:click={() => removeSocial(i)}>−</button>
-                </div>
-                {#if $validationErrors.find(e => e.field === `socials.${i}` && e.display)}
-                    <p class="red" style="grid-column: 1 / -1;">
-                        {$validationErrors.find(e => e.field === `socials.${i}`).message}
-                    </p>
+                        <div class="social-remove">
+                            <button type="button" on:click={() => removeSocial(i)}>−</button>
+                        </div>
+                    </div>
+
+                    {#if $validationErrors.find(e => e.field === `socials.${i}` && e.display)}
+                        <p class="red">{$validationErrors.find(e => e.field === `socials.${i}`).message}</p>
+                    {/if}
                 {/if}
             {/each}
         </div>
     {/if}
 
-    <select on:change={(e) => {
-        if (e.target.value === "other") {
-            socials.update(s => [
-                ...s,
-                { platform_id: null, name: null, custom_platform: "", custom_link: "" }
-            ]);
-        } else {
+    <select
+        on:change={(e) => {
             const platform = $allPlatforms.find(p => p.id === e.target.value);
             if (platform) {
                 socials.update(s => [
                     ...s,
-                    { platform_id: platform.id, name: platform.name, handle: "" }
+                    {
+                        platform_id: platform.id,
+                        name: platform.name,
+                        handle: "",
+                        url_pattern: platform.url_pattern
+                    }
                 ]);
             }
-        }
-        e.target.value = "";
-    }}>
+            e.target.value = "";
+        }}
+    >
         <option value="">+ Add platform</option>
         {#each $allPlatforms as platform}
             <option value={platform.id}>{platform.name}</option>
         {/each}
-        <option value="other">Other</option>
     </select>
 </div>
 
@@ -295,31 +287,88 @@
 
 
 <style>
-.socials-grid {
-	display: grid;
-	grid-template-columns: 100px 1fr auto;
-	align-items: center;
-	gap: 0.5rem 1rem;
-}
+    .socials-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
 
-.social-name {
-	text-align: right;
-}
+    .social-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+    }
 
-.social-name input {
-	width: 100%;
-}
+    .social-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-.social-link input {
-	width: 100%;
-}
+    .social-icon img {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
 
-.social-remove button {
-	background: none;
-	border: none;
-	font-size: 1.2rem;
-	cursor: pointer;
-	color: #c00;
-}
+    .social-icon-placeholder {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ccc;
+        color: white;
+        font-size: 0.8rem;
+        border-radius: 4px;
+    }
 
+    .social-preview {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-grow: 1;
+        font-size: 0.9rem;
+        color: #444;
+        word-break: break-all;
+    }
+
+    .social-base {
+        color: #777;
+        user-select: none;
+    }
+
+    .social-handle-input {
+        border: none;
+        border-bottom: 1px solid #aaa;
+        background: transparent;
+        font-size: 0.9rem;
+        padding: 0.2rem 0.25rem;
+        width: 150px;
+        transition: border-color 0.2s ease;
+    }
+
+    .social-handle-input:focus {
+        outline: none;
+        border-color: #0070f3;
+    }
+
+    .social-remove button {
+        border: none;
+        background: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #c00;
+    }
+
+    .social-remove button:hover {
+        color: #900;
+    }
 </style>
