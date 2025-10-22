@@ -5,14 +5,26 @@ import { getUserLoops } from "$lib/api/loop.js";
 
 export const loops = writable([]);
 export const selectedLoop = writable(null);
+export const loopsTotal = writable(0);
 export const loopsState = writable({
-    limit: 24,
+    limit: 18,
     end: false,
     loading: false,
     initialized: false,
     cursorId: null,
 });
 export const loopsStatus = writable("unloaded");
+
+
+// --- Helper: sort favourites first, then newest ---
+function sortLoops(items) {
+    return [...items].sort((a, b) => {
+        const favA = a.loop?.is_favourite ? 1 : 0;
+        const favB = b.loop?.is_favourite ? 1 : 0;
+        if (favA !== favB) return favB - favA; // favourites first
+        return new Date(b.loop.created_at) - new Date(a.loop.created_at); // newest first
+    });
+}
 
 
 // Initialize loops on first visit
@@ -29,8 +41,9 @@ export async function loadInitialLoops() {
     loopsStatus.set("loading");
 
     try {
-        const { items, has_more, next_cursor } = await getUserLoops({ limit: s.limit });
-        loops.set(items);
+        const { items, has_more, next_cursor, total } = await getUserLoops({ limit: s.limit });
+        loops.set(sortLoops(items));
+        loopsTotal.set(total || 0);
 
         loopsState.set({
             ...s,
@@ -54,12 +67,13 @@ export async function loadMoreLoops() {
     loopsState.set({ ...s, loading: true });
 
     try {
-        const { items, has_more, next_cursor } = await getUserLoops({
+        const { items, has_more, next_cursor, total } = await getUserLoops({
             limit: s.limit,
             after_id: s.cursorId,
         });
 
-        loops.update((prev) => [...prev, ...items]);
+        loops.update((prev) => sortLoops([...prev, ...items]));
+        if (total !== undefined) loopsTotal.set(total);
 
         loopsState.set({
             ...s,
@@ -91,8 +105,9 @@ export async function refreshLoopsStore() {
             cursorId: null,
         });
 
-        const { items, has_more, next_cursor } = await getUserLoops({ limit: s.limit });
-        loops.set(items);
+        const { items, has_more, next_cursor, total } = await getUserLoops({ limit: s.limit });
+        loops.set(sortLoops(items));
+        loopsTotal.set(total || 0);
 
         loopsState.set({
             ...s,

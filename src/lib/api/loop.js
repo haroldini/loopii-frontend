@@ -23,3 +23,23 @@ export function getProfilesFromLoops(loopIds) {
         data: { loop_ids: loopIds }
     });
 }
+
+// Update the user's loop state (favourite / seen)
+export function updateLoopState(loopId, { is_fav = null, is_seen = null } = {}) {
+    // Build payload with only provided keys
+    const data = {};
+    if (is_fav !== null && is_fav !== undefined) data.is_fav = is_fav;
+    if (is_seen !== null && is_seen !== undefined) data.is_seen = is_seen;
+
+    return request(`/loop/update-state/${loopId}`, {
+        method: "PATCH",
+        data
+    });
+}
+
+// Delete a loop entirely (must belong to the logged-in user)
+export function deleteLoop(loopId) {
+    return request(`/loop/delete/${loopId}`, {
+        method: "DELETE"
+    });
+}

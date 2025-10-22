@@ -11,17 +11,31 @@ import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 // ---------------- Icons ---------------- //
 
-const ICONS = {
-	"discord": "/icons/discord.svg",
-	"twitter / x": "/icons/twitter.svg",
-	"tiktok": "/icons/tiktok.svg",
-	"snapchat": "/icons/snapchat.svg",
-	"reddit": "/icons/reddit.svg",
-	"instagram": "/icons/instagram.svg",
-	"threads": "/icons/threads.svg",
-	"bluesky": "/icons/bluesky.svg",
+const PLATFORM_ICONS = {
+	"discord": "/platforms/discord.svg",
+	"twitter / x": "/platforms/twitter.svg",
+	"tiktok": "/platforms/tiktok.svg",
+	"snapchat": "/platforms/snapchat.svg",
+	"reddit": "/platforms/reddit.svg",
+	"instagram": "/platforms/instagram.svg",
+	"threads": "/platforms/threads.svg",
+	"bluesky": "/platforms/bluesky.svg",
 };
 
+export const GENDER_ICONS = {
+    male: {
+        icon: "/genders/male.svg",
+        color: "#4A90E2", // soft blue
+    },
+    female: {
+        icon: "/genders/female.svg",
+        color: "#E94E77", // rose pink
+    },
+    other: {
+        icon: "/genders/other.svg",
+        color: "#9B59B6", // violet / neutral
+    },
+};
 
 // ---------------- Reference Data ---------------- //
 
@@ -49,16 +63,22 @@ export async function initReferences() {
             return a.name.localeCompare(b.name);
         });
 
+        // Attach flag URLs by country code
+        const countriesWithFlags = sortedCountries.map((c) => ({
+            ...c,
+            flag_url: c.code ? `/flags/${c.code.toLowerCase()}.svg` : null,
+        }));
+
 		// Attach static icons by normalized name
 		const platformsWithIcons = platforms.map(p => {
 			const key = p.name.trim().toLowerCase();
 			return {
 				...p,
-				icon_url: ICONS[key] || null,
+				icon_url: PLATFORM_ICONS[key] || null,
 			};
 		});
 
-        allCountries.set(sortedCountries);
+        allCountries.set(countriesWithFlags);
         allInterests.set(interests);
         allPlatforms.set(platformsWithIcons);
         referencesLoaded.set(true);
