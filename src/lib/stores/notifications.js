@@ -72,6 +72,7 @@ async function hydrateLoopNotifications(list) {
                         ...n,
                         component: ProfileCardPreview,
                         props: { profile },
+                        text: `You looped with ${profile.username}!`,
                         onAction: openLoop,
                     };
                 }
