@@ -8,8 +8,7 @@
     import { initReferences } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth";
     import { initProfile, profile, profileState } from "$lib/stores/profile";
-	import { initPopupsWithNotifications } from "$lib/stores/popups";
-	import { loadInitialNotifications, resetInbox, initNotificationSub, clearNotificationSub, notifications } from "$lib/stores/notifications";
+    import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications";
     import { initLoopsStore } from "$lib/stores/loops.js";
     import { initPeerStore } from "$lib/stores/feed";
 
@@ -23,7 +22,7 @@
 
     let { children } = $props();
 
-	
+
     // ---------------- Initial setup ---------------- //
     onMount(() => {
         initReferences();
@@ -55,14 +54,11 @@
             initLoopsStore();
             initPeerStore();
             initNotificationSub();
-			loadInitialNotifications();
-			initPopupsWithNotifications({ notifications });
-
         } else if ($authState === "unauthenticated") {
             clearNotificationSub();
-			resetInbox();
         }
-    });
+    })
+
 </script>
 
 <svelte:head>

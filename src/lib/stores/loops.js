@@ -1,5 +1,5 @@
 
-import { writable, get } from "svelte/store";
+import { writable, get, derived } from "svelte/store";
 import { getUserLoops } from "$lib/api/loop.js";
 
 
@@ -123,3 +123,9 @@ export async function refreshLoopsStore() {
         loopsState.update((x) => ({ ...x, loading: false }));
     }
 }
+
+
+// Derived store: count of new loops
+export const newLoopsCount = derived(loops, ($loops) =>
+    $loops.filter((item) => item.loop && !item.loop.is_seen).length
+);

@@ -1,7 +1,7 @@
 <script>
     import { user, signOut } from "$lib/stores/auth";
     import { page } from "$app/stores";
-    import { totalUnread } from "$lib/stores/notifications";
+    import { newLoopsCount } from "$lib/stores/loops";
 
     const isActive = (path) => $page.url.pathname === path;
 </script>
@@ -16,12 +16,11 @@
     <!-- Navigation Links -->
     <ul class="nav-links">
         <li><a href="/" class:active={isActive("/")}>Find Loops</a></li>
-        <li><a href="/loops" class:active={isActive("/loops")}>Loops</a></li>
         <li>
-            <a href="/notifications" class:active={isActive("/notifications")} style="position: relative;">
-                Notifications
-                {#if $totalUnread > 0}
-                    <span class="badge">{$totalUnread}</span>
+            <a href="/loops" class:active={isActive("/loops")}>
+                Loops
+                {#if $newLoopsCount > 0}
+                    <span class="badge">{$newLoopsCount}</span>
                 {/if}
             </a>
         </li>
@@ -72,6 +71,7 @@
         background: none;
         font: inherit;
         transition: background 0.2s, color 0.2s, border-bottom 0.2s;
+        position: relative;
     }
 
     .nav-links li a:hover {
@@ -85,6 +85,7 @@
         border-bottom: 2px solid #0070f3;
         font-weight: 600;
     }
+
     .badge {
         position: absolute;
         top: 8px;

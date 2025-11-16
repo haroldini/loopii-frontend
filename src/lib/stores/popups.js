@@ -1,8 +1,7 @@
-
 import { writable, derived } from "svelte/store";
 
 
-// Local toasts (frontend-only)
+// Local toasts
 const toasts = writable([]);
 let nextId = 0;
 
@@ -13,10 +12,11 @@ export function addToast({
     component = null,
     props = {},
     data = {},
-    onAction = null
+    onAction = null,
+    onDismiss = null,
 } = {}) {
     const id = `toast-${++nextId}`;
-    const toast = { id, variant, text, autoHideMs, component, props, data, onAction };
+    const toast = { id, variant, text, autoHideMs, component, props, data, onAction, onDismiss };
     toasts.update((list) => [toast, ...list]);
 }
 
@@ -25,53 +25,29 @@ export function dismissToast(id) {
 }
 
 
-// Unified popup stream (starts with toasts only)
-const basePopups = derived(toasts, ($t) =>
+// Unified popup stream
+export const allPopups = derived(toasts, ($t) =>
     $t.map((t) => ({
         ...t,
-        onDismiss: () => dismissToast(t.id),
-        onAction: t.onAction ?? null,
+        // Close the toast and call onDismiss if provided
+        onDismiss: () => {
+            try {
+                if (typeof t.onDismiss === "function") t.onDismiss();
+            } catch (err) {
+                console.error("Toast onDismiss handler threw:", err);
+            }
+            dismissToast(t.id);
+        },
+        // Close the toast and call onAction if provided
+        onAction: t.onAction
+            ? () => {
+                  try {
+                      t.onAction(t.id);
+                  } catch (err) {
+                      console.error("Toast onAction handler threw:", err);
+                  }
+                  dismissToast(t.id); 
+              }
+            : null,
     }))
 );
-
-// Exported store that the UI listens to
-export const allPopups = writable([]);
-basePopups.subscribe((v) => allPopups.set(v));
-
-
-// Notifications integration on app data load
-let notificationsSub;
-
-export function initPopupsWithNotifications({ notifications }) {
-    if (!notifications) return;
-
-    if (notificationsSub) notificationsSub();
-
-    const combined = derived([notifications, toasts], ([$n, $t]) => {
-        const toastPopups = $t.map((t) => ({
-            ...t,
-            onDismiss: () => dismissToast(t.id),
-            onAction: t.onAction ?? null,
-        }));
-
-        const notificationPopups = $n
-            .filter((n) => n.showPopup)
-            .map((n) => {
-                const hasValidProps =
-                    !n.component ||
-                    (n.props && Object.keys(n.props).length > 0);
-
-                return {
-                    ...n,
-                    component: hasValidProps ? n.component : null,
-                    props: hasValidProps ? n.props : {},
-                    onDismiss: n.onDismiss,
-                    onAction: n.onAction,
-                };
-            });
-
-        return [...toastPopups, ...notificationPopups];
-    });
-
-    notificationsSub = combined.subscribe((v) => allPopups.set(v));
-}

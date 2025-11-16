@@ -1,5 +1,6 @@
 
 <script>
+    import { onDestroy } from "svelte";
     import { get } from "svelte/store";
     import {
         loops,
@@ -17,6 +18,11 @@
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
     import { addToast } from "$lib/stores/popups.js";
 
+    
+    // Remove selected loop on component destroy
+    onDestroy(() => {
+        selectedLoop.set(null);
+    });
 
     // Open a loop’s expanded profile
     async function expandProfile(loopEntry) {
@@ -112,7 +118,7 @@
             // revert on error
             loops.set(prev);
             addToast({
-                text: "Failed to delete loop",
+                text: "Failed to delete loop.",
                 description: "We couldn't remove the profile from your loops. Please try again later.",
                 autoHideMs: 5000,
             });
@@ -161,7 +167,7 @@
 
 <!-- Loops content -->
 {#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-    <div class="container bordered">
+    <div class="container">
 
         <!-- Profile Cards Grid -->
         <div class="grid grid-2">
