@@ -35,6 +35,13 @@
         event.stopPropagation();
         dispatch("toggleFav", { loopId });
     }
+
+    // Unloop profile // emit event to parent
+    function unloop(event) {
+        event.stopPropagation();
+        dispatch("unloop", { loopId });
+    }
+
 </script>
 
 
@@ -67,7 +74,7 @@
 
         {#if isLoop && loopDate}
             <div class="bottom-row">
-                <p class="loop-date">Looped {timeAgo(loopDate)}</p>
+                <p class="loop-date">{timeAgo(loopDate)}</p>
                 <button
                     type="button"
                     class="fav-btn"
@@ -77,6 +84,14 @@
                     on:click={toggleFav}
                 >
                     ★
+                </button>
+                <button
+                    type="button"
+                    class="unloop-btn"
+                    title="Remove loop"
+                    on:click={unloop}
+                >
+                    ✕
                 </button>
             </div>
         {/if}
@@ -181,6 +196,28 @@
         outline: 2px solid #0070f3;
         outline-offset: 1px;
     }
+
+    /* --- Unloop button --- */
+    .unloop-btn {
+        font-size: 1rem;
+        background: none;
+        border: none;
+        color: #c33;
+        cursor: pointer;
+        padding: 0 0.25rem;
+        margin-left: 0.35rem;
+        opacity: 0.7;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .unloop-btn:hover {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+    .unloop-btn:focus-visible {
+        outline: 2px solid #0070f3;
+        outline-offset: 1px;
+    }
+
 
     /* --- Flag --- */
     .flag {

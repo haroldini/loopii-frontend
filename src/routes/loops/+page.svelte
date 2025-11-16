@@ -12,7 +12,7 @@
         refreshLoopsStore,
     } from "$lib/stores/loops.js";
 
-    import { updateLoopState,  } from "$lib/api/loop.js";
+    import { updateLoopState, deleteLoop } from "$lib/api/loop.js";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
 
@@ -66,6 +66,24 @@
         }
     }
 
+    async function handleUnloop({ detail }) {
+        const { loopId } = detail;
+        const prev = get(loops);
+        loops.update((arr) => arr.filter((item) => item.loop.id !== loopId));
+        loopsTotal.update((n) => Math.max(0, n - 1));
+        // Close expanded profile if it was the one being viewed
+        if (get(selectedLoop)?.id === get(loops).find(l => l.loop.id === loopId)?.profile.id) {
+            selectedLoop.set(null);
+        }
+        try {
+            await deleteLoop(loopId);
+        } catch (err) {
+            console.error("Failed to delete loop:", err);
+            // revert on error
+            loops.set(prev);
+        }
+    }
+
     function close() {
         selectedLoop.set(null);
     }
@@ -105,7 +123,7 @@
     <div class="container bordered">
 
         <!-- Profile Cards Grid -->
-        <div class="grid grid-3">
+        <div class="grid grid-2">
             {#each $loops as { loop, profile }}
                 <div style="aspect-ratio: 1 / 1;">
                     <ProfileCardPreview
@@ -116,6 +134,7 @@
                         isFav={loop.is_favourite}
                         isSeen={loop.is_seen}
                         on:toggleFav={handleFav}
+                        on:unloop={handleUnloop}
                         on:expand={() => expandProfile({ loop, profile })}
                     />
                 </div>
