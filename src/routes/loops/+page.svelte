@@ -19,7 +19,7 @@
     // Open a loop’s expanded profile
     async function expandProfile(loopEntry) {
         const { loop, profile } = loopEntry;
-        selectedLoop.set(profile);
+        selectedLoop.set({ loop, profile });
 
         // Mark as seen if not already
         if (!loop.is_seen) {
@@ -110,7 +110,13 @@
         <button on:click={refreshLoopsStore}>Refresh</button>
 
     {:else if $selectedLoop}
-        <ProfileCardExpanded profile={$selectedLoop} onAvatarClick={close} />
+        <ProfileCardExpanded
+            profile={$selectedLoop.profile}
+            loop={$selectedLoop.loop}
+            onAvatarClick={close}
+            on:toggleFav={handleFav}
+            on:unloop={handleUnloop}
+        />
     
     {:else if $loopsStatus === "loaded" && $loops.length > 0}
         <p>Showing { $loops.length } of { $loopsTotal } loops</p>

@@ -20,6 +20,7 @@
     import { getProfileFromLoop } from "$lib/api/loop";
     import { timeAgo } from "$lib/utils/misc";
     import { getAvatarUrl } from "$lib/utils/profile";
+    import { addToast } from "$lib/stores/popups";
 
     let loading = false;
 
@@ -33,7 +34,24 @@
 
     // Open a notification (per type)
     async function handleNotificationClick(n) {
-        n.onAction?.();
+        if (!n.onAction) return;
+
+        try {
+            const result = await n.onAction();
+
+            if (!result || result.success === false) {
+                addToast({
+                    variant: "banner",
+                    text: "Could not open this loop - it may have been deleted.",
+                });
+            }
+        } catch (err) {
+            console.error("Notification onAction failed:", err);
+            addToast({
+                variant: "banner",
+                text: "Something went wrong opening that notification.",
+            });
+        }
     }
 
     // Load more

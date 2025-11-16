@@ -6,7 +6,7 @@ import { supabase } from "$lib/stores/auth";
 
 import { getNotifications, markNotificationRead, markAllNotificationsRead, deleteAllReadNotifications, deleteNotification } from "$lib/api/notifications";
 import { getProfileFromLoop, getProfilesFromLoops } from "$lib/api/loop";
-import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops";
+import { refreshLoopsStore, selectedLoop, loops } from "$lib/stores/loops";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 
@@ -52,9 +52,21 @@ async function hydrateLoopNotifications(list) {
                 const profile = profilesMap[n.data.loop_id];
                 if (profile) {
                     const openLoop = () => {
-                        selectedLoop.set(profile);
+                        const allLoops = get(loops);
+                        const match = allLoops.find(item => item.loop.id === n.data.loop_id);
+
+                        if (match) {
+                            selectedLoop.set(match);
+                        } else if (profile) {
+                            selectedLoop.set({ loop: { id: n.data.loop_id }, profile });
+                        } else {
+                            // tell the caller it failed
+                            return { success: false, reason: "profile_not_found" };
+                        }
+
                         goto("/loops");
                         markAsRead(n.id);
+                        return { success: true };
                     };
                     return {
                         ...n,
@@ -270,9 +282,22 @@ function resolveNotificationBehavior(n) {
         resolved.showPopup = false;
 
         resolved.onAction = async () => {
-            selectedLoop.set(n.props?.profile ?? null);
+            const loopId = n.data?.loop_id;
+            const allLoops = get(loops);
+            const match = allLoops.find(item => item.loop.id === loopId);
+            const profile = n.props?.profile ?? null;
+
+            if (match) {
+                selectedLoop.set(match);
+            } else if (profile) {
+                selectedLoop.set({ loop: { id: loopId }, profile });
+            } else {
+                return { success: false, reason: "profile_not_found" };
+            }
+
             markAsRead(n.id);
             goto("/loops");
+            return { success: true };
         };
     }
 
@@ -342,9 +367,20 @@ export async function initNotificationSub() {
                         const profile = await getProfileFromLoop(n.data.loop_id);
 
                         const openLoop = () => {
-                            selectedLoop.set(profile);
+                            const allLoops = get(loops);
+                            const match = allLoops.find(item => item.loop.id === n.data.loop_id);
+
+                            if (match) {
+                                selectedLoop.set(match);
+                            } else if (profile) {
+                                selectedLoop.set({ loop: { id: n.data.loop_id }, profile });
+                            } else {
+                                return { success: false, reason: "profile_not_found" };
+                            }
+
                             goto("/loops");
                             markAsRead(n.id);
+                            return { success: true };
                         };
 
                         notifications.update((list) =>

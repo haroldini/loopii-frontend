@@ -6,6 +6,7 @@
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
+    import { addToast } from "$lib/stores/popups";
 
     let expanded = false;
 

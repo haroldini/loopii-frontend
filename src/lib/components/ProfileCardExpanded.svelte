@@ -7,6 +7,21 @@
 
     export let profile;
     export let onAvatarClick = null;
+
+    // optional loop props
+    export let loop = null;
+
+    // bubble events back to the parent page
+    import { createEventDispatcher } from "svelte";
+    const dispatch = createEventDispatcher();
+
+    function toggleFav() {
+        dispatch("toggleFav", { loopId: loop.id });
+    }
+
+    function unloop() {
+        dispatch("unloop", { loopId: loop.id });
+    }
 </script>
 
 
@@ -145,6 +160,33 @@
 {/if}
 
 
+<!-- Loop controls -->
+{#if loop}
+    <div class="container bordered">
+        <p>Looped {timeAgo(loop.created_at)}</p>
+        <nav>
+            <button
+                type="button"
+                class="fav-btn"
+                class:active={loop.is_favourite}
+                aria-pressed={loop.is_favourite}
+                on:click={toggleFav}
+            >
+                ★ {loop.is_favourite ? "Favourited" : "Favourite"}
+            </button>
+
+            <button
+                type="button"
+                class="delete-btn"
+                on:click={unloop}
+            >
+                ✕ Remove Loop
+            </button>
+        </nav>
+    </div>
+{/if}
+
+
 <style>
     .photo-section {
         display: flex;
@@ -168,10 +210,6 @@
         position: relative;
         border-radius: 1rem;
         overflow: hidden;
-    }
-    .container h2,
-    .container p {
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     }
     .bio {
         color: #555;
@@ -288,6 +326,29 @@
     }
     .copy-handle:hover {
         background: rgba(136, 136, 136, 0.1);
+    }
+
+
+    /* loop controls */
+    .fav-btn {
+        background: #f5f5f5;
+        color: #b8860b;
+    }
+    .fav-btn.active {
+        background: gold;
+        color: black;
+    }
+    .fav-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .delete-btn {
+        background: #f8e5e5;
+        color: #a11;
+    }
+    .delete-btn:hover {
+        background: #f2c9c9;
+        transform: scale(1.05);
     }
 
 </style>

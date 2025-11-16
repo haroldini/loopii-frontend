@@ -7,7 +7,6 @@ const toasts = writable([]);
 let nextId = 0;
 
 export function addToast({
-    type = "info",
     variant = "banner",
     text = "",
     autoHideMs = 5000,
@@ -17,7 +16,7 @@ export function addToast({
     onAction = null
 } = {}) {
     const id = `toast-${++nextId}`;
-    const toast = { id, type, variant, text, autoHideMs, component, props, data, onAction };
+    const toast = { id, variant, text, autoHideMs, component, props, data, onAction };
     toasts.update((list) => [toast, ...list]);
 }
 
