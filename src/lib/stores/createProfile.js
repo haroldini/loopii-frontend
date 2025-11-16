@@ -6,6 +6,7 @@ import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
 import { profile } from "$lib/stores/profile";
 import { validateProfileFields } from "$lib/utils/validators";
 import { normalizeProfile } from "$lib/utils/normalizers";
+import { addToast } from "./popups";
 
 
 // --- Form state ---
@@ -107,6 +108,7 @@ export async function submitProfile() {
 	try {
 		if (!get(readyToSubmit)) {
 			error.set("Please fix validation errors");
+			profileFormState.set("error");
 			return;
 		}
 
@@ -208,15 +210,27 @@ export async function submitProfile() {
 			if (socialsError) parts.push("socials");
 			if (avatarError) parts.push("profile picture");
 
-			let msg = "Profile created, but failed to add ";
+			let msg = "Your profile was created, but we couldn't add your ";
 			if (parts.length === 1) msg += parts[0];
 			else if (parts.length === 2) msg += parts.join(" and ");
 			else msg += parts.slice(0, -1).join(", ") + " and " + parts.at(-1);
 
 			msg += " — please try adding them later from your profile page.";
 			error.set(msg);
+			addToast({
+				variant: "banner",
+				text: "Welcome to loopii!",
+				description: msg,
+				autoHideMs: null,
+			});
 			profileFormState.set("partial");
 		} else {
+			addToast({
+				variant: "banner",
+				text: "Welcome to loopii!",
+				description: "Your profile has been created successfully.",
+				autoHideMs: 5000,
+			});
 			profileFormState.set("success");
 		}
 

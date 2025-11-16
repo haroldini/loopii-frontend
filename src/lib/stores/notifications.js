@@ -8,6 +8,7 @@ import { getNotifications, markNotificationRead, markAllNotificationsRead, delet
 import { getProfileFromLoop, getProfilesFromLoops } from "$lib/api/loop";
 import { refreshLoopsStore, selectedLoop, loops } from "$lib/stores/loops";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
+import { addToast } from "./popups";
 
 
 // ---------------- Core Store ---------------- //
@@ -110,6 +111,12 @@ export async function loadInitialNotifications() {
         });
     } catch (e) {
         console.error("Failed to load notifications:", e);
+        addToast({
+            variant: "error",
+            text: "Failed to load notifications.",
+            description: e.message || "An error occurred while loading notifications. Please try again later.",
+            autoHideMs: 5000,
+        });
         inboxState.update((x) => ({ ...x, loading: false, initialized: true }));
     }
 }
@@ -141,6 +148,12 @@ export async function loadMoreNotifications() {
         });
     } catch (e) {
         console.error("Failed to load more notifications:", e);
+        addToast({
+            variant: "error",
+            text: "Failed to load more notifications.",
+            description: e.message || "An error occurred while loading more notifications. Please try again later.",
+            autoHideMs: 5000,
+        });
         inboxState.update((x) => ({ ...x, loading: false }));
     }
 }
@@ -229,6 +242,12 @@ export async function markAllReadHandler() {
         await markAllNotificationsRead();
     } catch (err) {
         console.error("Failed to mark all as read:", err);
+        addToast({
+            variant: "error",
+            text: "Failed to mark notifications as read..",
+            description: err.message || "An error occurred while marking all notifications as read. Please try again later.",
+            autoHideMs: 5000,
+        });
         notifications.set(prev);
         totalUnread.set(unreadBefore);
     }
@@ -247,6 +266,12 @@ export async function deleteAllReadHandler() {
         await deleteAllReadNotifications();
     } catch (err) {
         console.error("Failed to delete all read:", err);
+        addToast({
+            variant: "error",
+            text: "Failed to delete notifications.",
+            description: err.message || "An error occurred while deleting all read notifications. Please try again later.",
+            autoHideMs: 5000,
+        });
         notifications.set(prev);
         totalCount.set(totalBefore);
     }

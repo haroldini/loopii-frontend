@@ -15,6 +15,8 @@
     import { updateLoopState, deleteLoop } from "$lib/api/loop.js";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
+    import { addToast } from "$lib/stores/popups.js";
+
 
     // Open a loop’s expanded profile
     async function expandProfile(loopEntry) {
@@ -100,10 +102,20 @@
         }
         try {
             await deleteLoop(loopId);
+            addToast({
+                text: "Loop successfully deleted.",
+                description: "The profile has been removed from your loops.",
+                autoHideMs: 3000,
+            });
         } catch (err) {
             console.error("Failed to delete loop:", err);
             // revert on error
             loops.set(prev);
+            addToast({
+                text: "Failed to delete loop",
+                description: "We couldn't remove the profile from your loops. Please try again later.",
+                autoHideMs: 5000,
+            });
         }
     }
 

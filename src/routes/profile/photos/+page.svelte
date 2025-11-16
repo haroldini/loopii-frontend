@@ -8,6 +8,7 @@
 	import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image";
 	import { writable, derived } from "svelte/store";
     import { timeAgo } from "$lib/utils/misc";
+    import { addToast } from "$lib/stores/popups";
 
 
     // State
@@ -58,9 +59,18 @@
                 )
             }));
             photosState.set("avatarSet");
+            addToast({
+                text: "Profile picture updated!",
+                autoHideMs: 3000,
+            });
         } catch (err) {
             photosState.set("errorSettingAvatar");
             console.error("Error setting avatar:", err);
+            addToast({
+                text: "Failed to update profile picture.",
+                description: "We couldn't update your profile picture. Please try again later.",
+                autoHideMs: 5000,
+            });
         }
     }
 
@@ -78,9 +88,18 @@
                 )
             }));
             photosState.set("deleted");
+            addToast({
+                text: "Image successfully deleted.",
+                autoHideMs: 3000,
+            });
 		} catch (err) {
 			console.error("Error deleting image:", err);
             photosState.set("errorDeleting");
+            addToast({
+                text: "Failed to delete image.",
+                description: "We couldn't delete the image. Please try again later.",
+                autoHideMs: 5000,
+            });
 		}
 	}
 
@@ -106,10 +125,19 @@
                 await handleSetAvatar(uploaded.id);
             } else {
                 photosState.set("uploaded");
+                addToast({
+                    text: "Photo uploaded!",
+                    autoHideMs: 3000,
+                });
             }
         } catch (err) {
             console.error("Upload failed:", err);
             photosState.set("errorUploading");
+            addToast({
+                text: "Failed to upload photo.",
+                description: "We couldn't upload the photo. Please try again later.",
+                autoHideMs: 5000,
+            });
         } finally {
             resetPicker();
         }
