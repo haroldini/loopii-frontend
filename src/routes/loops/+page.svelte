@@ -41,6 +41,7 @@
 
     async function handleFav({ detail }) {
         const { loopId } = detail;
+        // optimistically update store
         loops.update(arr => {
             const newArr = arr.map(item =>
                 item.loop.id === loopId
@@ -49,13 +50,24 @@
             );
             return newArr;
         });
+        // also update selectedLoop if it's the one being viewed
+        selectedLoop.update(sel => {
+            if (!sel || sel.loop.id !== loopId) return sel;
+            return {
+                ...sel,
+                loop: {
+                    ...sel.loop,
+                    is_favourite: !sel.loop.is_favourite,
+                },
+            };
+        });
 
         try {
             const loop = get(loops).find(l => l.loop.id === loopId);
             await updateLoopState(loopId, { is_fav: loop.loop.is_favourite });
         } catch (err) {
             console.error("Failed to update favourite:", err);
-            // revert on error
+            // revert the store update on error
             loops.update(arr =>
                 arr.map(item =>
                     item.loop.id === loopId
@@ -63,6 +75,17 @@
                         : item
                 )
             );
+            // also revert selectedLoop if needed
+            selectedLoop.update(sel => {
+                if (!sel || sel.loop.id !== loopId) return sel;
+                return {
+                    ...sel,
+                    loop: {
+                        ...sel.loop,
+                        is_favourite: !sel.loop.is_favourite,
+                    },
+                };
+            });
         }
     }
 
@@ -134,11 +157,7 @@
                 <div style="aspect-ratio: 1 / 1;">
                     <ProfileCardPreview
                         profile={profile}
-                        loopId={loop.id}
-                        loopDate={loop.created_at}
-                        isLoop={true}
-                        isFav={loop.is_favourite}
-                        isSeen={loop.is_seen}
+                        loop={loop}
                         on:toggleFav={handleFav}
                         on:unloop={handleUnloop}
                         on:expand={() => expandProfile({ loop, profile })}

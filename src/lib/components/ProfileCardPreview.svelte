@@ -1,4 +1,3 @@
-
 <script>
     import { createEventDispatcher } from "svelte";
     import { getAvatarUrl } from "$lib/utils/profile";
@@ -6,11 +5,7 @@
     import { timeAgo } from "$lib/utils/misc";
 
     export let profile;
-    export let isLoop = false;
-    export let isFav = false;
-    export let isSeen = false;
-    export let loopDate = null;
-    export let loopId = null;
+    export let loop = null; // just take the loop
 
     const { icon: gender_icon, color: gender_color } =
         GENDER_ICONS[profile.gender?.toLowerCase()] || GENDER_ICONS.other;
@@ -33,13 +28,13 @@
     // Toggle favourite status // emit event to parent
     function toggleFav(event) {
         event.stopPropagation();
-        dispatch("toggleFav", { loopId });
+        dispatch("toggleFav", { loopId: loop.id });
     }
 
     // Unloop profile // emit event to parent
     function unloop(event) {
         event.stopPropagation();
-        dispatch("unloop", { loopId });
+        dispatch("unloop", { loopId: loop.id });
     }
 
 </script>
@@ -54,7 +49,7 @@
     on:keydown={handleKey}
 >
     <div class="avatar" style={`background-image: url('${getAvatarUrl(profile)}');`}>
-        {#if isLoop && !isSeen}
+        {#if loop && !loop.is_seen}
             <span class="badge">New</span>
         {/if}
     </div>
@@ -72,15 +67,15 @@
             </span>
         </div>
 
-        {#if isLoop && loopDate}
+        {#if loop}
             <div class="bottom-row">
-                <p class="loop-date">{timeAgo(loopDate)}</p>
+                <p class="loop-date">{timeAgo(loop.created_at)}</p>
                 <button
                     type="button"
                     class="fav-btn"
-                    class:active={isFav}
-                    aria-pressed={isFav}
-                    title={isFav ? "Remove favourite" : "Mark favourite"}
+                    class:active={loop.is_favourite}
+                    aria-pressed={loop.is_favourite}
+                    title={loop.is_favourite ? "Remove favourite" : "Mark favourite"}
                     on:click={toggleFav}
                 >
                     ★
