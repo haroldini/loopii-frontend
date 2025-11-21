@@ -2,6 +2,7 @@
     import { user, signOut } from "$lib/stores/auth";
     import { page } from "$app/stores";
     import { newLoopsCount } from "$lib/stores/loops";
+    // import { newRequestsCount } from "$lib/stores/loopRequests";
 
     const isActive = (path) => $page.url.pathname === path;
 </script>
@@ -16,6 +17,14 @@
     <!-- Navigation Links -->
     <ul class="nav-links">
         <li><a href="/" class:active={isActive("/")}>Find Loops</a></li>
+        <li>
+            <a href="/requests" class:active={isActive("/requests")}>
+                Requests
+                <!-- {#if $newRequestsCount > 0}
+                    <span class="badge">{$newRequestsCount}</span>
+                {/if} -->
+            </a>
+        </li>
         <li>
             <a href="/loops" class:active={isActive("/loops")}>
                 Loops
