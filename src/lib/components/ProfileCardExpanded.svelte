@@ -188,44 +188,56 @@
 
 
 <style>
+    /* ---------------- Photo Section ---------------- */
     .photo-section {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
     }
+
     .info-wrapper {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         width: 100%;
         padding: 0 0.5rem;
+        color: var(--text-secondary);
     }
+
+    /* ---------------- Avatar Card ---------------- */
     .card {
         width: 100%;
         aspect-ratio: 1;
-        background-size: contain;
+        background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
         position: relative;
         border-radius: 1rem;
         overflow: hidden;
-    }
-    .bio {
-        color: #555;
-        font-size: 0.9rem;
-    }
-    .photo {
-		width: 100%;
-		height: auto;
-		border-radius: 8px;
-        pointer-events: none;
-	}
-    .clickableImg:hover {
-        transform: scale(1.03);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
+    .clickableImg:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+    }
+
+    /* ---------------- Bio ---------------- */
+    .bio {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* ---------------- Photos ---------------- */
+    .photo {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+
+    /* ---------------- Social List ---------------- */
     .social-list {
         display: flex;
         flex-direction: column;
@@ -237,14 +249,14 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.5rem 0.75rem;
-        background: #fafafa;
-        border: 1px solid #ddd;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
         border-radius: 0.5rem;
         transition: background 0.2s ease;
     }
 
     .social-item:hover {
-        background: #f0f0f0;
+        background: var(--surface-3);
     }
 
     .social-icon {
@@ -269,8 +281,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #ccc;
-        color: white;
+        background: var(--surface-4);
+        color: var(--text-primary);
         font-size: 0.8rem;
         border-radius: 4px;
     }
@@ -278,7 +290,7 @@
     .social-username {
         flex-grow: 1;
         text-decoration: none;
-        color: #0070f3;
+        color: var(--accent);
         font-weight: 500;
         word-break: break-all;
     }
@@ -287,6 +299,7 @@
         text-decoration: underline;
     }
 
+    /* ---------------- Copy Buttons ---------------- */
     .copy-buttons {
         display: flex;
         align-items: center;
@@ -298,7 +311,6 @@
         background: transparent;
         cursor: pointer;
         font-size: 1rem;
-        color: #666;
         width: 28px;
         height: 28px;
         display: flex;
@@ -306,49 +318,61 @@
         justify-content: center;
         border-radius: 6px;
         transition: background 0.2s ease, color 0.2s ease;
+        color: var(--text-secondary);
     }
 
     .copy-btn:hover {
-        color: #000;
-        background: rgba(0, 0, 0, 0.05);
+        background: var(--surface-3);
+        color: var(--text-primary);
     }
-
 
     .copy-url {
-        color: #0070f3;
+        color: var(--accent);
     }
     .copy-url:hover {
-        background: rgba(0, 112, 243, 0.1);
+        background: rgba(100, 181, 246, 0.15);
     }
 
     .copy-handle {
-        color: #888;
+        color: var(--text-muted);
     }
     .copy-handle:hover {
-        background: rgba(136, 136, 136, 0.1);
+        background: var(--surface-3);
     }
 
-
-    /* loop controls */
+    /* ---------------- Loop Controls ---------------- */
     .fav-btn {
-        background: #f5f5f5;
-        color: #b8860b;
+        background: #f5f5a5;      /* soft yellow */
+        color: #b8860b;           /* golden text */
+        border: 1px solid #665c00;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: transform 0.2s ease, background 0.2s ease;
     }
+
     .fav-btn.active {
-        background: gold;
+        background: gold;         /* bright yellow */
         color: black;
     }
+
     .fav-btn:hover {
         transform: scale(1.05);
+        background: #fff176;      /* lighter yellow */
     }
 
     .delete-btn {
-        background: #f8e5e5;
-        color: #a11;
-    }
-    .delete-btn:hover {
-        background: #f2c9c9;
-        transform: scale(1.05);
+        background: #f8e5e5;      /* soft red */
+        color: #a11;              /* deep red */
+        border: 1px solid #440000;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        transition: transform 0.2s ease, background 0.2s ease;
     }
 
+    .delete-btn:hover {
+        background: #f2c9c9;      /* slightly stronger red */
+        transform: scale(1.05);
+    }
 </style>
+
+

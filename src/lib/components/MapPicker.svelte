@@ -178,32 +178,39 @@
         width: 100%;
         height: 100%;
     }
+
     .preview-container {
         width: 100%;
         aspect-ratio: 16 / 9;
         max-width: 600px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-2);
         border-radius: 8px;
         overflow: hidden;
         cursor: pointer;
+        background: var(--bg-1);
     }
+
     .fullscreen-container {
         position: fixed;
         inset: 0;
-        background: white;
+        background: var(--bg);
         display: flex;
         flex-direction: column;
         z-index: 1000;
     }
+
     .map-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1rem;
-        background: #f2f2f2;
-        border-bottom: 1px solid #ddd;
+        background: var(--bg-2);
+        border-bottom: 1px solid var(--border-2);
+        color: var(--text-2);
     }
+
     .fullscreen-container .map {
         flex: 1;
     }
 </style>
+

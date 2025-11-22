@@ -46,15 +46,15 @@
         align-items: center;
         height: 4rem;
         padding: 0 1.5rem;
-        background-color: #fff;
-        border-bottom: 1px solid #eee;
+        background-color: var(--bg-1);
+        border-bottom: 1px solid var(--border-1);
     }
 
     .brand a {
         font-size: 1.25rem;
         font-weight: 600;
         text-decoration: none;
-        color: #333;
+        color: var(--text-1);
     }
 
     .nav-links {
@@ -75,7 +75,7 @@
         height: 100%;
         padding: 0 1rem;
         text-decoration: none;
-        color: #333;
+        color: var(--text-2);
         cursor: pointer;
         border: none;
         background: none;
@@ -85,14 +85,14 @@
     }
 
     .nav-links li a:hover {
-        background: #f5f5f5;
-        color: #0070f3;
+        background: var(--bg-hover);
+        color: var(--accent-blue);
     }
 
     /* Highlight active link */
     .nav-links li a.active {
-        color: #0070f3;
-        border-bottom: 2px solid #0070f3;
+        color: var(--accent-blue);
+        border-bottom: 2px solid var(--accent-blue);
         font-weight: 600;
     }
 
@@ -104,7 +104,7 @@
         height: 18px;
         padding: 0 6px;
         border-radius: 999px;
-        background: #ff3b30;
+        background: var(--red);
         color: white;
         font-size: 12px;
         line-height: 18px;

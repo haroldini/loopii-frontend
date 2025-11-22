@@ -286,11 +286,11 @@
 		width: 100%;
 		height: auto;
 		border-radius: 8px;
-        pointer-events: none;
-	}
-	.no-photos {
-		text-align: center;
-		color: #666;
+		pointer-events: none;
 	}
 
+	.no-photos {
+		text-align: center;
+		color: var(--text-2);
+	}
 </style>

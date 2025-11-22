@@ -150,6 +150,7 @@
     </div>
 {/if}
 
+
 <style>
     /* Shared popup container */
     .popup {
@@ -157,8 +158,8 @@
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
-        background: #fff;
-        border: 1px solid #ccc;
+        background: var(--bg-2);
+        border: 1px solid var(--border-1);
         border-radius: 8px;
         padding: 0.75rem 0.9rem;
         max-width: 500px;
@@ -171,19 +172,20 @@
 
     .popup--rich {
         cursor: pointer;
-        transition: background 0.15s ease;
+        transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     .popup--rich:hover {
-        background: #f5f5f5;
+        background: var(--bg-hover);
+        border-color: var(--border-2);
     }
 
     .popup--rich:focus-visible {
-        outline: 2px solid #000;
+        outline: 2px solid var(--accent-blue);
         outline-offset: 2px;
     }
 
-    /* Header row: text left, X+spinner right */
+    /* Header row: title on left, dismiss button on right */
     .popup-header {
         display: flex;
         flex-direction: row;
@@ -204,14 +206,14 @@
     .popup-title {
         font-weight: 600;
         margin: 0;
-        color: #222;
+        color: var(--text-1);
         overflow-wrap: anywhere;
     }
 
     .popup-detail {
         margin: 0;
         font-size: 0.9rem;
-        color: #444;
+        color: var(--text-2);
         overflow-wrap: anywhere;
     }
 
@@ -232,15 +234,18 @@
         padding: 0 0.4rem;
         border-radius: 999px;
         flex-shrink: 0;
+        background: transparent;
+        color: var(--text-2);
     }
 
     .dismiss:hover {
-        background: #e5e5e5;
+        background: var(--bg-hover);
     }
 
     .dismiss-icon {
         font-size: 0.9rem;
         line-height: 1;
+        color: var(--text-2);
     }
 
     .dismiss svg.progress {
@@ -251,9 +256,10 @@
 
     .dismiss .circle {
         fill: none;
-        stroke: rgba(0, 0, 0, 0.25);
+        stroke: var(--text-3);
         stroke-width: 2.5;
         stroke-linecap: round;
         transition: stroke-dasharray 0.1s linear;
     }
 </style>
+

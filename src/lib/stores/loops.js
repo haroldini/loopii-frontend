@@ -16,7 +16,7 @@ export function adjustNewLoopsCount(delta = -1) {
 }
 
 export const loopsState = writable({
-	limit: 18,
+	limit: 20,
 	end: false,
 	loading: false,
 	initialized: false,

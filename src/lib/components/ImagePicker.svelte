@@ -265,6 +265,7 @@
     {/if}
 {/if}
 
+
 <style>
     .preview-button {
         width: 100%;
@@ -276,43 +277,49 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f7f7f7;
+        background: var(--bg-1);
         border: none;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .preview-button:hover {
         transform: scale(1.03);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
+
     .preview-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         pointer-events: none;
     }
+
     .no-image-placeholder {
-        color: #666;
+        color: var(--text-muted);
     }
 
     .fullscreen-container {
         position: fixed;
         inset: 0;
-        background: white;
+        background: var(--bg);
         display: flex;
         flex-direction: column;
         z-index: 1000;
     }
+
     .header {
         display: flex;
         justify-content: space-between;
         padding: 1rem;
-        background: #f2f2f2;
-        border-bottom: 1px solid #ddd;
+        background: var(--bg-2);
+        border-bottom: 1px solid var(--border-2);
     }
+
     .header-actions {
         display: flex;
         gap: 0.5rem;
     }
+
     .main {
         flex: 1;
         display: flex;
@@ -320,17 +327,19 @@
         justify-content: center;
         padding: 1rem;
     }
+
     .image-wrapper {
         max-width: 90%;
         max-height: 70vh;
         aspect-ratio: 1/1;
         border-radius: 8px;
-        background: #fafafa;
+        background: var(--bg-1);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
     }
+
     .full-img {
         width: 100%;
         height: 100%;
@@ -338,14 +347,19 @@
         pointer-events: none;
     }
 
+    /* Cropper overrides */
     :global(.cropper-view-box) {
         outline: 2px solid rgba(76, 175, 80, 0.85);
     }
-    :global(.cropper-dashed) { display: none; }
+
+    :global(.cropper-dashed) {
+        display: none;
+    }
+
     :global(.cropper-point) {
         width: 10px;
         height: 10px;
-        background-color: #4caf50;
+        background-color: var(--green);
         border-radius: 50%;
     }
 </style>

@@ -1,255 +1,282 @@
 /* app.css */
 
+/* ---------------- CSS Variables ---------------- */
+:root {
+	/* Base backgrounds */
+	--bg: #121212;
+	--bg-1: #1a1a1a;
+	--bg-2: #1c1c1c;
+	--bg-3: #1f1f1f;
+	--bg-hover: #2a2a2a;
+
+	/* Borders */
+	--border-1: #262626;
+	--border-2: #2b2b2b;
+	--border-3: #333;
+
+	/* Text */
+	--text-1: #fafafa;
+	--text-2: #e6e6e6;
+	--text-3: #b8b8b8;
+	--text-muted: #999;
+
+	/* Accents */
+	--accent-blue: #64b5f6;
+	--accent-primary: #0d47a1;
+
+	/* Status */
+	--green: #4caf50;
+	--red: #ff5252;
+	--blue: #64b5f6;
+}
+
 /* Reset / base */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 html, body {
-    font-family: system-ui, sans-serif;
-    background: #f5f5f5;
-    color: #222;
-    line-height: 1;
-    min-height: 100vh;
+	font-family: system-ui, sans-serif;
+	background: var(--bg);
+	color: var(--text-2);
+	line-height: 1;
+	min-height: 100vh;
 }
+
 body::after {
-    content: "";
-    display: block;
-    height: 100px; /* extra scroll space */
+	content: "";
+	display: block;
+	height: 100px; /* extra scroll space */
 }
 
-/* Form fields */
+/* ---------------- Form fields ---------------- */
 input, textarea, select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font: inherit;
-    color: inherit;
-    background: white;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--border-3);
+	border-radius: 6px;
+	font: inherit;
+	color: var(--text-2);
+	background: var(--bg-2);
+	outline: none;
+	transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-/* Focus state */
 input:focus, textarea:focus, select:focus {
-    border-color: #222;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+	border-color: var(--text-3);
+	box-shadow: 0 0 0 2px rgba(255,255,255,0.12);
 }
 
-/* Disabled state */
 input:disabled, textarea:disabled, select:disabled {
-    background: #f0f0f0;
-    cursor: not-allowed;
-    opacity: 0.7;
+	background: var(--bg-hover);
+	cursor: not-allowed;
+	opacity: 0.7;
 }
 
-/* Textarea specifics */
 textarea {
-    resize: vertical;
-    min-height: 4rem;
+	resize: vertical;
+	min-height: 4rem;
 }
 
-/* Select specifics */
 select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 0.5rem center;
-    background-size: 1rem;
-    padding-right: 2rem; /* space for arrow */
+	appearance: none;
+	background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right 0.5rem center;
+	background-size: 1rem;
+	padding-right: 2rem;
 }
 
-/* Layout helpers */
+/* ---------------- Layout helpers ---------------- */
 .container {
-    width: 500px;
-    max-width: calc(100% - 2rem);
-    margin-left: 1rem;
-    margin-right: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
+	width: 500px;
+	max-width: calc(100% - 2rem);
+	margin-left: 1rem;
+	margin-right: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 1rem;
 }
 
 .bordered {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 1rem;
-    background: #f9f9f9;
+	border: 1px solid var(--border-2);
+	border-radius: 8px;
+	padding: 1rem;
+	background: var(--bg-1);
 }
 
 .fill {
-    width: 100%;
+	width: 100%;
 }
+
 .fillvh {
-    height: 100vh;
+	height: 100vh;
 }
 
 .center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 .flex-vertical {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    padding-block: 1rem;
-}
-.flex-horizontal {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-block: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	padding-block: 1rem;
 }
 
-/* Typography */
+.flex-horizontal {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding-block: 1rem;
+}
+
+/* ---------------- Typography ---------------- */
 h1, h2, h3 {
-    font-weight: 600;
+	font-weight: 600;
+	color: var(--text-1);
 }
 
 p {
-    color: #444;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
+	color: var(--text-3);
+	max-width: 100%;
+	white-space: normal;
+	overflow-wrap: anywhere;
 }
 
-.green {
-    color: green;
-}
-.red {
-    color: red;
-}
-.blue {
-    color: blue;
-}
+.green { color: var(--green); }
+.red { color: var(--red); }
+.blue { color: var(--blue); }
+
 span.button {
-    cursor: pointer;
-    text-decoration: underline;
-}
-span.clickable {
-    cursor: pointer;
-}
-span.clickable:hover {
-    background: #e5e5e5;
+	cursor: pointer;
+	text-decoration: underline;
 }
 
-/* Buttons */
+span.clickable {
+	cursor: pointer;
+}
+
+span.clickable:hover {
+	background: rgba(255,255,255,0.1);
+}
+
+/* ---------------- Buttons ---------------- */
 button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #f5f5f5;
-    cursor: pointer;
-    transition: background 0.15s;
+	padding: 0.5rem 1rem;
+	border: 1px solid var(--border-3);
+	border-radius: 6px;
+	background: var(--bg-3);
+	color: var(--text-2);
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s;
 }
 
 button:hover {
-    background: #e5e5e5;
+	background: var(--bg-hover);
 }
 
 button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+	opacity: 0.6;
+	cursor: not-allowed;
 }
 
-/* Variants */
 button.primary {
-    background: #222;
-    color: white;
-    border-color: #222;
+	background: var(--accent-primary);
+	border-color: var(--accent-primary);
+	color: white;
 }
 
 button.primary:hover {
-    background: #000;
+	background: #093b86;
 }
 
 button.bare {
-    border: none;
-    background: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font: inherit;
-    color: inherit;
+	border: none;
+	background: none;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	font: inherit;
+	color: inherit;
 }
 
-
-/* Container for tags */
+/* ---------------- Tags ---------------- */
 .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    width: 100%;
-    justify-content: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	width: 100%;
+	justify-content: center;
 }
 
-/* Tags */
 .tag {
-    display: inline-block;
-    background: #eee;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 0.8rem;
-    margin: 0.125rem;
+	display: inline-block;
+	background: var(--bg-hover);
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--text-3);
 }
 
-/* Grids */
+/* ---------------- Grids ---------------- */
 .grid {
-    display: grid;
-    width: 100%;
-    gap: 1rem;
+	display: grid;
+	width: 100%;
+	gap: 1rem;
 }
 
 .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(3, 1fr);
 }
 
 .grid-2 {
-    grid-template-columns: repeat(2, 1fr);
+	grid-template-columns: repeat(2, 1fr);
 }
 
-/* Navbar */
+/* ---------------- Navbar ---------------- */
 nav {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	background: var(--bg-1);
 }
 
-
-/* Horizontal selector (tab-like buttons) */
+/* ---------------- Tab Selector ---------------- */
 .tab-selector {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-    border-bottom: 1px solid #ddd;
-    width: 100%;
+	display: flex;
+	gap: 1rem;
+	margin-top: 1rem;
+	border-bottom: 1px solid var(--border-3);
+	width: 100%;
 }
 
 .tab-selector button {
-    border: none;
-    background: transparent;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
-    transition: border-color 0.2s;
+	border: none;
+	background: transparent;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	border-bottom: 3px solid transparent;
+	border-radius: 0;
+	color: var(--text-3);
+	transition: border-color 0.2s, color 0.2s;
 }
 
 .tab-selector button[aria-current="page"] {
-    border-bottom-color: #000; /* active tab underline */
-    font-weight: 600;
+	border-bottom-color: var(--accent-blue);
+	color: var(--text-1);
+	font-weight: 600;
 }

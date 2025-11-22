@@ -55,26 +55,43 @@
     .card {
         width: 100%;
         aspect-ratio: 1;
-        background-size: contain;
+        background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
         position: relative;
         border-radius: 1rem;
         overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
+
+    /* All text inside the overlayed container gets a shadow for readability */
     .container h2,
     .container p,
     .container .tag {
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        color: var(--text-primary);
     }
 
+    /* Bio text (overlaid on image) */
     .bio {
-        color: #555;
+        color: var(--text-secondary);
         font-size: 0.9rem;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     }
 
+    /* Hover zoom */
     .clickableImg:hover {
         transform: scale(1.03);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+    }
+
+    /* Tags follow global theme */
+    .tag {
+        background: var(--surface-3);
+        color: var(--text-secondary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
     }
 </style>
+

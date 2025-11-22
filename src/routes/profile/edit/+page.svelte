@@ -297,8 +297,8 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        background: #fafafa;
-        border: 1px solid #ddd;
+        background: var(--bg-1);
+        border: 1px solid var(--border-2);
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
     }
@@ -314,7 +314,7 @@
 
     .social-icon img {
         width: 24px;
-        height: 24px;
+       	height: 24px;
         border-radius: 4px;
     }
 
@@ -324,8 +324,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #ccc;
-        color: white;
+        background: var(--border-3);
+        color: var(--text-2);
         font-size: 0.8rem;
         border-radius: 4px;
     }
@@ -336,19 +336,20 @@
         gap: 0.25rem;
         flex-grow: 1;
         font-size: 0.9rem;
-        color: #444;
+        color: var(--text-2);
         word-break: break-all;
     }
 
     .social-base {
-        color: #777;
+        color: var(--text-muted);
         user-select: none;
     }
 
     .social-handle-input {
         border: none;
-        border-bottom: 1px solid #aaa;
+        border-bottom: 1px solid var(--border-3);
         background: transparent;
+        color: var(--text-2);
         font-size: 0.9rem;
         padding: 0.2rem 0.25rem;
         width: 150px;
@@ -357,7 +358,7 @@
 
     .social-handle-input:focus {
         outline: none;
-        border-color: #0070f3;
+        border-color: var(--accent-blue);
     }
 
     .social-remove button {
@@ -365,7 +366,7 @@
         background: none;
         font-size: 1.2rem;
         cursor: pointer;
-        color: #c00;
+        color: var(--red);
     }
 
     .social-remove button:hover {
