@@ -1,195 +1,204 @@
 
 <script>
-    import { onDestroy } from "svelte";
-    import { get } from "svelte/store";
-    import {
-        loops,
-        loopsTotal,
-        selectedLoop,
-        loopsStatus,
-        loopsState,
-        loadInitialLoops,
-        loadMoreLoops,
-        refreshLoopsStore,
-    } from "$lib/stores/loops.js";
+	import { onDestroy } from "svelte";
+	import { get } from "svelte/store";
 
-    import { updateLoopState, deleteLoop } from "$lib/api/loop.js";
-    import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
-    import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
-    import { addToast } from "$lib/stores/popups.js";
+	import {
+		loopRequests,
+		loopRequestsTotal,
+		selectedRequest,
+		loopRequestsStatus,
+		loopRequestsState,
+		initLoopRequestsStore,
+		loadMoreLoopRequests,
+		refreshLoopRequestsStore,
+		newRequestsCount,
+	} from "$lib/stores/loopRequests.js";
 
-    
-    // Remove selected loop on component destroy
-    onDestroy(() => {
-        selectedLoop.set(null);
-    });
+	import { evaluatePeer } from "$lib/api/feed.js";
+	import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
+	import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
+	import { addToast } from "$lib/stores/popups.js";
 
-    // Open a loop’s expanded profile
-    async function expandProfile(loopEntry) {
-        const { loop, profile } = loopEntry;
-        selectedLoop.set({ loop, profile });
 
-        // Mark as seen if not already
-        if (!loop.is_seen) {
-            try {
-                // Optimistically update local state
-                loops.update((arr) =>
-                    arr.map((item) =>
-                        item.loop.id === loop.id
-                            ? { ...item, loop: { ...item.loop, is_seen: true } }
-                            : item
-                    )
-                );
-                await updateLoopState(loop.id, { is_seen: true });
-            } catch (err) {
-                console.error("Failed to mark loop as seen:", err);
-            }
-        }
-    }
+    // Remove selected request on component destroy
+	onDestroy(() => {
+		selectedRequest.set(null);
+	});
 
-    async function handleFav({ detail }) {
-        const { loopId } = detail;
-        // optimistically update store
-        loops.update(arr => {
-            const newArr = arr.map(item =>
-                item.loop.id === loopId
-                    ? { ...item, loop: { ...item.loop, is_favourite: !item.loop.is_favourite } }
-                    : item
-            );
-            return newArr;
-        });
-        // also update selectedLoop if it's the one being viewed
-        selectedLoop.update(sel => {
-            if (!sel || sel.loop.id !== loopId) return sel;
-            return {
-                ...sel,
-                loop: {
-                    ...sel.loop,
-                    is_favourite: !sel.loop.is_favourite,
-                },
-            };
-        });
+    // Open a request’s expanded profile
+	function expandRequest(entry) {
+		const { decision, profile } = entry;
+		selectedRequest.set({ decision, profile });
+	}
 
-        try {
-            const loop = get(loops).find(l => l.loop.id === loopId);
-            await updateLoopState(loopId, { is_fav: loop.loop.is_favourite });
-        } catch (err) {
-            console.error("Failed to update favourite:", err);
-            // revert the store update on error
-            loops.update(arr =>
-                arr.map(item =>
-                    item.loop.id === loopId
-                        ? { ...item, loop: { ...item.loop, is_favourite: !item.loop.is_favourite } }
-                        : item
-                )
-            );
-            // also revert selectedLoop if needed
-            selectedLoop.update(sel => {
-                if (!sel || sel.loop.id !== loopId) return sel;
-                return {
-                    ...sel,
-                    loop: {
-                        ...sel.loop,
-                        is_favourite: !sel.loop.is_favourite,
-                    },
-                };
-            });
-        }
-    }
+	function close() {
+		selectedRequest.set(null);
+	}
 
-    async function handleUnloop({ detail }) {
-        const { loopId } = detail;
-        const prev = get(loops);
-        loops.update((arr) => arr.filter((item) => item.loop.id !== loopId));
-        loopsTotal.update((n) => Math.max(0, n - 1));
-        // Close expanded profile if it was the one being viewed
-        if (get(selectedLoop)?.id === get(loops).find(l => l.loop.id === loopId)?.profile.id) {
-            selectedLoop.set(null);
-        }
-        try {
-            await deleteLoop(loopId);
-            addToast({
-                text: "Loop successfully deleted.",
-                description: "The profile has been removed from your loops.",
-                autoHideMs: 3000,
-            });
-        } catch (err) {
-            console.error("Failed to delete loop:", err);
-            // revert on error
-            loops.set(prev);
-            addToast({
-                text: "Failed to delete loop.",
-                description: "We couldn't remove the profile from your loops. Please try again later.",
-                autoHideMs: 5000,
-            });
-        }
-    }
 
-    function close() {
-        selectedLoop.set(null);
-    }
+    // Handle accepting a loop request
+	async function handleAccept(entry) {
+		const { profile } = entry;
+		const prevRequests = get(loopRequests);
+		const prevTotal = get(loopRequestsTotal);
+		const prevCount = get(newRequestsCount);
+
+		// Optimistically remove all requests from this profile
+		loopRequests.update((arr) => arr.filter((item) => item.profile.id !== profile.id));
+		loopRequestsTotal.set(Math.max(0, prevTotal - 1));
+		newRequestsCount.set(Math.max(0, prevCount - 1));
+
+		if (get(selectedRequest)?.profile.id === profile.id) {
+			selectedRequest.set(null);
+		}
+
+		try {
+			const res = await evaluatePeer(profile.id, true);
+			if (!res || (res.looped !== true && !res.decision)) {
+				console.error("Unexpected response from evaluatePeer on accept:", res);
+			}
+		} catch (err) {
+			console.error("Failed to accept request:", err);
+			// Revert on error
+			loopRequests.set(prevRequests);
+			loopRequestsTotal.set(prevTotal);
+			newRequestsCount.set(prevCount);
+			addToast({
+				text: "Something went wrong while accepting the request.",
+				autoHideMs: 5000,
+			});
+		}
+	}
+
+    // Handle declining a loop request
+	async function handleDecline(entry) {
+		const { profile } = entry;
+		const prevRequests = get(loopRequests);
+		const prevTotal = get(loopRequestsTotal);
+		const prevCount = get(newRequestsCount);
+
+		// Optimistically remove all requests from this profile
+		loopRequests.update((arr) => arr.filter((item) => item.profile.id !== profile.id));
+		loopRequestsTotal.set(Math.max(0, prevTotal - 1));
+		newRequestsCount.set(Math.max(0, prevCount - 1));
+
+		if (get(selectedRequest)?.profile.id === profile.id) {
+			selectedRequest.set(null);
+		}
+
+		try {
+			const res = await evaluatePeer(profile.id, false);
+			if (!res || res.looped !== false) {
+				console.error("Unexpected response from evaluatePeer on decline:", res);
+			}
+			addToast({
+				text: "Loop request declined.",
+				autoHideMs: 3000,
+			});
+		} catch (err) {
+			console.error("Failed to decline request:", err);
+			// Revert on error
+			loopRequests.set(prevRequests);
+			loopRequestsTotal.set(prevTotal);
+			newRequestsCount.set(prevCount);
+			addToast({
+				text: "Failed to decline request.",
+				autoHideMs: 5000,
+			});
+		}
+	}
+
+	function acceptSelected() {
+		const current = get(selectedRequest);
+		if (!current) return;
+		handleAccept(current);
+	}
+
+	function declineSelected() {
+		const current = get(selectedRequest);
+		if (!current) return;
+		handleDecline(current);
+	}
 </script>
 
 
 <svelte:head>
-    <title>loopii • Loops</title>
+	<title>loopii • Requests</title>
 </svelte:head>
 
 
 <div class="container bordered">
-    <h3>Your Loops</h3>
+	<h3>Requests</h3>
 
-    {#if $loopsStatus === "loading"}
-        <p>Loading...</p>
+	{#if $loopRequestsStatus === "loading"}
+		<p>Loading...</p>
 
-    {:else if $loopsStatus === "error"}
-        <p>Error loading loops</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
+	{:else if $loopRequestsStatus === "error"}
+		<p>Error loading requests</p>
+		<button on:click={refreshLoopRequestsStore}>Refresh</button>
 
-    {:else if $loopsStatus === "loaded" && $loops.length === 0}
-        <p>You don't have any loops yet.</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
+	{:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0}
+		<p>You don't have any requests yet.</p>
+		<button on:click={refreshLoopRequestsStore}>Refresh</button>
 
-    {:else if $selectedLoop}
-        <ProfileCardExpanded
-            profile={$selectedLoop.profile}
-            loop={$selectedLoop.loop}
-            onAvatarClick={close}
-            on:toggleFav={handleFav}
-            on:unloop={handleUnloop}
-        />
-    
-    {:else if $loopsStatus === "loaded" && $loops.length > 0}
-        <p>Showing { $loops.length } of { $loopsTotal } loops</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
-    {/if}
+	{:else if $selectedRequest}
+		<ProfileCardExpanded
+			profile={$selectedRequest.profile}
+			onAvatarClick={close}
+		/>
+
+		<div class="actions">
+			<button on:click={acceptSelected}>Accept</button>
+			<button on:click={declineSelected}>Decline</button>
+		</div>
+
+	{:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
+		<p>Showing {$loopRequests.length} of {$loopRequestsTotal} requests</p>
+		<button on:click={refreshLoopRequestsStore}>Refresh</button>
+	{/if}
 </div>
 
-<!-- Loops content -->
-{#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-    <div class="container">
 
-        <!-- Profile Cards Grid -->
-        <div class="grid grid-2">
-            {#each $loops as { loop, profile }}
-                <div style="aspect-ratio: 1 / 1;">
-                    <ProfileCardPreview
-                        profile={profile}
-                        loop={loop}
-                        on:toggleFav={handleFav}
-                        on:unloop={handleUnloop}
-                        on:expand={() => expandProfile({ loop, profile })}
-                    />
-                </div>
-            {/each}
-        </div>
+{#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
+	<div class="container">
+		<div class="grid grid-2">
+			{#each $loopRequests as entry}
+				{#if entry?.profile}
+					<div style="aspect-ratio: 1 / 1;">
+						<ProfileCardPreview
+							profile={entry.profile}
+							on:expand={() => expandRequest(entry)}
+						/>
+						<div class="actions-inline">
+							<button on:click={() => handleAccept(entry)}>Accept</button>
+							<button on:click={() => handleDecline(entry)}>Decline</button>
+						</div>
+					</div>
+				{/if}
+			{/each}
+		</div>
 
-        <!-- Load More Button -->
-        {#if !$loopsState.end}
-            <button on:click={loadMoreLoops} disabled={$loopsState.loading}>
-                {$loopsState.loading ? "Loading…" : "Load More"}
-            </button>
-        {/if}
-    </div>
+		{#if !$loopRequestsState.end}
+			<button on:click={loadMoreLoopRequests} disabled={$loopRequestsState.loading}>
+				{$loopRequestsState.loading ? "Loading…" : "Load More"}
+			</button>
+		{/if}
+	</div>
 {/if}
-    
+
+
+<style>
+	.actions {
+		margin-top: 1rem;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.actions-inline {
+		margin-top: 0.5rem;
+		display: flex;
+		gap: 0.5rem;
+		justify-content: center;
+	}
+</style>

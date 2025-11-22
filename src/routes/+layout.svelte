@@ -10,6 +10,7 @@
     import { initProfile, profile, profileState } from "$lib/stores/profile";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications";
     import { initLoopsStore } from "$lib/stores/loops.js";
+    import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
     import { initPeerStore } from "$lib/stores/feed";
 
     import Auth from "$lib/components/Auth.svelte";
@@ -51,8 +52,9 @@
     // ---------------- App data setup ---------------- //
     $effect(() => {
         if ($authState === "authenticated" && $profileState === "loaded") {
-            initLoopsStore();
             initPeerStore();
+            initLoopsStore();
+            initLoopRequestsStore();
             initNotificationSub();
         } else if ($authState === "unauthenticated") {
             clearNotificationSub();
