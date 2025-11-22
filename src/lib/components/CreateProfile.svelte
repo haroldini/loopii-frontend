@@ -1,16 +1,17 @@
+
 <script>
 	import { onMount } from "svelte";
 	import { get, writable } from "svelte/store";
-	import { user, signOut } from "$lib/stores/auth";
-	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
+	import { user, signOut } from "$lib/stores/auth.js";
+	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 	import { 
 		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
 		error, readyToSubmit, validationErrors, currentPage,
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
 		updateHandle, removeSocial,
-	} from "$lib/stores/createProfile";
+	} from "$lib/stores/createProfile.js";
 	
-	import MapPicker from "./MapPicker.svelte";
+	import MapPicker from "$lib/components/MapPicker.svelte";
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	let avatarPicker;
 

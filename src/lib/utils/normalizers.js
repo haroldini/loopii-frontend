@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { allPlatforms } from "$lib/stores/app";
+import { allPlatforms } from "$lib/stores/app.js";
 
 
 // ---- Helpers ----

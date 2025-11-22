@@ -1,10 +1,11 @@
+
 import { writable, get, derived } from "svelte/store";
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 
-import { getCountries, getInterests, getPlatforms } from "$lib/api/references";
-import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops";
-import { getProfileFromLoop } from "$lib/api/loop";
+import { getCountries, getInterests, getPlatforms } from "$lib/api/references.js";
+import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops.js";
+import { getProfileFromLoop } from "$lib/api/loop.js";
 
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 

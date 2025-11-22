@@ -1,7 +1,7 @@
 
 <script>
-    import { allPopups } from "$lib/stores/popups";
-    import Popup from "./Popup.svelte";
+    import { allPopups } from "$lib/stores/popups.js";
+    import Popup from "$lib/components/Popup.svelte";
 </script>
 
 <div class="popups">

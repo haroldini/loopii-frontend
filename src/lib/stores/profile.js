@@ -1,8 +1,8 @@
 
 import { get, writable } from "svelte/store";
 
-import { getProfile } from "$lib/api/profile";
-import { authState, forceUnauth } from "$lib/stores/auth";
+import { getProfile } from "$lib/api/profile.js";
+import { authState, forceUnauth } from "$lib/stores/auth.js";
 
 
 // For profile data and state

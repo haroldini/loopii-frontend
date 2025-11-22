@@ -1,10 +1,10 @@
 
 import { writable, get, derived } from "svelte/store";
-import { profile } from "$lib/stores/profile";
-import { validateProfileFields } from "$lib/utils/validators";
-import { normalizeProfile } from "$lib/utils/normalizers";
-import { updateProfile } from "$lib/api/profile";
-import { allCountries, allInterests, allPlatforms } from "./app";
+import { profile } from "$lib/stores/profile.js";
+import { validateProfileFields } from "$lib/utils/validators.js";
+import { normalizeProfile } from "$lib/utils/normalizers.js";
+import { updateProfile } from "$lib/api/profile.js";
+import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 
 
 // --- Form state ---

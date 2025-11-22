@@ -6,14 +6,14 @@
     import { 
         user, signInWithEmail, signUpWithEmail, requestPasswordReset, 
         resetPasswordWithToken, resetToken, authState
-    } from "$lib/stores/auth";
+    } from "$lib/stores/auth.js";
 
     import { 
         email, confirmEmail, password, confirmPassword, 
         emailTouched, passwordTouched, isSubmitting, subPage, showForm,
         validationErrors, error, authFormStatus, readyToSubmit,
         toggleMode, resetAuthForm, toggleForm, resetSensitive
-    } from "$lib/stores/authForm";
+    } from "$lib/stores/authForm.js";
 
     import { onMount } from "svelte";
 

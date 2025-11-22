@@ -12,7 +12,7 @@
 		initLoopRequestsStore,
 		loadMoreLoopRequests,
 		refreshLoopRequestsStore,
-		newRequestsCount,
+		adjustNewRequestsCount,
 	} from "$lib/stores/loopRequests.js";
 
 	import { evaluatePeer } from "$lib/api/feed.js";
@@ -42,12 +42,11 @@
 		const { profile } = entry;
 		const prevRequests = get(loopRequests);
 		const prevTotal = get(loopRequestsTotal);
-		const prevCount = get(newRequestsCount);
 
 		// Optimistically remove all requests from this profile
 		loopRequests.update((arr) => arr.filter((item) => item.profile.id !== profile.id));
 		loopRequestsTotal.set(Math.max(0, prevTotal - 1));
-		newRequestsCount.set(Math.max(0, prevCount - 1));
+		adjustNewRequestsCount();
 
 		if (get(selectedRequest)?.profile.id === profile.id) {
 			selectedRequest.set(null);
@@ -63,7 +62,7 @@
 			// Revert on error
 			loopRequests.set(prevRequests);
 			loopRequestsTotal.set(prevTotal);
-			newRequestsCount.set(prevCount);
+			adjustNewRequestsCount(1);
 			addToast({
 				text: "Something went wrong while accepting the request.",
 				autoHideMs: 5000,
@@ -76,12 +75,11 @@
 		const { profile } = entry;
 		const prevRequests = get(loopRequests);
 		const prevTotal = get(loopRequestsTotal);
-		const prevCount = get(newRequestsCount);
 
 		// Optimistically remove all requests from this profile
 		loopRequests.update((arr) => arr.filter((item) => item.profile.id !== profile.id));
 		loopRequestsTotal.set(Math.max(0, prevTotal - 1));
-		newRequestsCount.set(Math.max(0, prevCount - 1));
+		adjustNewRequestsCount();
 
 		if (get(selectedRequest)?.profile.id === profile.id) {
 			selectedRequest.set(null);
@@ -101,7 +99,7 @@
 			// Revert on error
 			loopRequests.set(prevRequests);
 			loopRequestsTotal.set(prevTotal);
-			newRequestsCount.set(prevCount);
+			adjustNewRequestsCount(1);
 			addToast({
 				text: "Failed to decline request.",
 				autoHideMs: 5000,

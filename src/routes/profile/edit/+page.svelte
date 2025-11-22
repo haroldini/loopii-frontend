@@ -9,8 +9,8 @@
 		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
 		validationErrors, profileEditState, error, readyToSubmit,
         removeSocial, updateHandle
-	} from "$lib/stores/editProfile";
-	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
+	} from "$lib/stores/editProfile.js";
+	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	import MapPicker from "$lib/components/MapPicker.svelte";
 

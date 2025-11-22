@@ -6,16 +6,15 @@
     import { onMount } from "svelte";
 
     import { initReferences } from "$lib/stores/app.js";
-    import { initAuth, user, signOut, authState } from "$lib/stores/auth";
-    import { initProfile, profile, profileState } from "$lib/stores/profile";
-    import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications";
+    import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
+    import { initProfile, profile, profileState } from "$lib/stores/profile.js";
+    import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
     import { initLoopsStore } from "$lib/stores/loops.js";
     import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
-    import { initPeerStore } from "$lib/stores/feed";
+    import { initPeerStore } from "$lib/stores/feed.js";
 
     import Auth from "$lib/components/Auth.svelte";
     import CreateProfile from "$lib/components/CreateProfile.svelte";
-
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
 

@@ -1,12 +1,13 @@
+
 import { get } from "svelte/store";
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
-import { supabase } from "$lib/stores/auth";
 
-import { getProfileFromLoop, updateLoopState } from "$lib/api/loop";
-import { refreshLoopsStore, selectedLoop, loops } from "$lib/stores/loops";
+import { supabase } from "$lib/stores/auth.js";
+import { getProfileFromLoop, updateLoopState } from "$lib/api/loop.js";
+import { refreshLoopsStore, selectedLoop, loops, adjustNewLoopsCount } from "$lib/stores/loops.js";
+import { addToast } from "$lib/stores/popups.js";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
-import { addToast } from "./popups";
 
 
 
@@ -106,22 +107,31 @@ export async function initNotificationSub() {
 
                         const openLoop = async () => {
                             const allLoops = get(loops);
-                            const match = allLoops.find(item => item.loop.id === loopId);
+                            const match = allLoops.find((item) => item.loop.id === loopId);
 
                             if (match) {
+                                const wasSeen = match.loop.is_seen;
+
                                 selectedLoop.set(match);
 
-                                loops.update(arr =>
-                                    arr.map(item =>
+                                loops.update((arr) =>
+                                    arr.map((item) =>
                                         item.loop.id === loopId
                                             ? { ...item, loop: { ...item.loop, is_seen: true } }
                                             : item
                                     )
                                 );
+
+                                // If this loop was previously unseen, decrement the badge count
+                                if (!wasSeen) {
+                                    adjustNewLoopsCount();
+                                }
                                 updateLoopState(loopId, { is_seen: true }).catch(console.error);
 
                             } else if (profile) {
                                 selectedLoop.set({ loop: { id: loopId }, profile });
+                                adjustNewLoopsCount();
+                                updateLoopState(loopId, { is_seen: true }).catch(console.error);
                             } else {
                                 return { success: false, reason: "profile_not_found" };
                             }

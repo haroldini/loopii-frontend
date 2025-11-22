@@ -1,12 +1,12 @@
 
 import { writable, derived, get } from "svelte/store";
-import { createProfile, getProfile, createProfileInterests, createProfileSocials } from "$lib/api/profile";
-import { uploadProfileImage, setProfileAvatar } from "$lib/api/image";
-import { allCountries, allInterests, allPlatforms } from "$lib/stores/app";
-import { profile } from "$lib/stores/profile";
-import { validateProfileFields } from "$lib/utils/validators";
-import { normalizeProfile } from "$lib/utils/normalizers";
-import { addToast } from "./popups";
+import { createProfile, getProfile, createProfileInterests, createProfileSocials } from "$lib/api/profile.js";
+import { uploadProfileImage, setProfileAvatar } from "$lib/api/image.js";
+import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+import { profile } from "$lib/stores/profile.js";
+import { validateProfileFields } from "$lib/utils/validators.js";
+import { normalizeProfile } from "$lib/utils/normalizers.js";
+import { addToast } from "$lib/stores/popups.js";
 
 
 // --- Form state ---

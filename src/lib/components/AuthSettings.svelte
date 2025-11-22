@@ -5,10 +5,10 @@
         newEmail, confirmNewEmail, confirmPhrase, isSubmitting,
         validationErrors, error, status, readyToSubmit, 
         resetSensitive, resetTransient, resetValidation, resetState
-    } from "$lib/stores/authSettings";
+    } from "$lib/stores/authSettings.js";
 
-    import { updatePassword, updateEmail, deleteAccount, requestPasswordReset, signOut, user, expectedPhrase } from "$lib/stores/auth";
-    import { email } from "$lib/stores/authForm";
+    import { updatePassword, updateEmail, deleteAccount, requestPasswordReset, signOut, user, expectedPhrase } from "$lib/stores/auth.js";
+    import { email } from "$lib/stores/authForm.js";
 
     let emailSentToNew = "";
     let emailSentToOld = "";

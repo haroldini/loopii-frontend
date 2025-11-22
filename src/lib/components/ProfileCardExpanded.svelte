@@ -1,9 +1,9 @@
 
 <script>
-    import { interestMap, platformMap, countryMap } from "$lib/stores/app";
-    import { buildSocialLink } from "$lib/utils/urls";
-    import { getAvatarUrl } from "../utils/profile";
-    import { timeAgo } from "$lib/utils/misc";
+    import { interestMap, platformMap, countryMap } from "$lib/stores/app.js";
+    import { buildSocialLink } from "$lib/utils/urls.js";
+    import { getAvatarUrl } from "$lib/utils/profile.js";
+    import { timeAgo } from "$lib/utils/misc.js";
 
     export let profile;
     export let onAvatarClick = null;

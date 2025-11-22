@@ -1,10 +1,9 @@
 
 <script>
     import { goto } from "$app/navigation";
+    import { user } from "$lib/stores/auth.js";
+    import { mode, setMode, status } from "$lib/stores/authSettings.js";
     import AuthSettings from "$lib/components/AuthSettings.svelte";
-    import { mode, setMode, status } from "$lib/stores/authSettings";
-
-    import { user } from "$lib/stores/auth";
 
     function select(tab) {
         setMode(tab);

@@ -1,7 +1,7 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env.js";
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
 import { addToast } from "$lib/stores/popups.js";

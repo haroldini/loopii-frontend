@@ -1,5 +1,6 @@
-import { writable, derived, get } from "svelte/store";
-import { user, expectedPhrase } from "$lib/stores/auth";
+
+import { writable, derived, get } from  "svelte/store";
+import { user, expectedPhrase } from "$lib/stores/auth.js";
 
 
 ///// --- Form state ---

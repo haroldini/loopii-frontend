@@ -7,6 +7,14 @@ export const selectedLoop = writable(null);
 export const loopsTotal = writable(0);
 export const newLoopsCount = writable(0);
 
+// Adjust the backend-driven unseen loops badge by a delta (default -1). Clamped to 0.
+export function adjustNewLoopsCount(delta = -1) {
+	newLoopsCount.update((n) => {
+		const next = n + delta;
+		return next < 0 ? 0 : next;
+	});
+}
+
 export const loopsState = writable({
 	limit: 18,
 	end: false,
@@ -14,6 +22,7 @@ export const loopsState = writable({
 	initialized: false,
 	cursorId: null,
 });
+
 export const loopsStatus = writable("unloaded");
 
 

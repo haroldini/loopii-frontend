@@ -1,12 +1,12 @@
 
 <script>
-    import { profile } from "$lib/stores/profile";
     import { goto } from "$app/navigation";
+    import { profile } from "$lib/stores/profile.js";
+    import { addToast } from "$lib/stores/popups.js";
     import ProfileCard from "$lib/components/ProfileCard.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
-    import { addToast } from "$lib/stores/popups";
 
     let expanded = false;
 

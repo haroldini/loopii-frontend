@@ -1,8 +1,8 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import { getAvatarUrl } from "$lib/utils/profile";
-    import { countryMap, GENDER_ICONS } from "$lib/stores/app";
-    import { timeAgo } from "$lib/utils/misc";
+    import { getAvatarUrl } from "$lib/utils/profile.js";
+    import { countryMap, GENDER_ICONS } from "$lib/stores/app.js";
+    import { timeAgo } from "$lib/utils/misc.js";
 
     export let profile;
     export let loop = null; // just take the loop

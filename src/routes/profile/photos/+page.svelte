@@ -1,14 +1,15 @@
 
 <script>
-	import { onMount } from "svelte";
+    import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import { goto } from "$app/navigation";
-	import { profile } from "$lib/stores/profile";
-	import ImagePicker from "$lib/components/ImagePicker.svelte";
-	import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image";
 	import { writable, derived } from "svelte/store";
-    import { timeAgo } from "$lib/utils/misc";
-    import { addToast } from "$lib/stores/popups";
+	import { goto } from "$app/navigation";
+
+	import { profile } from "$lib/stores/profile.js";
+	import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image.js";
+    import { timeAgo } from "$lib/utils/misc.js";
+    import { addToast } from "$lib/stores/popups.js";
+	import ImagePicker from "$lib/components/ImagePicker.svelte";
 
 
     // State

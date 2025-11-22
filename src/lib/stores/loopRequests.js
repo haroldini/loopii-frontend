@@ -9,6 +9,13 @@ export const selectedRequest = writable(null);
 export const loopRequestsTotal = writable(0);
 export const newRequestsCount = writable(0);
 
+// Adjust the pending requests badge by a delta (default -1). Clamped to 0.
+export function adjustNewRequestsCount(delta = -1) {
+	newRequestsCount.update((n) => {
+		const next = n + delta;
+		return next < 0 ? 0 : next;
+	});
+}
 
 export const loopRequestsState = writable({
 	limit: 18,
@@ -17,7 +24,6 @@ export const loopRequestsState = writable({
 	initialized: false,
 	cursorId: null,
 });
-
 
 export const loopRequestsStatus = writable("unloaded");
 

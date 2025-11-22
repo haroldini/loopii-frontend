@@ -11,6 +11,7 @@
         loadInitialLoops,
         loadMoreLoops,
         refreshLoopsStore,
+        adjustNewLoopsCount,
     } from "$lib/stores/loops.js";
 
     import { updateLoopState, deleteLoop } from "$lib/api/loop.js";
@@ -24,28 +25,44 @@
         selectedLoop.set(null);
     });
 
-    // Open a loop’s expanded profile
-    async function expandProfile(loopEntry) {
-        const { loop, profile } = loopEntry;
-        selectedLoop.set({ loop, profile });
+    
+	// Open a loop’s expanded profile
+	async function expandProfile(loopEntry) {
+		const { loop, profile } = loopEntry;
+		selectedLoop.set({ loop, profile });
 
-        // Mark as seen if not already
-        if (!loop.is_seen) {
-            try {
-                // Optimistically update local state
-                loops.update((arr) =>
-                    arr.map((item) =>
-                        item.loop.id === loop.id
-                            ? { ...item, loop: { ...item.loop, is_seen: true } }
-                            : item
-                    )
-                );
-                await updateLoopState(loop.id, { is_seen: true });
-            } catch (err) {
-                console.error("Failed to mark loop as seen:", err);
-            }
-        }
-    }
+		// Mark as seen if not already
+		if (!loop.is_seen) {
+            
+			try {
+				// Optimistically update badge count
+				adjustNewLoopsCount();
+
+				// Optimistically update local state
+				loops.update((arr) =>
+					arr.map((item) =>
+						item.loop.id === loop.id
+							? { ...item, loop: { ...item.loop, is_seen: true } }
+							: item
+					)
+				);
+
+				await updateLoopState(loop.id, { is_seen: true });
+			} catch (err) {
+				console.error("Failed to mark loop as seen:", err);
+                
+				// Revert local loop state on error
+				adjustNewLoopsCount(1);
+				loops.update((arr) =>
+					arr.map((item) =>
+						item.loop.id === loop.id
+							? { ...item, loop: { ...item.loop, is_seen: false } }
+							: item
+					)
+				);
+			}
+		}
+	}
 
     async function handleFav({ detail }) {
         const { loopId } = detail;

@@ -1,8 +1,8 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
-    import { interestMap, platformMap, countryMap } from "$lib/stores/app";
-    import { getAvatarUrl } from "../utils/profile";
+    import { interestMap, platformMap, countryMap } from "$lib/stores/app.js";
+    import { getAvatarUrl } from "$lib/utils/profile.js";
 
     export let profile;
     const dispatch = createEventDispatcher();

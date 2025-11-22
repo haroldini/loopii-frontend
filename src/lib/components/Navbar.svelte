@@ -1,8 +1,9 @@
+
 <script>
-    import { user, signOut } from "$lib/stores/auth";
     import { page } from "$app/stores";
-    import { newLoopsCount } from "$lib/stores/loops";
-    import { newRequestsCount } from "$lib/stores/loopRequests";
+    import { user, signOut } from "$lib/stores/auth.js";
+    import { newLoopsCount } from "$lib/stores/loops.js";
+    import { newRequestsCount } from "$lib/stores/loopRequests.js";
 
     const isActive = (path) => $page.url.pathname === path;
 </script>
