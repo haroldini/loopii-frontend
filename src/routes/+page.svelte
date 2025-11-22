@@ -22,7 +22,7 @@
 
 
 <svelte:head>
-    <title>loopii • Find Loops</title>
+    <title>TEST TESTloopii • Find Loops</title>
 </svelte:head>
 
 
