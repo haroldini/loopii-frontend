@@ -1,4 +1,3 @@
-
 <script>
     import { onMount, tick } from "svelte";
     import { createEventDispatcher } from "svelte";
@@ -7,7 +6,7 @@
     export let mode = "preview";   // "preview" (small static view) or "fullscreen"
     export let lat = 51.505;       // initial latitude (default: London)
     export let lng = -0.09;        // initial longitude (default: London)
-    export let radius;             // optional radius for drawing a circle
+    export let radius;             // optional radius for drawing a circle (meters)
     export let defaultZoom = 11;   // default zoom level
 
     // ─── Local state ─────────────────────────────────────────────────────────────
@@ -69,7 +68,11 @@
 
         if (map) {
             map.invalidateSize(); // Redraw map to avoid tile glitches
-            centerOnConfirmed();
+            if (circle) {
+                map.fitBounds(circle.getBounds(), { padding: [20, 20] });
+            } else {
+                centerOnConfirmed();
+            }
         }
     }
 
@@ -91,7 +94,11 @@
 
         if (map) {
             map.invalidateSize();
-            centerOnConfirmed();
+            if (circle) {
+                map.fitBounds(circle.getBounds(), { padding: [20, 20] });
+            } else {
+                centerOnConfirmed();
+            }
         }
     }
 
@@ -135,14 +142,41 @@
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
 
-        // Add marker and circle
+        // Add marker
         marker = L.marker([pinLat, pinLng], { draggable: true }).addTo(map);
         marker.on("drag", handleMarkerDrag);
-        if (radius) {
+
+        // Initial circle if radius provided
+        if (typeof radius === "number" && radius > 0) {
             circle = L.circle([pinLat, pinLng], { radius, color: "blue" }).addTo(map);
+            // Fit zoom to include the whole circle
+            map.fitBounds(circle.getBounds(), { padding: [20, 20] });
         }
 
         setInteractivity(interactable);
+    }
+
+    // React to radius prop changes (create/update/remove circle and adjust zoom)
+    $: if (map && marker) {
+        const r = typeof radius === "number" ? radius : 0;
+
+        if (r > 0) {
+            if (!circle) {
+                circle = L.circle([pinLat, pinLng], { radius: r, color: "blue" }).addTo(map);
+            } else {
+                circle.setRadius(r);
+                circle.setLatLng([pinLat, pinLng]);
+            }
+            // Adjust zoom to fit the new radius
+            map.fitBounds(circle.getBounds(), { padding: [20, 20] });
+        } else {
+            if (circle) {
+                map.removeLayer(circle);
+                circle = null;
+            }
+            // No radius → just center on confirmed point at default zoom
+            centerOnConfirmed();
+        }
     }
 
     onMount(() => {
@@ -213,4 +247,3 @@
         flex: 1;
     }
 </style>
-

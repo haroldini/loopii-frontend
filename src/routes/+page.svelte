@@ -1,5 +1,6 @@
 
 <script>
+    import { goto } from "$app/navigation";
     import { initPeerStore, peer, peerStatus, handleDecision, refreshPeerStore } from "$lib/stores/feed.js";
     import ProfileCard from "$lib/components/ProfileCard.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
@@ -22,8 +23,16 @@
 
 
 <svelte:head>
-    <title>TEST TESTloopii • Find Loops</title>
+    <title>loopii • Find Loops</title>
 </svelte:head>
+
+
+<div class="container bordered">
+    <nav>
+        <button on:click={refreshPeerStore}>Refresh</button>
+        <button on:click={() => goto("/profile/search-preferences")}>Edit Preferences</button>
+    </nav>
+</div>
 
 
 <div class="container bordered">
@@ -51,8 +60,5 @@
             <button style="flex:1;" on:click={() => handleDecision(true)}>Connect</button>
         </nav>
         {/if}
-    </div>
-<div class="container">
-    <button on:click={refreshPeerStore}>Refresh</button>
 </div>
 
