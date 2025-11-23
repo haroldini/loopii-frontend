@@ -5,6 +5,7 @@
     import PrefsForm from "$lib/components/PrefsForm.svelte";
     import { updateSearchPrefs } from "$lib/api/prefs.js";
     import { profile } from "$lib/stores/profile.js";
+    import { addToast } from "$lib/stores/popups";
 
     let body = null;
     let canSave = true;  // false when there is an active validation error
@@ -50,6 +51,11 @@
             }
 
             status = "success";
+            addToast({
+                text: "Search preferences updated.",
+                autoHideMs: 3000,
+            });
+
         } catch (err) {
             console.error("Error updating search prefs:", err);
             status = "error";

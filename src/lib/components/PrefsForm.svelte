@@ -51,12 +51,6 @@
         proximityLat = basePrefs.proximity_lat ?? null;
         proximityLng = basePrefs.proximity_lng ?? null;
 
-        // Fallback: if prefs have no location but profile has one, use it as default map center
-        if ((proximityLat == null || proximityLng == null) && $profile?.latitude && $profile?.longitude) {
-            proximityLat = $profile.latitude;
-            proximityLng = $profile.longitude;
-        }
-
         initialized = true;
     }
 
@@ -143,7 +137,18 @@
     }
 
     // Emit change whenever any bound field changes
-    $: dispatch("change", buildState());
+    $: {
+        genders;
+        ageMin;
+        ageMax;
+        ageError;
+        countryIds;
+        proximityKm;
+        proximityLat;
+        proximityLng;
+        valid;
+        dispatch("change", buildState());
+    }
 
     function toggleGender(value) {
         if (genders.includes(value)) {
