@@ -140,17 +140,41 @@
         <!-- Display the correct buttons -->
         <nav>
             {#if $subPage === "signup"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Sign Up</button>
+                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
+                    {#if $isSubmitting}
+                        Creating account...
+                    {:else}
+                        Create Account
+                    {/if}
+                </button>
                 <button type="button" on:click={() => toggleMode("login")}>Login instead</button>
             {:else if $subPage === "login"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Login</button>
+                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
+                    {#if $isSubmitting}
+                        Logging in...
+                    {:else}
+                        Login
+                    {/if}
+                </button>
                 <button type="button" on:click={() => toggleMode("signup")}>Sign up instead</button>
                 <button type="button" on:click={() => toggleMode("requestReset")}>Forgot password?</button>
             {:else if $subPage === "requestReset"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Send reset email</button>
+                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
+                    {#if $isSubmitting}
+                        Sending reset email...
+                    {:else}
+                        Send reset email
+                    {/if}
+                </button>
                 <button type="button" on:click={() => toggleMode("login")}>Back to Login</button>
             {:else if $subPage === "reset"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>Set New Password</button>
+                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
+                    {#if $isSubmitting}
+                        Setting new password...
+                    {:else}
+                        Set New Password
+                    {/if}
+                </button>
             {/if}
         </nav>
     </form>
@@ -158,64 +182,14 @@
 
 
 <!-- Status / Feedback Box -->
-{#if $error || $authFormStatus}
+{#if $error || $authFormStatus === "signedUp" || $authFormStatus === "resetEmailSent"}
     <div class="container bordered fill">
 
-        <!-- Auth status messages -->
-
-        <!-- Login -->
-        {#if $authFormStatus === "loggingIn"}
-            <p>Logging in…</p>
-        {:else if $authFormStatus === "loggedIn"}
-            <p class="green">Login successful!</p>
-        {:else if $authFormStatus === "loginFailed"}
-            <p class="red">Login failed</p>
-
-
-        <!-- Signup -->
-        {:else if $authFormStatus === "signingUp"}
-            <p>Creating your account…</p>
-        {:else if $authFormStatus === "signedUp"}
-        <p class="green">
-            Confirmation email sent! Check your inbox ({$email}) to verify your account.
-        </p>
-        {#if !$showForm}
-            <p>
-                Click
-                <span
-                    role="button"
-                    tabindex="0"
-                    on:click={() => toggleForm(true)}
-                    on:keydown={(e) => e.key === "Enter" && toggleForm(true)}
-                    class="button blue"
-                >
-                    here
-                </span>
-                if you need to resend the email.
+        <!-- Signup instructions -->
+        {#if $authFormStatus === "signedUp"}
+            <p class="green">
+                Confirmation email sent! Check your inbox ({$email}) to verify your account.
             </p>
-        {/if}
-        <p>
-            If you don’t receive it, your email may already be in use — Try
-            <span
-                role="button"
-                tabindex="0"
-                on:click={() => toggleMode("login")}
-                on:keydown={(e) => e.key === "Enter" && toggleMode("login")}
-                class="button blue"
-            >
-                logging in
-            </span>
-            instead.
-        </p>
-        {:else if $authFormStatus === "signUpFailed"}
-            <p class="red">Sign up failed</p>
-
-
-        <!-- Password reset request -->
-        {:else if $authFormStatus === "sendingResetRequest"}
-            <p>Sending password reset email…</p>
-        {:else if $authFormStatus === "resetEmailSent"}
-            <p class="green">Password reset email sent! Check your inbox ({$email}) to set a new password.</p>
             {#if !$showForm}
                 <p>
                     Click
@@ -227,23 +201,47 @@
                         class="button blue"
                     >
                         here
-                    </span> to resend the email.
+                    </span>
+                    if you need to resend the email.
                 </p>
             {/if}
-        {:else if $authFormStatus === "resetRequestFailed"}
-            <p class="red">Could not send reset email</p>
-            
+            <p>
+                If you don't receive it, your email may already be in use — Try
+                <span
+                    role="button"
+                    tabindex="0"
+                    on:click={() => toggleMode("login")}
+                    on:keydown={(e) => e.key === "Enter" && toggleMode("login")}
+                    class="button blue"
+                >
+                    logging in
+                </span>
+                instead.
+            </p>
 
-        <!-- Password update -->
-        {:else if $authFormStatus === "resettingPassword"}
-            <p>Updating your password…</p>
-        {:else if $authFormStatus === "passwordReset"}
-            <p class="green">Password updated successfully!</p>
-        {:else if $authFormStatus === "resetPasswordFailed"}
-            <p class="red">Password reset failed</p>
+        <!-- Password reset email instructions -->
+        {:else if $authFormStatus === "resetEmailSent"}
+            <p class="green">
+                Password reset email sent! Check your inbox ({$email}) to set a new password.
+            </p>
+            {#if !$showForm}
+                <p>
+                    Click
+                    <span
+                        role="button"
+                        tabindex="0"
+                        on:click={() => toggleForm(true)}
+                        on:keydown={(e) => e.key === "Enter" && toggleForm(true)}
+                        class="button blue"
+                    >
+                        here
+                    </span>
+                    to resend the email.
+                </p>
+            {/if}
         {/if}
 
-        <!-- API error (single) -->
+        <!-- API / backend error -->
         {#if $error}
             <p class="red">{$error}</p>
         {/if}
