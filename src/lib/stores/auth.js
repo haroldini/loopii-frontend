@@ -44,7 +44,7 @@ export async function initAuth() {
         if (urlMsg) {
             addToast({
                 variant: "banner",
-                text: "Message from loopii authentication",
+                text: "Message from loopii:",
                 description: urlMsg,
                 autoHideMs: null,
             });
@@ -219,8 +219,24 @@ export async function signOut(scope = "local") {
             console.error(`Error signing out (${scope}):`, error);
             return { data: null, error: normalizeError(error) };
         }
+        if (scope === "global") {
+            addToast({
+                variant: "banner",
+                text: "Successfully signed out everywhere!",
+                description: "You have been signed out of all sessions on all devices.",
+                autoHideMs: null,
+            });
+        }
     } catch (err) {
         console.error(`Unexpected error during signOut (${scope}):`, err);
+        if (scope === "global") {
+            addToast({
+                variant: "banner",
+                text: "Could not sign you out everywhere.",
+                description: normalizeError(err),
+                autoHideMs: null,
+            });
+        }
         return { data: null, error: normalizeError(err) };
     } finally {
         forceUnauth();
@@ -268,7 +284,7 @@ export async function updatePassword(currentPassword, newPassword) {
         addToast({
             variant: "banner",
             text: "Password successfully updated!",
-            autoHideMs: 3000,
+            autoHideMs: null,
         });
         return { data, error: null };
 
@@ -337,7 +353,7 @@ export async function updateEmail(newEmail) {
             variant: "banner",
             text: "Email successfully updated!",
             description: "Your email has been updated successfully.",
-            autoHideMs: 3000,
+            autoHideMs: null,
         });
         return { data, error: null };
 

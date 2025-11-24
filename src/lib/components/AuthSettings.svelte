@@ -8,7 +8,6 @@
     } from "$lib/stores/authSettings.js";
 
     import { updatePassword, updateEmail, deleteAccount, requestPasswordReset, signOut, user, expectedPhrase } from "$lib/stores/auth.js";
-    import { email } from "$lib/stores/authForm.js";
 
     let emailSentToNew = "";
     let emailSentToOld = "";
@@ -66,7 +65,7 @@
                 status.set("updating");
                 const { data, error: err } = await signOut("global");
                 if (err) {
-                    error.set(err || "Could not sign out everywhere");
+                    error.set(err || "We could not sign you out everywhere.");
                     status.set("failed");
                 } else {
                     status.set("updated");
@@ -182,7 +181,7 @@
 
 
 <!-- Status / Feedback Box -->
-{#if $validationErrors.filter(e => e.display).length || $error || ["failed", "updated", "emailPending"].includes($status)}
+{#if $validationErrors.filter(e => e.display).length || $error || ["failed", "emailPending"].includes($status)}
     <div class="container bordered fill">
 
         <!-- Validation errors -->
@@ -196,15 +195,7 @@
         {/if}
 
         <!-- Status -->
-        {#if $status === "updated" && $mode === "password"}
-        <p class="green">Password updated successfully.</p>
-        {:else if $status === "updated" && $mode === "email"}
-        <p class="green">Email updated successfully.</p>
-        {:else if $status === "updated" && $mode === "delete"}
-        <p class="green">Account deleted. Logging you out...</p>
-        {:else if $status === "updated" && $mode === "revoke"}
-        <p class="green">Sessions revoked. Logging you out...</p>
-        {:else if $status === "emailPending" && $mode === "email"}
+        {#if $status === "emailPending" && $mode === "email"}
         <p class="green">Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.</p>
         {:else if $status === "emailPending" && $mode === "reset"}
         <p class="green">Password reset email sent! Check your inbox ({$user?.email}).</p>
