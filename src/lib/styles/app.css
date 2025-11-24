@@ -48,7 +48,8 @@ html, body {
 body::after {
 	content: "";
 	display: block;
-	height: 100px; /* extra scroll space */
+	/* extra scroll space */
+	/* height: 100px;  */
 }
 
 /* ---------------- Form fields ---------------- */

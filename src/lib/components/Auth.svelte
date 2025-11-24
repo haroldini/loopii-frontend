@@ -94,7 +94,6 @@
         reset: "Reset Password"
     };
 </script>
-
     
 <h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
 

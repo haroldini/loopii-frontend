@@ -96,6 +96,7 @@
 <!-- Recovery / account creation flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"}
 <div class="center fill fillvh">
+    <h1 style="margin-bottom: 2rem;">loopii</h1>
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <Auth />
     </div>

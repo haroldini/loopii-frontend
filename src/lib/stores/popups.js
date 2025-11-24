@@ -9,6 +9,7 @@ let nextId = 0;
 export function addToast({
     variant = "banner",
     text = "",
+    description = null,
     autoHideMs = 5000,
     component = null,
     props = {},
@@ -17,7 +18,7 @@ export function addToast({
     onDismiss = null,
 } = {}) {
     const id = `toast-${++nextId}`;
-    const toast = { id, variant, text, autoHideMs, component, props, data, onAction, onDismiss };
+    const toast = { id, variant, text, description, autoHideMs, component, props, data, onAction, onDismiss };
     toasts.update((list) => [toast, ...list]);
 }
 
