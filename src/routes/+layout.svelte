@@ -111,7 +111,7 @@
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <CreateProfile />
     </div>
-    {#if $profileFormState !== "submitting"}
+    {#if ["idle", "error"].includes($profileFormState)}
     <div class="container">
         <p>Logged in as {$user.email}</p>
         <nav>

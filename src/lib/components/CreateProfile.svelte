@@ -261,7 +261,6 @@
 	{#if $currentPage === 3}
 		<h3>Preferences</h3>
 		<p class="hint">Choose who you see in your feed. We'll also only show your profile to genders you select.</p>
-		<br>
 
 		<PrefsForm
 			mode="search"
