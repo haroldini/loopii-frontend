@@ -5,6 +5,7 @@ import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { updateProfile } from "$lib/api/profile.js";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+import { addToast } from "$lib/stores/popups.js";
 
 
 // --- Form state ---
@@ -177,10 +178,19 @@ export async function saveEdits() {
         const updated = await updateProfile(changed);
         profile.set(updated);
         profileEditState.set("success");
+        addToast({
+            text: "Profile updated successfully.",
+            autoHideMs: 3000,
+        });
     } catch (err) {
         profileEditState.set("error");
         error.set(err.message || "Unexpected error saving profile");
         console.error("Error updating profile:", err);
+        addToast({
+            text: "Failed to update profile.",
+            description: err.message || "We couldn't save your changes. Please try again later.",
+            autoHideMs: 5000,
+        });
     }
 }
 

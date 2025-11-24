@@ -42,6 +42,9 @@
         <button type="button" on:click={() => goto("/profile/customization")}>
             Customization
         </button>
+        <button type="button" on:click={() => goto("/profile/visibility-preferences")}>
+            Visibility
+        </button>
         <button type="button" on:click={() => goto("/profile/security")}>
             Account Settings
         </button>
