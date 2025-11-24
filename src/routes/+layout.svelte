@@ -12,6 +12,7 @@
     import { initLoopsStore } from "$lib/stores/loops.js";
     import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
     import { initPeerStore } from "$lib/stores/feed.js";
+    import { profileFormState } from "$lib/stores/createProfile.js";
 
     import Auth from "$lib/components/Auth.svelte";
     import CreateProfile from "$lib/components/CreateProfile.svelte";
@@ -96,7 +97,7 @@
 <!-- Recovery / account creation flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"}
 <div class="center fill fillvh">
-    <h1 style="margin-bottom: 2rem;">loopii</h1>
+    <h1>loopii</h1>
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <Auth />
     </div>
@@ -106,9 +107,18 @@
 <!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
 <div class="center fill fillvh">
+    <h1>loopii</h1>
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <CreateProfile />
     </div>
+    {#if $profileFormState !== "submitting"}
+    <div class="container">
+        <p>Logged in as {$user.email}</p>
+        <nav>
+            <button onclick={signOut}>Log Out</button>
+        </nav>
+    </div>
+    {/if}
 </div>
 
 

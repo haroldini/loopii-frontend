@@ -7,6 +7,7 @@ import { profile } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { addToast } from "$lib/stores/popups.js";
+import { updateSearchPrefs, updateVisibilityPrefs } from "$lib/api/prefs.js";
 
 
 // --- Form state ---
@@ -45,10 +46,17 @@ export const submissionProgress = writable(null);
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "partial" | "error"
 
+// Onboarding prefs (from PrefsForm)
+export const prefsState = writable({
+	payload: null,
+	valid: true,
+});
+
 export const pageFields = {
 	0: ["username", "dob", "gender", "country", "name", "avatar"],
 	1: ["bio", "interests", "latitude", "longitude", "location"],
-	2: ["socials"]
+	2: ["socials"],
+	3: [],
 };
 
 
@@ -73,7 +81,9 @@ export const readyToSubmit = derived(
 		const allValid = validateProfile(
 			$username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile
 		);
-		if ($currentPage === 2) return allValid;
+
+		const isLastPage = $currentPage === 3;
+		if (isLastPage) return allValid;
 
 		const fields = pageFields[$currentPage] || [];
 		const pageErrors = get(validationErrors).filter(e => fields.includes(e.field));
@@ -210,12 +220,89 @@ export async function submitProfile() {
 			avatarError = true;
 		}
 
+		// Preferences (search + visibility-genders)
+		let searchPrefsError = false;
+		let visibilityPrefsError = false;
+
+		const prefsSnapshot = get(prefsState) || {};
+		const prefsPayload = prefsSnapshot.payload ?? null;
+		const prefsValid = prefsSnapshot.valid ?? true;
+
+		if (prefsValid && prefsPayload) {
+			const {
+				genders = null,
+				age_min = null,
+				age_max = null,
+				country_ids = null,
+				proximity_km = null,
+				proximity_lat = null,
+				proximity_lng = null,
+			} = prefsPayload;
+
+			// Search prefs: full payload
+			try {
+				submissionProgress.set("Saving search preferences");
+				const searchPayload = {
+					genders,
+					age_min,
+					age_max,
+					country_ids,
+					proximity_km,
+					proximity_lat,
+					proximity_lng,
+				};
+				const savedSearch = await updateSearchPrefs(searchPayload);
+
+				const current = get(profile);
+				if (current) {
+					profile.set({
+						...current,
+						search_prefs: savedSearch,
+					});
+				}
+			} catch (err) {
+				console.error("Error saving search prefs:", err);
+				searchPrefsError = true;
+			}
+
+			// Visibility prefs: only genders + is_visible = true
+			if (Array.isArray(genders) && genders.length > 0) {
+				try {
+					submissionProgress.set("Saving visibility preferences");
+					const visibilityPayload = {
+						genders,
+						age_min: null,
+						age_max: null,
+						country_ids: null,
+						proximity_km: null,
+						proximity_lat: null,
+						proximity_lng: null,
+						is_visible: true,
+					};
+					const savedVisibility = await updateVisibilityPrefs(visibilityPayload);
+
+					const current = get(profile);
+					if (current) {
+						profile.set({
+							...current,
+							visibility_prefs: savedVisibility,
+						});
+					}
+				} catch (err) {
+					console.error("Error saving visibility prefs:", err);
+					visibilityPrefsError = true;
+				}
+			}
+		}
+
 		// Step 5: Handle partial success
-		if (interestsError || socialsError || avatarError) {
+		if (interestsError || socialsError || avatarError || searchPrefsError || visibilityPrefsError) {
 			const parts = [];
 			if (interestsError) parts.push("interests");
 			if (socialsError) parts.push("socials");
 			if (avatarError) parts.push("profile picture");
+			if (searchPrefsError) parts.push("search preferences");
+			if (visibilityPrefsError) parts.push("visibility preferences");
 
 			let msg = "Your profile was created, but we couldn't add your ";
 			if (parts.length === 1) msg += parts[0];
@@ -277,6 +364,7 @@ function resetFields() {
 	avatarFile.set(null);
 	avatarOriginalUrl.set(null);
 	avatarCropState.set(null);
+	prefsState.set({ payload: null, valid: true });
 }
 
 export function resetState() {

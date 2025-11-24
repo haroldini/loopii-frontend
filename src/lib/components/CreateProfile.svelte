@@ -8,11 +8,13 @@
 		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
 		error, readyToSubmit, validationErrors, currentPage,
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
-		updateHandle, removeSocial,
+		updateHandle, removeSocial, 
+		prefsState,
 	} from "$lib/stores/createProfile.js";
 
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	import ProfileFields from "$lib/components/ProfileFields.svelte";
+	import PrefsForm from "$lib/components/PrefsForm.svelte";
 
 	let avatarPicker;
 
@@ -82,16 +84,18 @@
 			},
 		]);
 	}
+
+	// PrefsForm state (onboarding search/visibility preferences)
+	let prefsValid = true;
+
+	function handlePrefsChange(event) {
+		const payload = event.detail?.payload ?? null;
+		const valid = event.detail?.valid ?? true;
+		prefsState.set({ payload, valid });
+	}
+
+	$: prefsValid = $prefsState.valid;
 </script>
-
-<h1>loopii</h1>
-
-{#if $profileFormState !== "submitting"}
-	<p>Logged in as {$user.email}</p>
-	<nav>
-		<button on:click={signOut}>Log Out</button>
-	</nav>
-{/if}
 
 {#if $profileFormState === "submitting"}
 	<p>{$submissionProgress}...</p>
@@ -122,7 +126,7 @@
 <form on:submit|preventDefault={submitProfile} style="width: 100%; display: flex; flex-direction: column; gap: 1rem;">
 
 	{#if $currentPage === 0}
-		<h3>Create your profile</h3>
+		<h3>Create Your Profile</h3>
 
 		<!-- Username + Display Name -->
 		<ProfileFields
@@ -192,14 +196,14 @@
 	{/if}
 
 	{#if $currentPage === 1}
-		<h3>Help others discover you</h3>
+		<h3>Help Others Discover You</h3>
 
 		<!-- Map (lat/lng picker) -->
 		<ProfileFields
 			fields={[
 				{
 					key: "map",
-					hint: "Select your approximate location to appear in proximity searches",
+					hint: "Select your approximate location to appear in location searches",
 					// optional overrides if needed later:
 					// clearLabel: "Clear location",
 					// pickLabel: "Pick Location",
@@ -228,7 +232,7 @@
 	{/if}
 
 	{#if $currentPage === 2}
-		<h3>What your Loops see</h3>
+		<h3>What Your Loops See</h3>
 
 		<ProfileFields
 			fields={[{ key: "socials", label: "Social Media Links" }]}
@@ -244,7 +248,33 @@
 
 		<nav>
 			<button type="button" on:click={() => $currentPage = 1}>← Back</button>
-			<button type="submit" disabled={$profileFormState === "submitting" || !$readyToSubmit}>
+			<button
+				type="button"
+				on:click={() => $currentPage = 3}
+				disabled={!$readyToSubmit}
+			>
+				Continue →
+			</button>
+		</nav>
+	{/if}
+
+	{#if $currentPage === 3}
+		<h3>Preferences</h3>
+		<p class="hint">Choose who you see in your feed. We'll also only show your profile to genders you select.</p>
+		<br>
+
+		<PrefsForm
+			mode="search"
+			on:change={handlePrefsChange}
+			bind:valid={prefsValid}
+		/>
+
+		<nav>
+			<button type="button" on:click={() => $currentPage = 2}>← Back</button>
+			<button
+				type="submit"
+				disabled={$profileFormState === "submitting" || !$readyToSubmit || !prefsValid}
+			>
 				{$profileFormState === "submitting" ? "Creating…" : "Create Profile"}
 			</button>
 		</nav>

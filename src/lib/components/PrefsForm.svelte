@@ -226,7 +226,7 @@
 </script>
 
 {#if mode === "visibility"}
-    <h3>Profile visibility</h3>
+    <label for="global-visibility">Profile visibility</label>
     <label class="visibility-toggle">
         <input
             type="checkbox"
@@ -239,7 +239,7 @@
 {/if}
 
 {#if mode !== "visibility" || isVisible}
-    <h3>Genders</h3>
+    <label for="genders">Genders</label>
     <div class="grid grid-3">
         <button
             type="button"
@@ -264,7 +264,7 @@
         </button>
     </div>
 
-    <h3>Age range</h3>
+    <label for="age-range">Age range</label>
     <div class="grid grid-2">
         <input
             type="number"
@@ -287,7 +287,7 @@
         <p class="red">{ageError}</p>
     {/if}
 
-    <h3>Countries</h3>
+    <label for="countries">Countries</label>
     <select multiple size="5" bind:value={countryIds}>
         {#each $allCountries as country}
             <option value={country.id}>
@@ -296,7 +296,7 @@
         {/each}
     </select>
 
-    <h3>Location</h3>
+    <label for="location">Location</label>
     {#if mode === "search"}
         <p class="hint">Only show me people near a chosen location.</p>
     {:else}

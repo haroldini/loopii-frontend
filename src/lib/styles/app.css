@@ -115,7 +115,10 @@ select {
 }
 
 .fillvh {
-	height: 100vh;
+	min-height: 100vh;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	gap: 2rem;
 }
 
 .center {
@@ -279,4 +282,13 @@ nav {
 	border-bottom-color: var(--accent-blue);
 	color: var(--text-1);
 	font-weight: 600;
+}
+
+
+/* ---------------- Text ---------------- */
+
+.hint {
+	margin-bottom: 0.5rem;
+	font-size: 0.9rem;
+	color: var(--text-muted);
 }

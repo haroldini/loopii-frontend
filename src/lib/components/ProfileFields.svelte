@@ -215,7 +215,7 @@
 
     {:else if field.key === "map"}
         {#if field.label}
-            <h3>{field.label}</h3>
+            <label for="map">{field.label}</label>
         {/if}
         {#if field.hint}
             <p class="hint">{field.hint}</p>
@@ -362,12 +362,6 @@
 {/each}
 
 <style>
-    .hint {
-        margin-bottom: 0.5rem;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
-
     .socials-list {
         display: flex;
         flex-direction: column;
