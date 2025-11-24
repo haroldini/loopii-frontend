@@ -1,15 +1,15 @@
 
 <script>
     import { onMount } from "svelte";
-	import { get } from "svelte/store";
-	import { writable, derived } from "svelte/store";
-	import { goto } from "$app/navigation";
+    import { get } from "svelte/store";
+    import { writable, derived } from "svelte/store";
+    import { goto } from "$app/navigation";
 
-	import { profile } from "$lib/stores/profile.js";
-	import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image.js";
+    import { profile } from "$lib/stores/profile.js";
+    import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image.js";
     import { timeAgo } from "$lib/utils/misc.js";
     import { addToast } from "$lib/stores/popups.js";
-	import ImagePicker from "$lib/components/ImagePicker.svelte";
+    import ImagePicker from "$lib/components/ImagePicker.svelte";
 
 
     // State
@@ -20,29 +20,29 @@
     // "errorSettingAvatar" | "errorDeleting" | "errorUploading"
 
     // Store for uploading new images
-	let imagePicker;
-	const newImageFile = writable(null);
-	const newImageOriginalUrl = writable(null);
-	const newImageCropState = writable(null);
-	const newImageUrl = derived(newImageFile, ($file, set) => {
-		if ($file) {
-			const url = URL.createObjectURL($file);
-			set(url);
-			return () => URL.revokeObjectURL(url);
-		} else set(null);
-	});
+    let imagePicker;
+    const newImageFile = writable(null);
+    const newImageOriginalUrl = writable(null);
+    const newImageCropState = writable(null);
+    const newImageUrl = derived(newImageFile, ($file, set) => {
+        if ($file) {
+            const url = URL.createObjectURL($file);
+            set(url);
+            return () => URL.revokeObjectURL(url);
+        } else set(null);
+    });
 
 
     // Reset the image picker state
-	function resetPicker() {
-		if (typeof get(newImageFile) === "string" && get(newImageFile).startsWith("blob:")) {
-			try { URL.revokeObjectURL(get(newImageFile)); } catch {}
-		}
-		newImageFile.set(null);
-		newImageOriginalUrl.set(null);
-		newImageCropState.set(null);
-		imagePicker.reset();
-	}
+    function resetPicker() {
+        if (typeof get(newImageFile) === "string" && get(newImageFile).startsWith("blob:")) {
+            try { URL.revokeObjectURL(get(newImageFile)); } catch {}
+        }
+        newImageFile.set(null);
+        newImageOriginalUrl.set(null);
+        newImageCropState.set(null);
+        imagePicker.reset();
+    }
 
 
     // Handle setting an image as avatar
@@ -77,11 +77,11 @@
 
 
     // Handle deleting an image
-	async function handleDelete(imageId) {
-		if (!confirm("Delete this image?")) return;
-		try {
+    async function handleDelete(imageId) {
+        if (!confirm("Delete this image?")) return;
+        try {
             photosState.set("deleting");
-			await deleteProfileImage(imageId);
+            await deleteProfileImage(imageId);
             profile.update(p => ({
                 ...p,
                 images: sortImages(
@@ -93,16 +93,16 @@
                 text: "Image successfully deleted.",
                 autoHideMs: 3000,
             });
-		} catch (err) {
-			console.error("Error deleting image:", err);
+        } catch (err) {
+            console.error("Error deleting image:", err);
             photosState.set("errorDeleting");
             addToast({
                 text: "Failed to delete image.",
                 description: "We couldn't delete the image. Please try again later.",
                 autoHideMs: 5000,
             });
-		}
-	}
+        }
+    }
 
 
     // Handle confirming upload of new image
@@ -146,20 +146,20 @@
 
 
     // Helper to format ISO date strings
-	function formatDate(isoString) {
-		try {
-			const date = new Date(isoString);
-			return date.toLocaleDateString(undefined, {
-				year: "numeric",
-				month: "short",
-				day: "numeric",
-				hour: "2-digit",
-				minute: "2-digit"
-			});
-		} catch {
-			return isoString;
-		}
-	}
+    function formatDate(isoString) {
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        } catch {
+            return isoString;
+        }
+    }
 
 
     // Helper to sort images by avatar first, then most recent
@@ -183,15 +183,20 @@
 
 
 <svelte:head>
-	<title>loopii • Edit Photos</title>
+    <title>loopii • Edit Photos</title>
 </svelte:head>
 
 
 <div class="container bordered">
-	<h3>Edit Photos</h3>
-	<nav>
-		<button type="button" on:click={() => goto("/profile")}>Back to Profile</button>
-	</nav>
+    <h3>Edit Photos</h3>
+    <nav>
+        <button
+            type="button"
+            on:click={() => goto("/profile")}
+            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
+            Back to Profile
+        </button>
+    </nav>
 </div>
 
 
@@ -218,79 +223,74 @@
                 <input
                     type="checkbox"
                     id="newImageAsAvatar"
+                    disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                 />
                 <label for="newImageAsAvatar">Set as Avatar</label>
             </div>
 
-            <button type="button" on:click={handleUpload} disabled={$photosState === "uploading"}>
+            <button
+                type="button"
+                on:click={handleUpload}
+                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
                 { $photosState === "uploading" ? "Uploading..." : "Upload Photo" }
             </button>
-            <button type="button" on:click={resetPicker}>Cancel</button>
-		{:else}
-            <button type="button" on:click={() => imagePicker.open()}>Upload New Photo</button>
-		{/if}
+            <button
+                type="button"
+                on:click={resetPicker}
+                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
+                Cancel
+            </button>
+        {:else}
+            <button
+                type="button"
+                on:click={() => imagePicker.open()}
+                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
+                Upload New Photo
+            </button>
+        {/if}
     </nav>
-
-    <!-- Status -->
-    {#if $photosState === "uploading"}
-        <p class="blue">Uploading photo...</p>
-    {:else if $photosState === "settingAvatar"}
-        <p class="blue">Setting avatar...</p>
-    {:else if $photosState === "deleting"}
-        <p class="blue">Deleting photo...</p>
-
-    {:else if $photosState === "uploaded"}
-        <p class="green">Photo uploaded!</p>
-    {:else if $photosState === "avatarSet"}
-        <p class="green">Avatar updated!</p>
-    {:else if $photosState === "deleted"}
-        <p class="green">Photo deleted!</p>
-
-    {:else if $photosState === "errorUploading"}
-        <p class="red">Error uploading photo.</p>
-    {:else if $photosState === "errorSettingAvatar"}
-        <p class="red">Error setting avatar.</p>
-    {:else if $photosState === "errorDeleting"}
-        <p class="red">Error deleting photo.</p>
-    {/if}
 </div>
 
 
 {#if $profile.images.length > 0}
-	{#each $profile.images as img (img.id)}
+    {#each $profile.images as img (img.id)}
     <div class="container bordered">
         <img src={img.urls.medium} class="photo" alt="" />
         <nav>
             {#if !img.is_avatar}
-                <button on:click={() => handleSetAvatar(img.id)}>Set as Avatar</button>
+                <button
+                    on:click={() => handleSetAvatar(img.id)}
+                    disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}>
+                    {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
+                </button>
             {:else}
                 <button class="green" disabled>Current Avatar</button>
             {/if}
 
             <button
                 on:click={() => handleDelete(img.id)}
-                disabled={img.is_avatar}>
-                {img.is_avatar ? "Cannot Delete Avatar" : "Delete"}
+                disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}>
+                {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
             </button>
             <p>{timeAgo(img.created_at)}</p>
         </nav>
     </div>
-	{/each}
+    {/each}
 {:else}
-	<p class="no-photos">No photos uploaded yet.</p>
+    <p class="no-photos">No photos uploaded yet.</p>
 {/if}
 
 
 <style>
-	.photo {
-		width: 100%;
-		height: auto;
-		border-radius: 8px;
-		pointer-events: none;
-	}
+    .photo {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        pointer-events: none;
+    }
 
-	.no-photos {
-		text-align: center;
-		color: var(--text-2);
-	}
+    .no-photos {
+        text-align: center;
+        color: var(--text-2);
+    }
 </style>

@@ -100,6 +100,9 @@
     <h3>Visibility Preferences</h3>
     <p>Control who can see your profile.</p>
     <br>
+    {#if status === "error"}
+        <p class="red">{error}</p>
+    {/if}
     <nav style="justify-content: space-between;">
         <button type="button" on:click={goBack}>
             Back
@@ -127,11 +130,4 @@
         bind:valid={canSave}
         {clearSignal}
     />
-
-    {#if status === "error"}
-        <p class="red">{error}</p>
-    {:else if status === "success"}
-        <p class="green">Preferences updated.</p>
-    {/if}
-
 </div>

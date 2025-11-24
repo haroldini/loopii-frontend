@@ -135,6 +135,45 @@ function valuesEqual(a, b) {
 }
 
 
+// --- Derived: track whether there are unsaved changes ---
+export const hasChanges = derived(
+    [profile, name, dob, username, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
+    ([$profile, $name, $dob, $username, $gender, $country, $latitude, $longitude, $location, $bio, $selectedInterests, $socials], set) => {
+        if (!$profile) {
+            set(false);
+            return;
+        }
+
+        const current = normalizeProfile($profile || {});
+        const fields = normalizeProfile({
+            name: $name,
+            dob: $dob,
+            username: $username,
+            gender: $gender,
+            country_id: $country,
+            latitude: $latitude,
+            longitude: $longitude,
+            location: $location,
+            bio: $bio,
+            interests: $selectedInterests,
+            socials: $socials,
+        });
+
+        const changed = {};
+        for (const key in fields) {
+            const newVal = fields[key];
+            const oldVal = current[key] ?? null;
+            if (!valuesEqual(newVal, oldVal)) {
+                changed[key] = newVal;
+            }
+        }
+
+        set(Object.keys(changed).length > 0);
+    },
+    false
+);
+
+
 // --- Save changes ---
 export async function saveEdits() {
     if (!get(readyToSubmit)) {
@@ -170,7 +209,7 @@ export async function saveEdits() {
     }
 
     if (Object.keys(changed).length === 0) {
-        profileEditState.set("idle");
+        profileEditState.set("editing");
         return;
     }
 

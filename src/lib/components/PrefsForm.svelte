@@ -296,8 +296,12 @@
         {/each}
     </select>
 
-    <h3>Proximity</h3>
-    <p class="hint">Limit matches to people near a chosen location.</p>
+    <h3>Location</h3>
+    {#if mode === "search"}
+        <p class="hint">Only show me people near a chosen location.</p>
+    {:else}
+        <p class="hint">Only show me to people near a chosen location.</p>
+    {/if}
 
     {#if proximityLat != null && proximityLng != null}
         <MapPicker
@@ -312,7 +316,7 @@
             }}
         />
         <button type="button" on:click={clearLocationFilter} style="margin-top: 0.5rem;">
-            Clear location filter
+            Clear Location Filter
         </button>
 
         <select
@@ -333,7 +337,7 @@
         </select>
     {:else}
         <button type="button" on:click={pickLocation}>
-            Enable Proximity Filtering
+            Enable Location Filter
         </button>
     {/if}
 {/if}

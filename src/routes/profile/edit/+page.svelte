@@ -1,30 +1,30 @@
 
 <script>
-	import { onMount, onDestroy } from "svelte";
-	import { get } from "svelte/store";
-	import { goto } from "$app/navigation";
-	import { profile } from "$lib/stores/profile";
-	import {
-		saveEdits, cancelEditing, startEditing,
-		name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
-		validationErrors, profileEditState, error, readyToSubmit,
+    import { onMount, onDestroy } from "svelte";
+    import { get } from "svelte/store";
+    import { goto } from "$app/navigation";
+    import { profile } from "$lib/stores/profile";
+    import {
+        saveEdits, cancelEditing, startEditing,
+        name, dob, gender, country, latitude, longitude, location, bio, selectedInterests, socials, username,
+        validationErrors, profileEditState, error, readyToSubmit, hasChanges,
         removeSocial, updateHandle
-	} from "$lib/stores/editProfile.js";
-	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
-	import ImagePicker from "$lib/components/ImagePicker.svelte";
-	import MapPicker from "$lib/components/MapPicker.svelte";
+    } from "$lib/stores/editProfile.js";
+    import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+    import ImagePicker from "$lib/components/ImagePicker.svelte";
+    import MapPicker from "$lib/components/MapPicker.svelte";
 
-	let imagePicker;
+    let imagePicker;
 
-	onMount(() => {
-		startEditing();
-		console.log("Editing profile:", get(profile));
-	});
+    onMount(() => {
+        startEditing();
+        console.log("Editing profile:", get(profile));
+    });
 
-	function cancelEditingAndGoBack() {
-		cancelEditing();
-		goto("/profile");
-	}
+    function cancelEditingAndGoBack() {
+        cancelEditing();
+        goto("/profile");
+    }
 
     onDestroy(() => {
         cancelEditing();
@@ -39,50 +39,38 @@
 
 
 <div class="container bordered">
-	<h3>Edit Profile</h3>
+    <h3>Edit Profile</h3>
 
-	<nav>
-        <button type="button" on:click={cancelEditingAndGoBack}>
-            {#if $profileEditState === "editing"}
+    {#if $profileEditState === "error"}
+        <p class="red">{$error}</p>
+    {/if}
+
+    <nav>
+        <button
+            type="button"
+            on:click={cancelEditingAndGoBack}
+            disabled={$profileEditState === "saving"}
+        >
+            {#if $profileEditState === "editing" || $profileEditState === "saving"}
                 Discard Changes
-            {:else if $profileEditState === "saving"}
-                Saving...
             {:else}
                 Back to Profile
             {/if}
         </button>
 
-		<button
-			type="button"
-			on:click={saveEdits}
-			disabled={$profileEditState === "saving" || ! $readyToSubmit}
-		>
-			{$profileEditState === "saving" ? "Saving..." : "Save Changes"}
-		</button>
-	</nav>
+        <button
+            type="button"
+            on:click={saveEdits}
+            disabled={$profileEditState === "saving" || ! $readyToSubmit || ! $hasChanges}
+        >
+            {$profileEditState === "saving" ? "Saving..." : "Save Changes"}
+        </button>
+    </nav>
 </div>
-
 
 {#if $profileEditState === "idle"}
     <p>Loading profile...</p>
-
-{:else if $profileEditState === "success"}
-    <p class="green">Profile updated successfully!</p>
-    <button type="button" on:click={() => goto("/profile")}>
-        Back to profile
-    </button>
-
-{:else if $profileEditState === "error"}
-    <p class="red">Error updating profile: {$error}</p>
-    <button type="button" on:click={() => $profileEditState = "editing"}>
-        Try Again
-    </button>
-
-
-{:else if $profileEditState === "saving"}
-    <p>Saving profile...</p>
-
-{:else if $profileEditState === "editing"}
+{:else}
 
 <div class="container bordered">
 
@@ -314,7 +302,8 @@
 
     .social-icon img {
         width: 24px;
-       	height: 24px;
+        height: 24px;
+        height: 24px;
         border-radius: 4px;
     }
 
