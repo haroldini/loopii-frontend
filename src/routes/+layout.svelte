@@ -95,7 +95,7 @@
 
 <!-- Recovery / account creation flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"}
-<div class="center fill">
+<div class="center fill fillvh">
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <Auth />
     </div>
@@ -104,7 +104,7 @@
 
 <!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
-<div class="center fill">
+<div class="center fill fillvh">
     <div class="container bordered" style="width: 100%; max-width: min(calc(100% - 2rem), 500px);">
         <CreateProfile />
     </div>
@@ -121,9 +121,12 @@
 
 <!-- Fallback -->
 {:else}
-    <div class="container bordered">
-        <h1>loopii</h1>
-        <p>Stale session. Try refreshing the page, or log out and log back in.</p>
-        <button onclick={signOut}>Log Out</button>
+    <div class="center fill fillvh">
+        <div class="container bordered">
+            <h1>loopii</h1>
+            <p>Stale session. Try refreshing the page, or log out and log back in.</p>
+            <button onclick={signOut}>Log Out</button>
+        </div>
     </div>
 {/if}
+
