@@ -15,6 +15,15 @@
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	let avatarPicker;
 
+	onMount(() => {
+		const unsubscribe = profileFormState.subscribe((state) => {
+			if (state === "success" || state === "exists" || state === "partial") {
+				window.location.replace(window.location.origin);
+			}
+		});
+		return unsubscribe;
+	});
+
 </script>
 
 <h1>loopii</h1>
@@ -23,25 +32,14 @@
 	<button on:click={signOut}>Log Out</button>
 </nav>
 
+
 {#if $profileFormState === "submitting"}
 	<p>{$submissionProgress}...</p>
 
-{:else if $profileFormState === "success"}
-	<p class="green">Profile created successfully!</p>
-	<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
-
-{:else if $profileFormState === "exists"}
-	<p class="green">You already have a profile.</p>
-	<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
-
-{:else if $profileFormState === "partial"}
-	<p class="red">{$error}</p>
-	<button on:click={() => window.location.replace(window.location.origin)}>Continue</button>
-	
 {:else if $profileFormState === "error"}
 	<p class="red">{$error}</p>
 	<button on:click={resetState}>Try again</button>
-
+	
 {:else}
 
 <form on:submit|preventDefault={submitProfile} style="width: 100%; display: flex; flex-direction: column; gap: 1rem;">

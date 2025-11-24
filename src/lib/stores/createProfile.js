@@ -142,8 +142,15 @@ export async function submitProfile() {
 				longitude: normalized.longitude,
 			});
 		} catch (err) {
-			if (err.status === 409) {
-				error.set("You already have a profile");
+    		if (err.status === 409) {
+				const msg = "You already have a profile. Redirecting to feed...";
+				error.set(msg);
+				addToast({
+					variant: "banner",
+					text: "Welcome back to loopii!",
+					description: msg,
+					autoHideMs: null,
+				});
 				profileFormState.set("exists");
 			} else if (err.status === 422) {
 				let validationMsg = "Invalid profile data";
