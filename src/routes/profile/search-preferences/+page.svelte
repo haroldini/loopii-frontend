@@ -8,6 +8,8 @@
     import { addToast } from "$lib/stores/popups";
 
     let body = null;
+    let original = null;
+    let hasChanges = false;
     let canSave = true;  // false when there is an active validation error
     let status = "idle"; // "idle" | "saving" | "success" | "error"
     let error = "";
@@ -17,12 +19,23 @@
 
     function handleChange(event) {
         // PrefsForm sends { payload, valid }
-        body = event.detail?.payload ?? null;
+        const payload = event.detail?.payload ?? null;
+        body = payload;
         canSave = event.detail?.valid ?? true;
+
+        if (original === null && payload !== null) {
+            original = JSON.parse(JSON.stringify(payload));
+        }
+
+        if (original === null || payload === null) {
+            hasChanges = false;
+        } else {
+            hasChanges = JSON.stringify(payload) !== JSON.stringify(original);
+        }
     }
 
     async function save() {
-        if (!canSave) return;
+        if (!canSave || !hasChanges) return;
 
         status = "saving";
         error = "";
@@ -49,6 +62,9 @@
                     search_prefs: res,
                 });
             }
+
+            original = body ? JSON.parse(JSON.stringify(body)) : null;
+            hasChanges = false;
 
             status = "success";
             addToast({
@@ -83,6 +99,25 @@
 <div class="container bordered">
     <h3>Search Preferences</h3>
     <p>Control who you see in your feed.</p>
+    <br>
+    <nav style="justify-content: space-between;">
+        <button type="button" on:click={goBack}>
+            Back
+        </button>
+        <button
+            type="button"
+            on:click={save}
+            disabled={status === "saving" || !canSave || !hasChanges}
+        >
+            {status === "saving" ? "Saving..." : "Save"}
+        </button>
+        <button
+            type="button"
+            on:click={triggerClearAll}
+        >
+            Clear all
+        </button>
+    </nav>
 </div>
 
 <div class="container bordered">
@@ -99,22 +134,4 @@
         <p class="green">Preferences updated.</p>
     {/if}
 
-    <nav style="justify-content: space-between;">
-        <button type="button" on:click={goBack}>
-            Back
-        </button>
-        <button
-            type="button"
-            on:click={save}
-            disabled={status === "saving" || !canSave}
-        >
-            {status === "saving" ? "Saving..." : "Save"}
-        </button>
-        <button
-            type="button"
-            on:click={triggerClearAll}
-        >
-            Clear all
-        </button>
-    </nav>
 </div>

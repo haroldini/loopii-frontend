@@ -29,6 +29,7 @@
     let proximityLat = null;
     let proximityLng = null;
 
+    let isVisible = true;
     let initialized = false;
 
     // Determine base prefs source: explicit initial > profile.*_prefs > null
@@ -50,6 +51,10 @@
         proximityKm = basePrefs.proximity_km != null ? String(basePrefs.proximity_km) : "";
         proximityLat = basePrefs.proximity_lat ?? null;
         proximityLng = basePrefs.proximity_lng ?? null;
+
+        if (mode === "visibility") {
+            isVisible = basePrefs.is_visible ?? true;
+        }
 
         initialized = true;
     }
@@ -92,7 +97,7 @@
         return n;
     }
 
-    // Helper: build payload matching UpdateProfilePrefs
+    // Helper: build payload matching UpdateProfilePrefs / UpdateProfileVisibilityPrefs
     function buildPayload() {
         const hasGenders = Array.isArray(genders) && genders.length > 0;
         const hasCountries = Array.isArray(countryIds) && countryIds.length > 0;
@@ -117,7 +122,7 @@
 
         const enableProximity = hasKm && hasCoords;
 
-        return {
+        const base = {
             genders: hasGenders ? genders : null,
             age_min: minAge,
             age_max: maxAge,
@@ -126,6 +131,15 @@
             proximity_lat: enableProximity ? proximityLat : null,
             proximity_lng: enableProximity ? proximityLng : null,
         };
+
+        if (mode === "visibility") {
+            return {
+                ...base,
+                is_visible: isVisible,
+            };
+        }
+
+        return base;
     }
 
     // Bundle payload + validity for parent
@@ -146,6 +160,7 @@
         proximityKm;
         proximityLat;
         proximityLng;
+        isVisible;
         valid;
         dispatch("change", buildState());
     }
@@ -210,103 +225,117 @@
     }
 </script>
 
-
-<h3>Genders</h3>
-<div class="grid grid-3">
-    <button
-        type="button"
-        class:selected={genders.includes("male")}
-        on:click={() => toggleGender("male")}
-    >
-        Men
-    </button>
-    <button
-        type="button"
-        class:selected={genders.includes("female")}
-        on:click={() => toggleGender("female")}
-    >
-        Women
-    </button>
-    <button
-        type="button"
-        class:selected={genders.includes("other")}
-        on:click={() => toggleGender("other")}
-    >
-        Non-binary / Other
-    </button>
-</div>
-
-<h3>Age range</h3>
-<div class="grid grid-2">
-    <input
-        type="number"
-        min="18"
-        max="150"
-        placeholder="Min"
-        value={ageMin}
-        on:input={handleAgeMinChange}
-    />
-    <input
-        type="number"
-        min="18"
-        max="150"
-        placeholder="Max"
-        value={ageMax}
-        on:input={handleAgeMaxChange}
-    />
-</div>
-{#if ageError}
-    <p class="red">{ageError}</p>
+{#if mode === "visibility"}
+    <h3>Profile visibility</h3>
+    <label class="visibility-toggle">
+        <input
+            type="checkbox"
+            bind:checked={isVisible}
+        />
+        <span>
+            Show my profile in other people's feeds
+        </span>
+    </label>
 {/if}
 
-<h3>Countries</h3>
-<select multiple size="5" bind:value={countryIds}>
-    {#each $allCountries as country}
-        <option value={country.id}>
-            {country.name}
-        </option>
-    {/each}
-</select>
+{#if mode !== "visibility" || isVisible}
+    <h3>Genders</h3>
+    <div class="grid grid-3">
+        <button
+            type="button"
+            class:selected={genders.includes("male")}
+            on:click={() => toggleGender("male")}
+        >
+            Men
+        </button>
+        <button
+            type="button"
+            class:selected={genders.includes("female")}
+            on:click={() => toggleGender("female")}
+        >
+            Women
+        </button>
+        <button
+            type="button"
+            class:selected={genders.includes("other")}
+            on:click={() => toggleGender("other")}
+        >
+            Non-binary / Other
+        </button>
+    </div>
 
-<h3>Proximity</h3>
-<p class="hint">Limit matches to people near a chosen location.</p>
+    <h3>Age range</h3>
+    <div class="grid grid-2">
+        <input
+            type="number"
+            min="18"
+            max="150"
+            placeholder="Min"
+            value={ageMin}
+            on:input={handleAgeMinChange}
+        />
+        <input
+            type="number"
+            min="18"
+            max="150"
+            placeholder="Max"
+            value={ageMax}
+            on:input={handleAgeMaxChange}
+        />
+    </div>
+    {#if ageError}
+        <p class="red">{ageError}</p>
+    {/if}
 
-{#if proximityLat != null && proximityLng != null}
-    <MapPicker
-        lat={proximityLat}
-        lng={proximityLng}
-        radius={proximityKm ? Number(proximityKm) * 1000 : 0}
-        mode="preview"
-        defaultZoom={11}
-        on:confirm={(e) => {
-            proximityLat = e.detail.lat;
-            proximityLng = e.detail.lng;
-        }}
-    />
-    <button type="button" on:click={clearLocationFilter} style="margin-top: 0.5rem;">
-        Clear location filter
-    </button>
-
-    <select
-        id="proximity"
-        bind:value={proximityKm}
-        on:change={handleProximitySelect}
-        style="margin-top: 0.5rem;"
-    >
-        <option value="">
-            No limit
-        </option>
-        <option value="2">Within 2 km</option>
-        <option value="5">Within 5 km</option>
-        <option value="10">Within 10 km</option>
-        <option value="25">Within 25 km</option>
-        <option value="50">Within 50 km</option>
-        <option value="100">Within 100 km</option>
+    <h3>Countries</h3>
+    <select multiple size="5" bind:value={countryIds}>
+        {#each $allCountries as country}
+            <option value={country.id}>
+                {country.name}
+            </option>
+        {/each}
     </select>
-{:else}
-    <button type="button" on:click={pickLocation}>
-        Enable Proximity Filtering
-    </button>
+
+    <h3>Proximity</h3>
+    <p class="hint">Limit matches to people near a chosen location.</p>
+
+    {#if proximityLat != null && proximityLng != null}
+        <MapPicker
+            lat={proximityLat}
+            lng={proximityLng}
+            radius={proximityKm ? Number(proximityKm) * 1000 : 0}
+            mode="preview"
+            defaultZoom={11}
+            on:confirm={(e) => {
+                proximityLat = e.detail.lat;
+                proximityLng = e.detail.lng;
+            }}
+        />
+        <button type="button" on:click={clearLocationFilter} style="margin-top: 0.5rem;">
+            Clear location filter
+        </button>
+
+        <select
+            id="proximity"
+            bind:value={proximityKm}
+            on:change={handleProximitySelect}
+            style="margin-top: 0.5rem;"
+        >
+            <option value="">
+                No limit
+            </option>
+            <option value="2">Within 2 km</option>
+            <option value="5">Within 5 km</option>
+            <option value="10">Within 10 km</option>
+            <option value="25">Within 25 km</option>
+            <option value="50">Within 50 km</option>
+            <option value="100">Within 100 km</option>
+        </select>
+    {:else}
+        <button type="button" on:click={pickLocation}>
+            Enable Proximity Filtering
+        </button>
+    {/if}
 {/if}
 
 
@@ -321,5 +350,23 @@
         margin-bottom: 0.5rem;
         font-size: 0.85rem;
         color: var(--text-muted);
+    }
+
+    .visibility-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .visibility-toggle input {
+        width: 1.1rem;
+        height: 1.1rem;
+        cursor: pointer;
+    }
+
+    .visibility-toggle span {
+        font-weight: 500;
     }
 </style>
