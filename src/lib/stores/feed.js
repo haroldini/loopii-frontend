@@ -1,10 +1,10 @@
 
 import { writable, get } from "svelte/store";
-import { getUnseenPeers, evaluatePeer } from "$lib/api/feed.js";
+import { getFeedProfiles, evaluatePeer } from "$lib/api/feed.js";
 
 export const peer = writable(null);
 export const peerQueue = writable([]);               // queue[0] is the current peer (not removed until evaluated)
-export const peerStatus = writable("unloaded");      // "loading" | "loaded" | "empty" | "error" | "unloaded"
+export const peerStatus = writable("unloaded");      // "loading" | "loaded" | "empty" | "error" | "unloaded" | "hidden"
 export const ongoingEvaluations = writable([]);
 
 const QUEUE_BATCH_SIZE = 10;
@@ -13,14 +13,14 @@ const QUEUE_MIN = 5;
 let isFetching = false;
 
 
-// Fetch a batch of unseen peers, excluding those in the queue or currently being evaluated.
+// Fetch a batch of feed profiles, excluding those in the queue or currently being evaluated.
 export async function fetchPeerBatch() {
     if (isFetching) return { ok: true, added: 0, skipped: true };
     isFetching = true;
 
     try {
         const exclude_ids = [...get(peerQueue).map(p => p.id), ...get(ongoingEvaluations)];
-        const peers = await getUnseenPeers({ exclude_ids, limit: QUEUE_BATCH_SIZE });
+        const peers = await getFeedProfiles({ exclude_ids, limit: QUEUE_BATCH_SIZE });
 
         const added = Array.isArray(peers) ? peers.length : 0;
         if (added > 0) {
@@ -30,7 +30,17 @@ export async function fetchPeerBatch() {
 
     } catch (err) {
         console.error("fetchPeerBatch error:", err);
-        return { ok: false, added: 0, error: err?.message || String(err) };
+        const status = err?.status;
+        if (status === 403) {
+            // Profile is hidden
+            peerStatus.set("hidden");
+        }
+        return {
+            ok: false,
+            added: 0,
+            error: err?.message || String(err),
+            status,
+        };
     } finally {
         isFetching = false;
     }
@@ -62,10 +72,14 @@ export function setNextPeer() {
 export async function initPeerStore() {
     peerStatus.set("loading");
 
-    const { ok, added } = await fetchPeerBatch();
+    const { ok, added, status } = await fetchPeerBatch();
     if (!ok) {
         peer.set(null);
-        peerStatus.set("error");
+        if (status === 403) {
+            peerStatus.set("hidden");
+        } else {
+            peerStatus.set("error");
+        }
         return;
     }
 
@@ -110,10 +124,15 @@ export function handleDecision(connect) {
         peer.set(null);
         peerStatus.set("loading");
         void (async () => {
-            const { ok, added } = await fetchPeerBatch();
+            const { ok, added, status } = await fetchPeerBatch();
 
             if (!ok) {
-                peerStatus.set("error");
+                if (status === 403) {
+                    peer.set(null);
+                    peerStatus.set("hidden");
+                } else {
+                    peerStatus.set("error");
+                }
                 return;
             }
             if ((added === 0) && get(peerQueue).length === 0) {

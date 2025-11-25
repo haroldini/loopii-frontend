@@ -1,9 +1,9 @@
 
 import request from "$lib/utils/request.js";
 
-// Fetch an unseen peer
-export function getUnseenPeers({ exclude_ids = [], limit = 1 } = {}) {
-    return request("/feed/get-unseen-peers", {
+// Fetch feed profiles
+export function getFeedProfiles({ exclude_ids = [], limit = 1 } = {}) {
+    return request("/feed/get-feed", {
         method: "POST",
         data: { exclude_ids, limit }
     });
