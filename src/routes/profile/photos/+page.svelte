@@ -232,7 +232,13 @@
                 type="button"
                 on:click={handleUpload}
                 disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
-                { $photosState === "uploading" ? "Uploading..." : "Upload Photo" }
+                {#if $photosState === "uploading"}
+                    Uploading...
+                {:else if $photosState === "settingAvatar"}
+                    Setting avatar...
+                {:else}
+                    Upload Photo
+                {/if}
             </button>
             <button
                 type="button"

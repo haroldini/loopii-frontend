@@ -32,6 +32,7 @@
         <button on:click={refreshPeerStore}>Refresh</button>
         <button on:click={() => goto("/profile/search-preferences")}>Edit Preferences</button>
     </nav>
+    {$peerStatus}
 </div>
 
 

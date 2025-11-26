@@ -72,7 +72,7 @@ export function setNextPeer() {
 export async function initPeerStore() {
     peerStatus.set("loading");
 
-    const { ok, added, status } = await fetchPeerBatch();
+    const { ok, added, status, skipped } = await fetchPeerBatch();
     if (!ok) {
         peer.set(null);
         if (status === 403) {
@@ -80,6 +80,10 @@ export async function initPeerStore() {
         } else {
             peerStatus.set("error");
         }
+        return;
+    }
+
+    if (skipped) {
         return;
     }
 
@@ -124,7 +128,7 @@ export function handleDecision(connect) {
         peer.set(null);
         peerStatus.set("loading");
         void (async () => {
-            const { ok, added, status } = await fetchPeerBatch();
+            const { ok, added, status, skipped } = await fetchPeerBatch();
 
             if (!ok) {
                 if (status === 403) {
@@ -133,6 +137,9 @@ export function handleDecision(connect) {
                 } else {
                     peerStatus.set("error");
                 }
+                return;
+            }
+            if (skipped) {
                 return;
             }
             if ((added === 0) && get(peerQueue).length === 0) {
