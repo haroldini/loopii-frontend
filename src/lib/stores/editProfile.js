@@ -8,6 +8,17 @@ import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 import { addToast } from "$lib/stores/popups.js";
 
 
+// For user confirmation on changing certain fields
+const COOLDOWN_FIELDS = ["username", "dob", "gender", "country_id"];
+const COOLDOWN_LABELS = {
+    username: "username",
+    dob: "date of birth",
+    gender: "gender",
+    country_id: "country",
+};
+let pendingSave = null;
+
+
 // --- Form state ---
 export const name = writable(null);
 export const username = writable(null);
@@ -192,6 +203,32 @@ export const hasChanges = derived(
 );
 
 
+// Helper to save changes to profile
+async function performProfileUpdate(changed) {
+    profileEditState.set("saving");
+    error.set(null);
+
+    try {
+        const updated = await updateProfile(changed);
+        profile.set(updated);
+        profileEditState.set("success");
+        startEditing();
+        addToast({
+            text: "Profile updated successfully.",
+            autoHideMs: 3000,
+        });
+    } catch (err) {
+        profileEditState.set("error");
+        error.set(err.message || "Unexpected error saving profile");
+        console.error("Error updating profile:", err);
+        addToast({
+            text: "Failed to update profile.",
+            description: err.message || "We couldn't save your changes. Please try again later.",
+            autoHideMs: 5000,
+        });
+    }
+}
+
 
 // --- Save changes ---
 export async function saveEdits() {
@@ -200,7 +237,6 @@ export async function saveEdits() {
         return;
     }
 
-    profileEditState.set("saving");
     error.set(null);
 
     const current = normalizeProfile(get(profile) || {});
@@ -236,25 +272,55 @@ export async function saveEdits() {
         return;
     }
 
-    try {
-        const updated = await updateProfile(changed);
-        profile.set(updated);
-        profileEditState.set("success");
-        startEditing();
+    const cooldownFieldsEdited = Object.keys(changed).filter((k) =>
+        COOLDOWN_FIELDS.includes(k)
+    );
+
+    if (cooldownFieldsEdited.length > 0) {
+        const labels = cooldownFieldsEdited.map((k) => COOLDOWN_LABELS[k] || k);
+
+        let listText;
+        if (labels.length === 1) listText = labels[0];
+        else if (labels.length === 2) listText = labels.join(" and ");
+        else listText = `${labels.slice(0, -1).join(", ")} and ${labels.at(-1)}`;
+
+        pendingSave = { changed };
+
         addToast({
-            text: "Profile updated successfully.",
-            autoHideMs: 3000,
+            variant: "modal",
+            text: "Confirm important changes",
+            description: `You're about to change your ${listText}. These fields cannot be changed again for a while.`,
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Cancel",
+                    variant: "secondary",
+                },
+                {
+                    label: "Confirm changes",
+                    variant: "danger",
+                    onClick: () => {
+                        confirmCooldownSave();
+                    },
+                },
+            ],
         });
-    } catch (err) {
-        profileEditState.set("error");
-        error.set(err.message || "Unexpected error saving profile");
-        console.error("Error updating profile:", err);
-        addToast({
-            text: "Failed to update profile.",
-            description: err.message || "We couldn't save your changes. Please try again later.",
-            autoHideMs: 5000,
-        });
+
+        return;
     }
+
+    await performProfileUpdate(changed);
+}
+
+
+// --- Confirm cooldown save ---
+export async function confirmCooldownSave() {
+    if (!pendingSave) return;
+
+    const { changed } = pendingSave;
+    pendingSave = null;
+
+    await performProfileUpdate(changed);
 }
 
 

@@ -3,21 +3,22 @@
     import { onMount } from "svelte";
 
     export let id;
-    export let variant = "banner";     // "banner" | "popup"
+    export let variant = "banner";     // "banner" | "popup" | "modal"
     export let text = "";              // main title or headline
     export let description = null;     // secondary detail text
     export let autoHideMs = null;      // auto-dismiss timeout (usually for banners)
     export let onDismiss = null;       // called when dismissed
-    export let onAction = null;        // called on main click
-    export let component = null;       // optional content component (for rich popup)
+    export let onAction = null;        // called on main click (banner/popup)
+    export let component = null;       // optional content component (for rich popup / modal)
     export let props = {};             // props for component
+    export let actions = [];           // for modals: [{ label, variant?, onClick? }, ...]
 
     let timer;
     let interval;
     let progress = 1;
 
     onMount(() => {
-        if (autoHideMs) {
+        if (autoHideMs && variant !== "modal") {
             const start = Date.now();
             timer = setTimeout(() => dismiss(), autoHideMs);
             interval = setInterval(() => {
@@ -48,13 +49,23 @@
             action();
         }
     }
+
+    function handleModalKeyActivate(e) {
+        if (e.key === "Escape") {
+            e.stopPropagation();
+            dismiss();
+        }
+    }
+
+    function handleActionClick(act) {
+        act?.onClick?.(id);
+    }
 </script>
 
 {#if variant === "banner"}
     <!-- Banner: title left, X+spinner right, description under -->
     <div class="popup popup--banner" role="group">
         <div class="popup-header">
-            <!-- Clickable area is a real button now -->
             <button
                 type="button"
                 class="popup-titleblock bare"
@@ -93,7 +104,8 @@
             </button>
         </div>
     </div>
-{:else}
+
+{:else if variant === "popup"}
     <!-- Rich popup: text at top, optional component below -->
     <div
         class="popup popup--rich"
@@ -148,8 +160,82 @@
             </div>
         {/if}
     </div>
-{/if}
 
+{:else}
+    <!-- Modal -->
+    <div
+        class="modal-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-label={text || "Dialog"}
+        tabindex="-1"
+        on:click={(e) => {
+            if (e.target === e.currentTarget) {
+                dismiss();
+            }
+        }}
+        on:keydown={handleModalKeyActivate}
+    >
+        <div class="popup popup--modal" role="document">
+            <div class="popup-header">
+                <div class="popup-titleblock">
+                    {#if text}
+                        <p class="popup-title">{text}</p>
+                    {/if}
+                    {#if description}
+                        <p class="popup-detail">{description}</p>
+                    {/if}
+                </div>
+
+                <button
+                    type="button"
+                    class="dismiss bare"
+                    on:click={(e) => {
+                        e.stopPropagation();
+                        dismiss();
+                    }}
+                    aria-label="Dismiss dialog"
+                >
+                    <span class="dismiss-icon" aria-hidden="true">✕</span>
+                </button>
+            </div>
+
+            {#if component}
+                <div class="popup-inner">
+                    <svelte:component
+                        this={component}
+                        {...props}
+                        on:expand={() => onAction?.(id)}
+                        on:click={() => onAction?.(id)}
+                    />
+                </div>
+            {/if}
+
+            {#if actions && actions.length}
+                <div class="popup-actions">
+                    {#each actions as act}
+                        <button
+                            type="button"
+                            class={
+                                act.variant === "primary"
+                                    ? "primary"
+                                    : act.variant === "danger"
+                                    ? "danger"
+                                    : ""
+                            }
+                            on:click={(e) => {
+                                e.stopPropagation();
+                                handleActionClick(act);
+                            }}
+                        >
+                            {act.label}
+                        </button>
+                    {/each}
+                </div>
+            {/if}
+        </div>
+    </div>
+{/if}
 
 <style>
     /* Shared popup container */
@@ -183,6 +269,40 @@
     .popup--rich:focus-visible {
         outline: 2px solid var(--accent-blue);
         outline-offset: 2px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1100;
+    }
+
+    .popup--modal {
+        max-width: 480px;
+        width: min(480px, 100% - 2rem);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+        cursor: default;
+    }
+
+    .popup-actions {
+        margin-top: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    /* Reuse global button styles.
+       Only add a danger variant here. */
+    button.danger {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
     }
 
     /* Header row: title on left, dismiss button on right */
@@ -262,4 +382,3 @@
         transition: stroke-dasharray 0.1s linear;
     }
 </style>
-

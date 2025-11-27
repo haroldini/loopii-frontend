@@ -12,20 +12,20 @@
         loadMoreLoops,
         refreshLoopsStore,
         adjustNewLoopsCount,
+        confirmLoopDelete,
+        resetLoopDeleteConfirmPreference,
     } from "$lib/stores/loops.js";
 
-    import { updateLoopState, deleteLoop } from "$lib/api/loop.js";
+    import { updateLoopState } from "$lib/api/loop.js";
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
-    import { addToast } from "$lib/stores/popups.js";
 
-    
-    // Remove selected loop on component destroy
+    // Remove selected loop and reset delete-confirm preference on component destroy
     onDestroy(() => {
         selectedLoop.set(null);
+        resetLoopDeleteConfirmPreference();
     });
 
-    
 	// Open a loop’s expanded profile
 	async function expandProfile(loopEntry) {
 		const { loop, profile } = loopEntry;
@@ -33,7 +33,6 @@
 
 		// Mark as seen if not already
 		if (!loop.is_seen) {
-            
 			try {
 				// Optimistically update badge count
 				adjustNewLoopsCount();
@@ -50,7 +49,7 @@
 				await updateLoopState(loop.id, { is_seen: true });
 			} catch (err) {
 				console.error("Failed to mark loop as seen:", err);
-                
+
 				// Revert local loop state on error
 				adjustNewLoopsCount(1);
 				loops.update((arr) =>
@@ -116,30 +115,15 @@
 
     async function handleUnloop({ detail }) {
         const { loopId } = detail;
-        const prev = get(loops);
-        loops.update((arr) => arr.filter((item) => item.loop.id !== loopId));
-        loopsTotal.update((n) => Math.max(0, n - 1));
-        // Close expanded profile if it was the one being viewed
-        if (get(selectedLoop)?.id === get(loops).find(l => l.loop.id === loopId)?.profile.id) {
+
+        // Close expanded profile if it's this loop
+        const current = get(selectedLoop);
+        if (current?.loop?.id === loopId) {
             selectedLoop.set(null);
         }
-        try {
-            await deleteLoop(loopId);
-            addToast({
-                text: "Loop successfully deleted.",
-                description: "The profile has been removed from your loops.",
-                autoHideMs: 3000,
-            });
-        } catch (err) {
-            console.error("Failed to delete loop:", err);
-            // revert on error
-            loops.set(prev);
-            addToast({
-                text: "Failed to delete loop.",
-                description: "We couldn't remove the profile from your loops. Please try again later.",
-                autoHideMs: 5000,
-            });
-        }
+
+        // Let the store handle confirmation, deletion, and toasts
+        confirmLoopDelete(loopId);
     }
 
     function close() {
@@ -212,4 +196,3 @@
         {/if}
     </div>
 {/if}
-    

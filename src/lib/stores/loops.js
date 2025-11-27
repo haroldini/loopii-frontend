@@ -1,6 +1,7 @@
 
 import { writable, get } from "svelte/store";
-import { getUserLoops } from "$lib/api/loop.js";
+import { getUserLoops, deleteLoop as apiDeleteLoop } from "$lib/api/loop.js";
+import { addToast } from "$lib/stores/popups.js";
 
 export const loops = writable([]);
 export const selectedLoop = writable(null);
@@ -24,6 +25,10 @@ export const loopsState = writable({
 });
 
 export const loopsStatus = writable("unloaded");
+
+// Per-session flag: when false, delete confirmation is skipped.
+// Call resetLoopDeleteConfirmPreference() on component unmount to restore prompting.
+export const loopDeleteConfirmEnabled = writable(true);
 
 
 // --- Helper: sort favourites first, then newest ---
@@ -158,4 +163,127 @@ export async function refreshLoopsStore() {
 		loopsStatus.set("error");
 		loopsState.update((x) => ({ ...x, loading: false }));
 	}
+}
+
+
+// --- Local removal helper (used by optimistic delete) ---
+function removeLoopLocally(loopId) {
+	let removedLoop = null;
+
+	loops.update((arr) => {
+		const next = [];
+		for (const item of arr) {
+			if (item.loop?.id === loopId) {
+				removedLoop = item.loop;
+			} else {
+				next.push(item);
+			}
+		}
+		return next;
+	});
+
+	if (removedLoop) {
+		loopsTotal.update((n) => (n > 0 ? n - 1 : 0));
+
+		// If it was unseen, decrement unseen badge
+		if (!removedLoop.is_seen) {
+			adjustNewLoopsCount(); // default delta -1
+		}
+
+		// Clear selected loop if it was this one
+		selectedLoop.update((sl) =>
+			sl?.loop?.id === loopId ? null : sl
+		);
+	}
+
+	return removedLoop;
+}
+
+
+// --- Perform delete once user has confirmed (or confirmation skipped) ---
+// Optimistic: update UI first, revert on failure.
+async function performLoopDelete(loopId) {
+	if (!loopId) return;
+
+	// Snapshot current state for potential rollback
+	const prevLoops = get(loops);
+	const prevTotal = get(loopsTotal);
+	const prevNewCount = get(newLoopsCount);
+	const prevSelected = get(selectedLoop);
+
+	// Optimistic local removal
+	const removed = removeLoopLocally(loopId);
+	if (!removed) {
+		// Nothing to delete locally; still try API but no visible change
+	}
+
+	try {
+		await apiDeleteLoop(loopId);
+		addToast({
+			text: "Loop removed.",
+			description: "The profile has been removed from your loops.",
+			autoHideMs: 3000,
+		});
+	} catch (err) {
+		console.error("Failed to delete loop:", err);
+
+		// Roll back optimistic changes
+		loops.set(prevLoops);
+		loopsTotal.set(prevTotal);
+		newLoopsCount.set(prevNewCount);
+		selectedLoop.set(prevSelected);
+
+		addToast({
+			text: "Failed to delete loop.",
+			description: "We couldn't remove this loop. Please try again later.",
+			autoHideMs: 5000,
+		});
+	}
+}
+
+
+// --- Public: confirm + delete helper ---
+// Call this from the UI instead of calling the API directly.
+export function confirmLoopDelete(loopId) {
+	if (!loopId) return;
+
+	// If user has chosen "don't ask again" in this session, delete immediately
+	if (!get(loopDeleteConfirmEnabled)) {
+		void performLoopDelete(loopId);
+		return;
+	}
+
+	addToast({
+		variant: "modal",
+		text: "Delete this loop?",
+		description: "This will permanently remove this loop from your account.",
+		autoHideMs: null,
+		actions: [
+			{
+				label: "Cancel",
+				variant: "secondary",
+			},
+			{
+				label: "Delete loop",
+				variant: "danger",
+				onClick: () => {
+					void performLoopDelete(loopId);
+				},
+			},
+			{
+				label: "Delete and don't ask again",
+				variant: "danger",
+				onClick: () => {
+					loopDeleteConfirmEnabled.set(false);
+					void performLoopDelete(loopId);
+				},
+			},
+		],
+	});
+}
+
+
+// Reset preference so confirmation is shown again (call on component unmount)
+export function resetLoopDeleteConfirmPreference() {
+	loopDeleteConfirmEnabled.set(true);
 }

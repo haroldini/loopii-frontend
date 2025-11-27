@@ -16,9 +16,22 @@ export function addToast({
     data = {},
     onAction = null,
     onDismiss = null,
+    actions = null,
 } = {}) {
     const id = `toast-${++nextId}`;
-    const toast = { id, variant, text, description, autoHideMs, component, props, data, onAction, onDismiss };
+    const toast = {
+        id,
+        variant,
+        text,
+        description,
+        autoHideMs,
+        component,
+        props,
+        data,
+        onAction,
+        onDismiss,
+        actions,
+    };
     toasts.update((list) => [toast, ...list]);
 }
 
@@ -48,8 +61,27 @@ export const allPopups = derived(toasts, ($t) =>
                   } catch (err) {
                       console.error("Toast onAction handler threw:", err);
                   }
-                  dismissToast(t.id); 
+                  dismissToast(t.id);
               }
+            : null,
+        
+        // Modal actions: each button gets a wrapped onClick
+        actions: Array.isArray(t.actions)
+            ? t.actions.map((a) => ({
+                  ...a,
+                  onClick: a.onClick
+                      ? (id) => {
+                            try {
+                                a.onClick(t.id);
+                            } catch (err) {
+                                console.error("Toast action handler threw:", err);
+                            }
+                            dismissToast(t.id);
+                        }
+                      : () => {
+                            dismissToast(t.id);
+                        },
+              }))
             : null,
     }))
 );

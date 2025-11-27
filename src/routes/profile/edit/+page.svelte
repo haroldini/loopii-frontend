@@ -14,6 +14,7 @@
         removeSocial, updateHandle,
     } from "$lib/stores/editProfile.js";
     import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+    import { addToast } from "$lib/stores/popups.js";
     import ProfileFields from "$lib/components/ProfileFields.svelte";
 
     onMount(() => {
@@ -22,8 +23,32 @@
     });
 
     function cancelEditingAndGoBack() {
-        cancelEditing();
-        goto("/profile");
+        if (!get(hasChanges)) {
+            cancelEditing();
+            goto("/profile");
+            return;
+        }
+
+        addToast({
+            variant: "modal",
+            text: "Discard your changes?",
+            description: "You have unsaved changes. If you leave now, they will be lost.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Keep editing",
+                    variant: "secondary",
+                },
+                {
+                    label: "Discard changes",
+                    variant: "danger",
+                    onClick: () => {
+                        cancelEditing();
+                        goto("/profile");
+                    },
+                },
+            ],
+        });
     }
 
     onDestroy(() => {

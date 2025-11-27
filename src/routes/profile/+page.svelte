@@ -45,7 +45,7 @@
         <button type="button" on:click={() => goto("/profile/visibility-preferences")}>
             Visibility
         </button>
-        <button type="button" on:click={() => goto("/profile/security")}>
+        <button type="button" on:click={() => goto("/account")}>
             Account Settings
         </button>
     </nav>

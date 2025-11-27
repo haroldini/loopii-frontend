@@ -1,12 +1,35 @@
 
 <script>
     import { goto } from "$app/navigation";
-    import { user } from "$lib/stores/auth.js";
+    import { user, signOut } from "$lib/stores/auth.js";
     import { mode, setMode, status } from "$lib/stores/authSettings.js";
     import AuthSettings from "$lib/components/AuthSettings.svelte";
+    import { addToast } from "$lib/stores/popups.js";
 
     function select(tab) {
         setMode(tab);
+    }
+
+    function confirmLocalSignOut() {
+        addToast({
+            variant: "modal",
+            text: "Log out?",
+            description: "You'll be logged out on this device. You can sign back in any time.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Cancel",
+                    variant: "secondary",
+                },
+                {
+                    label: "Log out",
+                    variant: "danger",
+                    onClick: () => {
+                        signOut();
+                    },
+                },
+            ],
+        });
     }
 </script>
 
@@ -22,7 +45,7 @@
         <button type="button" on:click={() => goto("/profile")}>
             Back to Profile
         </button>
-        <button type="button" on:click={signOut}>
+        <button type="button" on:click={confirmLocalSignOut}>
             Log Out
         </button>
     </nav>
@@ -34,7 +57,9 @@
             type="button"
             on:click={() => select("password")}
             aria-current={$mode === "password" ? "page" : undefined}
-        >Change Password</button>
+        >
+            Change Password
+        </button>
         <button
             type="button"
             on:click={() => select("email")}

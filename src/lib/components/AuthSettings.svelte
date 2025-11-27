@@ -7,29 +7,149 @@
         resetSensitive, resetTransient, resetValidation, resetState
     } from "$lib/stores/authSettings.js";
 
-    import { updatePassword, updateEmail, deleteAccount, requestPasswordReset, signOut, user, expectedPhrase } from "$lib/stores/auth.js";
+    import {
+        updatePassword,
+        updateEmail,
+        deleteAccount,
+        requestPasswordReset,
+        signOut,
+        user,
+        expectedPhrase
+    } from "$lib/stores/auth.js";
+
+    import { addToast } from "$lib/stores/popups.js";
 
     let emailSentToNew = "";
     let emailSentToOld = "";
 
-    // Function to handle form submission
+    // Confirm + perform "delete account"
+    function confirmDeleteAccount() {
+        addToast({
+            variant: "modal",
+            text: "Delete your account?",
+            description:
+                "This will permanently delete your account and data. This action cannot be undone.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Cancel",
+                    variant: "secondary",
+                },
+                {
+                    label: "Delete account",
+                    variant: "danger",
+                    onClick: async () => {
+                        isSubmitting.set(true);
+                        error.set("");
+                        status.set("idle");
+
+                        try {
+                            status.set("updating");
+                            const { error: err } = await deleteAccount(
+                                $currentPassword,
+                                $confirmPhrase
+                            );
+                            if (err) {
+                                error.set(err || "Could not delete account");
+                                status.set("failed");
+                            } else {
+                                status.set("updated");
+                                // Backend already removed account; sign user out locally
+                                await signOut();
+                            }
+                        } finally {
+                            isSubmitting.set(false);
+                            resetValidation();
+                            if (!["emailPending", "failed"].includes($status)) {
+                                resetSensitive();
+                            }
+                        }
+                    },
+                },
+            ],
+        });
+    }
+
+    // Confirm + perform "sign out everywhere"
+    function confirmSignOutEverywhere() {
+        addToast({
+            variant: "modal",
+            text: "Sign out everywhere?",
+            description:
+                "This will sign you out of all sessions on all devices, including this one.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Cancel",
+                    variant: "secondary",
+                },
+                {
+                    label: "Sign out everywhere",
+                    variant: "danger",
+                    onClick: async () => {
+                        isSubmitting.set(true);
+                        error.set("");
+                        status.set("idle");
+
+                        try {
+                            status.set("updating");
+                            const { data, error: err } = await signOut("global");
+                            if (err) {
+                                error.set(
+                                    err || "We could not sign you out everywhere."
+                                );
+                                status.set("failed");
+                            } else {
+                                status.set("updated");
+                            }
+                        } finally {
+                            isSubmitting.set(false);
+                            resetValidation();
+                            if (!["emailPending", "failed"].includes($status)) {
+                                resetSensitive();
+                            }
+                        }
+                    },
+                },
+            ],
+        });
+    }
+
+    // Handle primary submit button
     async function handleSubmit() {
-        isSubmitting.set(true);
+        // Always clear transient state first
         error.set("");
         status.set("idle");
         emailSentToNew = "";
         emailSentToOld = "";
 
+        // Destructive actions go through confirmation modals
+        if ($mode === "delete") {
+            confirmDeleteAccount();
+            return;
+        }
+
+        if ($mode === "revoke") {
+            confirmSignOutEverywhere();
+            return;
+        }
+
+        isSubmitting.set(true);
+
         try {
             if ($mode === "password") {
                 status.set("updating");
-                const { data, error: err } = await updatePassword($currentPassword, $newPassword);
+                const { data, error: err } = await updatePassword(
+                    $currentPassword,
+                    $newPassword
+                );
                 if (err) {
                     error.set(err || "Could not update password");
                     status.set("failed");
                 } else {
                     status.set("updated");
                 }
+
             } else if ($mode === "email") {
                 status.set("updating");
                 const { data, error: err } = await updateEmail($newEmail);
@@ -37,38 +157,22 @@
                     error.set(err || "Could not update email");
                     status.set("failed");
                 } else {
-                    // Supabase sends confirmation email
+                    // Supabase sends confirmation emails
                     emailSentToNew = $newEmail;
                     emailSentToOld = $user?.email || "";
                     status.set("emailPending");
                 }
-            } else if ($mode === "delete") {
-                status.set("updating");
-                const { error: err } = await deleteAccount($currentPassword, $confirmPhrase);
-                if (err) {
-                    error.set(err || "Could not delete account");
-                    status.set("failed");
-                } else {
-                    status.set("updated");
-                    signOut();
-                }
+
             } else if ($mode === "reset") {
                 status.set("updating");
-                const { data, error: err } = await requestPasswordReset($user?.email || "");
+                const { data, error: err } = await requestPasswordReset(
+                    $user?.email || ""
+                );
                 if (err) {
                     error.set(err || "Could not send reset email");
                     status.set("failed");
                 } else {
                     status.set("emailPending");
-                }
-            } else if ($mode === "revoke") {
-                status.set("updating");
-                const { data, error: err } = await signOut("global");
-                if (err) {
-                    error.set(err || "We could not sign you out everywhere.");
-                    status.set("failed");
-                } else {
-                    status.set("updated");
                 }
             }
         } finally {
@@ -83,11 +187,11 @@
 
 
 <h3>
-    {#if $mode === "password"}Change password
-    {:else if $mode === "email"}Change email
-    {:else if $mode === "delete"}Delete account
-    {:else if $mode === "reset"}Reset password
-    {:else if $mode === "revoke"}Sign out everywhere
+    {#if $mode === "password"}Change Password
+    {:else if $mode === "email"}Change Email
+    {:else if $mode === "delete"}Delete Account
+    {:else if $mode === "reset"}Reset Password
+    {:else if $mode === "revoke"}Sign Out Everywhere
     {/if}
 </h3>
 
@@ -116,7 +220,8 @@
         value={$confirmNewPassword}
         on:input={(e) => confirmNewPassword.set(e.target.value)}
     />
-    <p>This will automatically sign you out on all other devices. Click
+    <p>
+        This will automatically sign you out on all other devices. Click
         <span
             role="button"
             tabindex="0"
@@ -142,9 +247,16 @@
         on:input={(e) => confirmNewEmail.set(e.target.value.trim())}
     />
 {:else if $mode === "delete"}
-    <input placeholder={$expectedPhrase} value={$confirmPhrase} on:input={(e) => confirmPhrase.set(e.target.value)}/>
-    <p>To confirm, type <strong style="user-select:none;">{$expectedPhrase}</strong> above.</p>
-    <p><span class="red">This action permanently deletes your account and data.</span> 
+    <input
+        placeholder={$expectedPhrase}
+        value={$confirmPhrase}
+        on:input={(e) => confirmPhrase.set(e.target.value)}
+    />
+    <p><span class="red">This action permanently deletes your account and data.</span></p>
+    <p>
+        To confirm, type <strong style="user-select:none;">{$expectedPhrase}</strong> above.
+    </p>
+    <p>
         Click
         <span
             role="button"
@@ -157,35 +269,21 @@
         </span> if you've forgotten your current password.
     </p>
 {:else if $mode === "reset"}
-    <p>Click the button below to send a password reset email to your inbox ({$user?.email}).</p>
+    <p>
+        Click the button below to send a password reset email to your inbox ({$user?.email}).
+    </p>
 {:else if $mode === "revoke"}
-    <p>Click the button below to sign out of all sessions on all devices, including this one.</p>
+    <p>
+        Click the button below to sign out of all sessions on all devices, including this one.
+    </p>
 {/if}
 
 
-<!-- Display the correct buttons -->
-<nav>
-    <button type="button" disabled={!$readyToSubmit || $isSubmitting} on:click={handleSubmit}>
-        {#if $isSubmitting}
-            Submitting...
-        {:else}
-            {#if $mode === "password"}Update password
-            {:else if $mode === "email"}Update email
-            {:else if $mode === "delete"}Delete account
-            {:else if $mode === "reset"}Send reset email
-            {:else if $mode === "revoke"}Sign out everywhere
-            {/if}
-        {/if}
-    </button>
-</nav>
-
-
 <!-- Status / Feedback Box -->
-{#if $validationErrors.filter(e => e.display).length || $error || ["failed", "emailPending"].includes($status)}
-    <div class="container bordered fill">
-
+{#if $validationErrors.filter((e) => e.display).length || $error || ["failed", "emailPending"].includes($status)}
+    <div class="container fill">
         <!-- Validation errors -->
-        {#each $validationErrors.filter(e => e.display) as err}
+        {#each $validationErrors.filter((e) => e.display) as err}
             <p class="red">{err.message}</p>
         {/each}
 
@@ -196,9 +294,35 @@
 
         <!-- Status -->
         {#if $status === "emailPending" && $mode === "email"}
-        <p class="green">Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.</p>
+            <p class="green">
+                Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and
+                <strong>{emailSentToNew}</strong>.
+            </p>
         {:else if $status === "emailPending" && $mode === "reset"}
-        <p class="green">Password reset email sent! Check your inbox ({$user?.email}).</p>
+            <p class="green">
+                Password reset email sent! Check your inbox ({$user?.email}).
+            </p>
         {/if}
     </div>
 {/if}
+
+
+<!-- Display the correct buttons -->
+<nav>
+    <button
+        type="button"
+        disabled={!$readyToSubmit || $isSubmitting}
+        on:click={handleSubmit}
+    >
+        {#if $isSubmitting}
+            Submitting...
+        {:else}
+            {#if $mode === "password"}Update Password
+            {:else if $mode === "email"}Update Email
+            {:else if $mode === "delete"}Delete Account
+            {:else if $mode === "reset"}Send reset Email
+            {:else if $mode === "revoke"}Sign Out Everywhere
+            {/if}
+        {/if}
+    </button>
+</nav>
