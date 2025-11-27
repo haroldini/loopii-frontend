@@ -99,7 +99,7 @@
 
             const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", imageQuality));
             if (blob) {
-                const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+                const file = new File([blob], "upload.jpg", { type: "image/jpeg" });
                 revokeUrl(editedUrl);
                 editedUrl = URL.createObjectURL(blob);
 
@@ -224,10 +224,12 @@
     <div class="fullscreen-container">
         <header class="header">
             <button type="button" on:click={() => exitToPreview(false)}>Back</button>
-            <h2>Select Avatar</h2>
+            <h2>Upload Image</h2>
             <div class="header-actions">
                 {#if (workingUrl || originalUrl)}
                     <button type="button" on:click={replaceImage}>Replace</button>
+                {:else}
+                    <button type="button" on:click={replaceImage}>Select</button>
                 {/if}
                 <button type="button" on:click={() => exitToPreview(true)}>Confirm</button>
             </div>
@@ -239,13 +241,21 @@
                     <img
                         bind:this={imgElement}
                         src={workingUrl || originalUrl}
-                        alt="Avatar preview"
+                        alt="Upload preview"
                         class="full-img"
                         on:load={onImageLoad}
                     />
                 </div>
             {:else}
-                <div class="no-image-placeholder">No image selected</div>
+                <div
+                    class="no-image-placeholder"
+                    role="button"
+                    tabindex="0"
+                    on:click={replaceImage}
+                    on:keydown={(e) => e.key === "Enter" && replaceImage()}
+                >
+                    No image selected — click to choose
+                </div>
             {/if}
         </main>
 
@@ -260,7 +270,7 @@
 {:else}
     {#if editedUrl}
         <button class="preview-button" on:click={enterFullscreen}>
-            <img src={editedUrl} alt="Avatar preview" class="preview-img" />
+            <img src={editedUrl} alt="Upload preview" class="preview-img" />
         </button>
     {/if}
 {/if}
@@ -295,7 +305,20 @@
     }
 
     .no-image-placeholder {
+        width: 100%;
+        height: 100%;
+        max-width: 90%;
+        max-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 8px;
+        border: 1px dashed var(--border-2);
+        background: var(--bg-1);
+        text-align: center;
+        padding: 1rem;
     }
 
     .fullscreen-container {

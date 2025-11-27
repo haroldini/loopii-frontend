@@ -15,6 +15,9 @@
 
     export let valid = true;
 
+    export let defaultLat = 51.505;
+    export let defaultLng = -0.09;
+
     const dispatch = createEventDispatcher();
 
     let genders = [];
@@ -184,8 +187,8 @@
 
     function pickLocation() {
         // Default London at 5km if no profile location
-        proximityLat = $profile?.latitude ?? 51.505;
-        proximityLng = $profile?.longitude ?? -0.09;
+        proximityLat = $profile?.latitude ?? defaultLat;
+        proximityLng = $profile?.longitude ?? defaultLng;
         if (!proximityKm) {
             proximityKm = "5";
         }

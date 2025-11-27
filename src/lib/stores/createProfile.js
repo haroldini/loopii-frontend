@@ -22,6 +22,8 @@ export const latitude = writable(null);
 export const longitude = writable(null);
 export const selectedInterests = writable([]);
 export const socials = writable([]);
+export const loop_bio = writable(null);
+export const looking_for = writable(null);
 
 // Avatar image state
 export const avatarFile = writable(null);
@@ -54,8 +56,8 @@ export const prefsState = writable({
 
 export const pageFields = {
 	0: ["username", "dob", "gender", "country", "name", "avatar"],
-	1: ["bio", "interests", "latitude", "longitude", "location"],
-	2: ["socials"],
+	1: ["bio", "interests", "latitude", "longitude", "looking_for"],
+	2: ["socials", "loop_bio"],
 	3: [],
 };
 
@@ -63,11 +65,13 @@ export const pageFields = {
 // --- Validation ---
 export function validateProfile(
 	username, dob, gender, country, name, bio,
-	location, selectedInterests, socials, avatarFile
+	location, selectedInterests, socials, avatarFile,
+	loop_bio, looking_for
 ) {
 	const errors = validateProfileFields({
 		username, dob, gender, country, name, bio,
-		location, interests: selectedInterests, socials, avatarFile
+		location, interests: selectedInterests, socials, avatarFile,
+		loop_bio, looking_for
 	});
 	validationErrors.set(errors);
 	return errors.length === 0;
@@ -76,10 +80,20 @@ export function validateProfile(
 
 // --- Derived: ready to submit ---
 export const readyToSubmit = derived(
-	[currentPage, username, dob, gender, country, name, bio, location, selectedInterests, socials, avatarFile],
-	([$currentPage, $username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile]) => {
+	[
+		currentPage, username, dob, gender, country,
+		name, bio, location, selectedInterests, socials,
+		avatarFile, loop_bio, looking_for,
+	],
+	([
+		$currentPage, $username, $dob, $gender, $country,
+		$name, $bio, $location, $selectedInterests, $socials,
+		$avatarFile, $loop_bio, $looking_for,
+	]) => {
 		const allValid = validateProfile(
-			$username, $dob, $gender, $country, $name, $bio, $location, $selectedInterests, $socials, $avatarFile
+			$username, $dob, $gender, $country, $name, $bio,
+			$location, $selectedInterests, $socials, $avatarFile,
+			$loop_bio, $looking_for,
 		);
 
 		const isLastPage = $currentPage === 3;
@@ -132,6 +146,8 @@ export async function submitProfile() {
 			location: get(location),
 			latitude: get(latitude),
 			longitude: get(longitude),
+			loop_bio: get(loop_bio),
+			looking_for: get(looking_for),
 			socials: get(socials),
 			interests: get(selectedInterests),
 		});
@@ -147,6 +163,8 @@ export async function submitProfile() {
 				country_id: normalized.country_id,
 				name: normalized.name,
 				bio: normalized.bio,
+				loop_bio: normalized.loop_bio,
+				looking_for: normalized.looking_for,
 				location: normalized.location,
 				latitude: normalized.latitude,
 				longitude: normalized.longitude,
@@ -360,6 +378,8 @@ function resetFields() {
 	latitude.set(null);
 	longitude.set(null);
 	selectedInterests.set([]);
+	loop_bio.set(null);
+	looking_for.set(null);
 	socials.set([]);
 	avatarFile.set(null);
 	avatarOriginalUrl.set(null);

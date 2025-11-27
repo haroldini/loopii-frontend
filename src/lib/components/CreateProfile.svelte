@@ -5,11 +5,11 @@
 	import { user, signOut } from "$lib/stores/auth.js";
 	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 	import { 
-		username, name, dob, gender, country, bio, latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
-		error, readyToSubmit, validationErrors, currentPage,
+		username, name, dob, gender, country, bio, loop_bio, looking_for,
+		latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
+		error, readyToSubmit, validationErrors, currentPage, prefsState,
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
 		updateHandle, removeSocial, 
-		prefsState,
 	} from "$lib/stores/createProfile.js";
 
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
@@ -50,6 +50,8 @@
 		country: $country,
 		location: $location,
 		bio: $bio,
+		loop_bio: $loop_bio,
+		looking_for: $looking_for,
 		latitude: $latitude,
 		longitude: $longitude,
 		interests: $selectedInterests,
@@ -64,6 +66,8 @@
 		country: (v) => country.set(v),
 		location: (v) => location.set(v),
 		bio: (v) => bio.set(v),
+		loop_bio: (v) => loop_bio.set(v),
+		looking_for: (v) => looking_for.set(v),
 		latitude: (v) => latitude.set(v),
 		longitude: (v) => longitude.set(v),
 		interests: (arr) => selectedInterests.set(arr),
@@ -218,7 +222,7 @@
 
 		<!-- City / Bio / Interests -->
 		<ProfileFields
-			fields={["location", "bio", "interests"]}
+			fields={["bio", "looking_for", "interests"]}
 			values={fieldValues}
 			setters={fieldSetters}
 			errors={$validationErrors}
@@ -235,7 +239,7 @@
 		<h3>What Your Loops See</h3>
 
 		<ProfileFields
-			fields={[{ key: "socials", label: "Social Media Links" }]}
+			fields={[{ key: "socials", label: "Social Media Links" }, "loop_bio"]}
 			values={fieldValues}
 			setters={fieldSetters}
 			errors={$validationErrors}
@@ -266,6 +270,8 @@
 			mode="search"
 			on:change={handlePrefsChange}
 			bind:valid={prefsValid}
+			defaultLat={$latitude}
+			defaultLng={$longitude}
 		/>
 
 		<nav>
