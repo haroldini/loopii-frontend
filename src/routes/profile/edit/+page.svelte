@@ -3,13 +3,15 @@
     import { onMount, onDestroy } from "svelte";
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
-    import { profile } from "$lib/stores/profile";
+    import { profile } from "$lib/stores/profile.js";
     import {
         saveEdits, cancelEditing, startEditing,
         name, dob, gender, country, latitude, longitude, location, bio,
         selectedInterests, socials, username,
-        validationErrors, profileEditState, error, readyToSubmit, hasChanges,
-        removeSocial, updateHandle
+        star_sign, mbti, loop_bio, looking_for,
+        validationErrors, profileEditState, error,
+        readyToSubmit, hasChanges,
+        removeSocial, updateHandle,
     } from "$lib/stores/editProfile.js";
     import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
     import ProfileFields from "$lib/components/ProfileFields.svelte";
@@ -40,6 +42,10 @@
         latitude: $latitude,
         longitude: $longitude,
         interests: $selectedInterests,
+        star_sign: $star_sign,
+        mbti: $mbti,
+        loop_bio: $loop_bio,
+        looking_for: $looking_for,
     };
 
     // cooldown timestamps passed into ProfileFields
@@ -64,6 +70,10 @@
         latitude: (v) => latitude.set(v),
         longitude: (v) => longitude.set(v),
         interests: (arr) => selectedInterests.set(arr),
+        star_sign: (v) => star_sign.set(v),
+        mbti: (v) => mbti.set(v),
+        loop_bio: (v) => loop_bio.set(v),
+        looking_for: (v) => looking_for.set(v),
     };
 
     // social add handler (was inline before)
@@ -147,7 +157,10 @@
                     // pickLabel: "Pick Location",
                     // defaultLat: 51.505,
                     // defaultLng: -0.09,
-                }
+                },
+                "looking_for",
+                "star_sign",
+                "mbti",
             ]}
             values={fieldValues}
             setters={fieldSetters}
@@ -171,7 +184,10 @@
         <h3>What Your Loops See</h3>
 
         <ProfileFields
-            fields={[{ key: "socials", label: "Social Media Links" }]}
+            fields={[
+                { key: "socials", label: "Social Media Links" },
+                "loop_bio"
+            ]}
             values={fieldValues}
             setters={fieldSetters}
             errors={$validationErrors}
@@ -183,19 +199,20 @@
         />
     </div>
 
-
     <div class="container bordered">
         <h3>Your Essential Info</h3>
-        <p class="hint">These fields cannot be changed more than once within a certain time period.</p>
+        <p class="hint">These fields cannot be frequently changed.</p>
 
-        <ProfileFields
-            fields={["username", "dob", "gender", "country"]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-            allCountries={$allCountries}
-            cooldowns={profileCooldowns}
-        />
+        {#key JSON.stringify(profileCooldowns)}
+            <ProfileFields
+                fields={["username", "dob", "gender", "country"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+                allCountries={$allCountries}
+                cooldowns={profileCooldowns}
+            />
+        {/key}
     </div>
 
 {/if}

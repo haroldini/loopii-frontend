@@ -1,194 +1,281 @@
 
+// ----- CONFIG CONSTANTS -----
+
+const MIN_AGE_YEARS = 18;
+const DOB_MIN_YEAR = 1900;
+
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 30;
+
+const NAME_MAX_LENGTH = 30;
+const BIO_MAX_LENGTH = 500;
+const LOCATION_MAX_LENGTH = 50;
+const LOOP_BIO_MAX_LENGTH = 500;
+const LOOKING_FOR_MAX_LENGTH = 500;
+
+const MAX_INTERESTS = 20;
+
+const ALLOWED_AVATAR_TYPES = ["image/jpeg"];
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+
 // ----- BASIC FIELD VALIDATORS -----
 
 export function validateUsername(username) {
-	if (!username) {
-		return { field: "username", message: "Username is required", display: false };
-	}
-	if (username.length < 3 || username.length > 30) {
-		return { field: "username", message: "Username must be 3–30 characters", display: true };
-	}
-	if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-		return { field: "username", message: "Username may only contain letters, numbers, underscores", display: true };
-	}
-	return null;
+    if (!username) {
+        return { field: "username", message: "Username is required", display: false };
+    }
+    if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
+        return {
+            field: "username",
+            message: `Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters`,
+            display: true,
+        };
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return {
+            field: "username",
+            message: "Username may only contain letters, numbers, and underscores",
+            display: true,
+        };
+    }
+    return null;
 }
 
 export function validateDOB(dob) {
-	if (!dob) {
-		return { field: "dob", message: "Date of birth is required", display: false };
-	}
-	const d = new Date(dob);
-	const today = new Date();
-	const minDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+    if (!dob) {
+        return { field: "dob", message: "Date of birth is required", display: false };
+    }
 
-	if (d > today) {
-		return { field: "dob", message: "Date of birth cannot be in the future", display: true };
-	}
-	if (d < new Date("1900-01-01")) {
-		return { field: "dob", message: "Date of birth must be after 1900", display: true };
-	}
-	if (d > minDate) {
-		const age = today.getFullYear() - d.getFullYear();
-		if (age < 13 || (age === 13 && today < new Date(d.getFullYear() + 13, d.getMonth(), d.getDate()))) {
-			return { field: "dob", message: "You must be at least 13 years old", display: true };
-		}
-	}
-	return null;
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) {
+        return { field: "dob", message: "Invalid date of birth", display: true };
+    }
+
+    const today = new Date();
+    const minDate = new Date(today.getFullYear() - MIN_AGE_YEARS, today.getMonth(), today.getDate());
+
+    if (d > today) {
+        return { field: "dob", message: "Date of birth cannot be in the future", display: true };
+    }
+    if (d < new Date(`${DOB_MIN_YEAR}-01-01`)) {
+        return { field: "dob", message: `Date of birth must be after ${DOB_MIN_YEAR}`, display: true };
+    }
+    if (d > minDate) {
+        return {
+            field: "dob",
+            message: `You must be at least ${MIN_AGE_YEARS} years old`,
+            display: true,
+        };
+    }
+    return null;
 }
 
 export function validateGender(gender) {
-	if (!gender) {
-		return { field: "gender", message: "Gender is required", display: false };
-	}
-	return null;
+    if (!gender) {
+        return { field: "gender", message: "Gender is required", display: false };
+    }
+    return null;
 }
 
 export function validateCountry(country) {
-	if (!country) {
-		return { field: "country", message: "Country is required", display: false };
-	}
-	return null;
+    if (!country) {
+        return { field: "country", message: "Country is required", display: false };
+    }
+    return null;
 }
 
 export function validateName(name) {
-	if (name && name.length > 30) {
-		return { field: "name", message: "Display name must be 30 characters or fewer", display: true };
-	}
-	return null;
+    if (name && name.length > NAME_MAX_LENGTH) {
+        return {
+            field: "name",
+            message: `Display name must be ${NAME_MAX_LENGTH} characters or fewer`,
+            display: true,
+        };
+    }
+    return null;
 }
 
 export function validateBio(bio) {
-	if (bio && bio.length > 500) {
-		return { field: "bio", message: "Bio must be 500 characters or fewer", display: true };
-	}
-	return null;
+    if (bio && bio.length > BIO_MAX_LENGTH) {
+        return {
+            field: "bio",
+            message: `Bio must be ${BIO_MAX_LENGTH} characters or fewer`,
+            display: true,
+        };
+    }
+    return null;
 }
 
 export function validateLocation(location) {
-	if (location && location.length > 50) {
-		return { field: "location", message: "Location must be 50 characters or fewer", display: true };
-	}
-	return null;
+    if (location && location.length > LOCATION_MAX_LENGTH) {
+        return {
+            field: "location",
+            message: `Location must be ${LOCATION_MAX_LENGTH} characters or fewer`,
+            display: true,
+        };
+    }
+    return null;
 }
+
+export function validateLoopBio(loopBio) {
+    if (loopBio && loopBio.length > LOOP_BIO_MAX_LENGTH) {
+        return {
+            field: "loop_bio",
+            message: `Loop bio must be ${LOOP_BIO_MAX_LENGTH} characters or fewer`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validateLookingFor(lookingFor) {
+    if (lookingFor && lookingFor.length > LOOKING_FOR_MAX_LENGTH) {
+        return {
+            field: "looking_for",
+            message: `This field must be ${LOOKING_FOR_MAX_LENGTH} characters or fewer`,
+            display: true,
+        };
+    }
+    return null;
+}
+
 
 // ----- AVATAR VALIDATION -----
 
 export function validateAvatar(avatarFile) {
-	if (!avatarFile) {
-		return { field: "avatar", message: "Profile picture is required", display: false };
-	}
+    if (!avatarFile) {
+        return { field: "avatar", message: "Profile picture is required", display: false };
+    }
 
-	const allowedTypes = ["image/jpeg"];
-	if (!allowedTypes.includes(avatarFile.type)) {
-		return { field: "avatar", message: "Profile picture must be a JPEG", display: true };
-	}
+    if (!ALLOWED_AVATAR_TYPES.includes(avatarFile.type)) {
+        return { field: "avatar", message: "Profile picture must be a JPEG", display: true };
+    }
 
-	const maxSize = 5 * 1024 * 1024; // 5 MB
-	const size = avatarFile.size;
-	const formatted =
-		size < 1024 * 1024
-			? (size / 1024).toFixed(2) + " KB"
-			: (size / (1024 * 1024)).toFixed(2) + " MB";
+    const size = avatarFile.size;
+    const formatted =
+        size < 1024 * 1024
+            ? (size / 1024).toFixed(2) + " KB"
+            : (size / (1024 * 1024)).toFixed(2) + " MB";
 
-	if (size > maxSize) {
-		return {
-			field: "avatar",
-			message: `Profile picture must be smaller than 5 MB (current: ${formatted})`,
-			display: true
-		};
-	}
+    if (size > MAX_AVATAR_SIZE_BYTES) {
+        return {
+            field: "avatar",
+            message: `Profile picture must be smaller than 5 MB (current: ${formatted})`,
+            display: true,
+        };
+    }
 
-	return null;
+    return null;
 }
+
 
 // ----- INTERESTS VALIDATION -----
 
 export function validateInterests(interests) {
-	if (interests && interests.length > 20) {
-		return { field: "interests", message: "You can select up to 20 interests", display: true };
-	}
-	return null;
+    if (interests && interests.length > MAX_INTERESTS) {
+        return {
+            field: "interests",
+            message: `You can select up to ${MAX_INTERESTS} interests`,
+            display: true,
+        };
+    }
+    return null;
 }
+
 
 // ----- SOCIALS VALIDATION -----
 
 export function validateSocials(socials) {
-	if (!socials || socials.length === 0) return [];
+    if (!socials || socials.length === 0) return [];
 
-	const errors = [];
+    const errors = [];
 
-	socials.forEach((s, idx) => {
-		const field = `socials.${idx}`;
+    socials.forEach((s, idx) => {
+        const field = `socials.${idx}`;
 
-		// Only predefined platforms now
-		if (!s.platform_id) {
-			errors.push({
-				field,
-				message: "Platform missing or invalid",
-				display: true
-			});
-			return;
-		}
+        if (!s.platform_id) {
+            errors.push({
+                field,
+                message: "Platform missing or invalid",
+                display: true,
+            });
+            return;
+        }
 
-		const handle = s.handle?.trim();
+        const handle = s.handle?.trim();
 
-		if (!handle) {
-			errors.push({ field, message: "Handle required", display: true });
-			return;
-		}
+        if (!handle) {
+            errors.push({ field, message: "Handle required", display: true });
+            return;
+        }
 
-		if (handle.length > 50) {
-			errors.push({ field, message: "Handle must be at most 50 characters", display: true });
-			return;
-		}
+        if (handle.length > 50) {
+            errors.push({
+                field,
+                message: "Handle must be at most 50 characters",
+                display: true,
+            });
+            return;
+        }
 
-		if (handle.startsWith("@") || handle.startsWith("/")) {
-			errors.push({ field, message: "Handle cannot start with '@' or '/'", display: true });
-			return;
-		}
+        if (handle.startsWith("@") || handle.startsWith("/")) {
+            errors.push({
+                field,
+                message: "Handle cannot start with '@' or '/'",
+                display: true,
+            });
+            return;
+        }
 
-		if (/\s/.test(handle)) {
-			errors.push({ field, message: "Handle cannot contain spaces", display: true });
-			return;
-		}
-	});
+        if (/\s/.test(handle)) {
+            errors.push({
+                field,
+                message: "Handle cannot contain spaces",
+                display: true,
+            });
+            return;
+        }
+    });
 
-	return errors;
+    return errors;
 }
+
 
 // ----- AGGREGATOR FUNCTION (Profile Fields) -----
 
 export function validateProfileFields(fields) {
-	const validators = {
-		username: validateUsername,
-		dob: validateDOB,
-		gender: validateGender,
-		country: validateCountry,
-		name: validateName,
-		bio: validateBio,
-		location: validateLocation,
-		interests: validateInterests,
-		avatarFile: validateAvatar,
-	};
+    const validators = {
+        username: validateUsername,
+        dob: validateDOB,
+        gender: validateGender,
+        country: validateCountry,
+        name: validateName,
+        bio: validateBio,
+        location: validateLocation,
+        interests: validateInterests,
+        avatarFile: validateAvatar,
+        loop_bio: validateLoopBio,
+        looking_for: validateLookingFor,
+    };
 
-	const errors = [];
+    const errors = [];
 
-	for (const [key, validator] of Object.entries(validators)) {
-		if (fields[key] !== undefined) {
-			const result = validator(fields[key]);
-			if (result) {
-				if (Array.isArray(result)) errors.push(...result);
-				else errors.push(result);
-			}
-		}
-	}
+    for (const [key, validator] of Object.entries(validators)) {
+        if (fields[key] !== undefined) {
+            const result = validator(fields[key]);
+            if (result) {
+                if (Array.isArray(result)) errors.push(...result);
+                else errors.push(result);
+            }
+        }
+    }
 
-	// socials are special because they can return multiple entries
-	if (fields.socials !== undefined) {
-		const socialErrors = validateSocials(fields.socials);
-		if (socialErrors.length) errors.push(...socialErrors);
-	}
+    // socials are special because they can return multiple entries
+    if (fields.socials !== undefined) {
+        const socialErrors = validateSocials(fields.socials);
+        if (socialErrors.length) errors.push(...socialErrors);
+    }
 
-	return errors;
+    return errors;
 }

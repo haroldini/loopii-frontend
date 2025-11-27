@@ -1,3 +1,4 @@
+
 <script>
     import MapPicker from "$lib/components/MapPicker.svelte";
 
@@ -8,11 +9,15 @@
      *  - "dob"
      *  - "gender"
      *  - "country"
-     *  - "location"   (text input)
-     *  - "map"        (lat/lng + MapPicker)
+     *  - "location"         (text input)
+     *  - "map"              (lat/lng + MapPicker)
      *  - "bio"
      *  - "interests"
      *  - "socials"
+     *  - "star_sign"        (dropdown)
+     *  - "mbti"             (dropdown)
+     *  - "loop_bio"         (text area, loops-only)
+     *  - "looking_for"      (text area, visible to all)
      *
      * or objects:
      *  { key: "username", label?: "Username *", required?: true, hint?: "..." }
@@ -24,6 +29,7 @@
     //   username, name, dob, gender, country,
     //   location, bio, latitude, longitude,
     //   interests, // array of interest IDs
+    //   star_sign, mbti, loop_bio, looking_for,
     // }
     export let values = {};
 
@@ -33,6 +39,10 @@
     //   dob: (v) => {},
     //   latitude: (v) => {},
     //   interests: (arr) => {},
+    //   star_sign: (v) => {},
+    //   mbti: (v) => {},
+    //   loop_bio: (v) => {},
+    //   looking_for: (v) => {},
     //   ...
     // }
     export let setters = {};
@@ -73,17 +83,21 @@
         interests: "Interests",
         socials: "Social Media Links",
         map: "Location",
+        star_sign: "Star Sign",
+        mbti: "Personality Type",
+        loop_bio: "Loops-only Bio",
+        looking_for: "What You're Looking For",
     };
 
     const DAY_MS = 24 * 60 * 60 * 1000;
 
     // Must match backend cooldown periods:
-    // USERNAME_COOLDOWN = timedelta(days=30)
+    // USERNAME_COOLDOWN = timedelta(days=28)
     // DOB_COOLDOWN      = timedelta(days=182)
     // GENDER_COOLDOWN   = timedelta(days=28)
     // COUNTRY_COOLDOWN  = timedelta(days=28)
     const COOLDOWN_DURATIONS = {
-        username: 30 * DAY_MS,
+        username: 28 * DAY_MS,
         dob: 182 * DAY_MS,
         gender: 28 * DAY_MS,
         country: 28 * DAY_MS,
@@ -206,7 +220,7 @@
             return {
                 managed: true,
                 disabled: true,
-                message: `You can change this again on ${formattedDate}.`,
+                message: `You can't change this again until ${formattedDate}.`,
             };
         }
 
@@ -216,6 +230,28 @@
             message: cooldownInfoMessage(fieldKey),
         };
     }
+
+    const STAR_SIGNS = [
+        "aries",      // Mar 21 – Apr 19
+        "taurus",     // Apr 20 – May 20
+        "gemini",     // May 21 – Jun 20
+        "cancer",     // Jun 21 – Jul 22
+        "leo",        // Jul 23 – Aug 22
+        "virgo",      // Aug 23 – Sep 22
+        "libra",      // Sep 23 – Oct 22
+        "scorpio",    // Oct 23 – Nov 21
+        "sagittarius",// Nov 22 – Dec 21
+        "capricorn",  // Dec 22 – Jan 19
+        "aquarius",   // Jan 20 – Feb 18
+        "pisces",     // Feb 19 – Mar 20
+    ];
+
+    const MBTI_TYPES = [
+        "ENFJ", "ENFP", "ENTJ", "ENTP",
+        "ESFJ", "ESFP", "ESTJ", "ESTP",
+        "INFJ", "INFP", "INTJ", "INTP",
+        "ISFJ", "ISFP", "ISTJ", "ISTP",
+    ];
 </script>
 
 
@@ -480,6 +516,60 @@
                 <option value={platform.id}>{platform.name}</option>
             {/each}
         </select>
+
+    {:else if field.key === "star_sign"}
+        <label for="star_sign">{labelFor(field)}</label>
+        <select
+            id="star_sign"
+            value={values.star_sign ?? ""}
+            on:change={(e) => setters.star_sign && setters.star_sign(e.target.value)}
+        >
+            <option value="" disabled>Select Star Sign</option>
+            {#each STAR_SIGNS as sign}
+                <option value={sign}>
+                    {sign.charAt(0).toUpperCase() + sign.slice(1)}
+                </option>
+            {/each}
+        </select>
+        {#if errorMap.star_sign}
+            <p class="red">{errorMap.star_sign.message}</p>
+        {/if}
+
+    {:else if field.key === "mbti"}
+        <label for="mbti">{labelFor(field)}</label>
+        <select
+            id="mbti"
+            value={values.mbti ?? ""}
+            on:change={(e) => setters.mbti && setters.mbti(e.target.value)}
+        >
+            <option value="" disabled>Select MBTI Type</option>
+            {#each MBTI_TYPES as type}
+                <option value={type}>{type}</option>
+            {/each}
+        </select>
+        {#if errorMap.mbti}
+            <p class="red">{errorMap.mbti.message}</p>
+        {/if}
+
+    {:else if field.key === "loop_bio"}
+        <label for="loop_bio">{labelFor(field)}</label>
+        <textarea
+            id="loop_bio"
+            on:input={(e) => setters.loop_bio && setters.loop_bio(e.target.value)}
+        >{values.loop_bio ?? ""}</textarea>
+        {#if errorMap.loop_bio}
+            <p class="red">{errorMap.loop_bio.message}</p>
+        {/if}
+
+    {:else if field.key === "looking_for"}
+        <label for="looking_for">{labelFor(field)}</label>
+        <textarea
+            id="looking_for"
+            on:input={(e) => setters.looking_for && setters.looking_for(e.target.value)}
+        >{values.looking_for ?? ""}</textarea>
+        {#if errorMap.looking_for}
+            <p class="red">{errorMap.looking_for.message}</p>
+        {/if}
     {/if}
 {/each}
 

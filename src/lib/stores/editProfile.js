@@ -20,6 +20,10 @@ export const location = writable(null);
 export const bio = writable(null);
 export const selectedInterests = writable([]);
 export const socials = writable([]);
+export const star_sign = writable(null);
+export const mbti = writable(null);
+export const loop_bio = writable(null);
+export const looking_for = writable(null);
 
 
 // --- UI + Validation state ---
@@ -37,10 +41,9 @@ export function startEditing() {
     const platforms = get(allPlatforms);
     const clonedSocials = current.socials ? structuredClone(current.socials) : [];
 
-    // attach platform names for display
-    clonedSocials.forEach(social => {
+    clonedSocials.forEach((social) => {
         if (social.platform_id) {
-            const platform = platforms.find(p => p.id === social.platform_id);
+            const platform = platforms.find((p) => p.id === social.platform_id);
             if (platform) {
                 social.name = platform.name;
             }
@@ -58,6 +61,10 @@ export function startEditing() {
     bio.set(current.bio || "");
     selectedInterests.set([...(current.interests || [])]);
     socials.set(clonedSocials);
+    star_sign.set(current.star_sign || "");
+    mbti.set(current.mbti || "");
+    loop_bio.set(current.loop_bio || "");
+    looking_for.set(current.looking_for || "");
     profileEditState.set("editing");
 }
 
@@ -75,6 +82,10 @@ export function cancelEditing() {
     bio.set(null);
     selectedInterests.set([]);
     socials.set([]);
+    star_sign.set(null);
+    mbti.set(null);
+    loop_bio.set(null);
+    looking_for.set(null);
     validationErrors.set([]);
     error.set(null);
     profileEditState.set("idle");
@@ -95,6 +106,8 @@ export function validateEditProfile() {
         bio: get(bio),
         interests: get(selectedInterests),
         socials: get(socials),
+        loop_bio: get(loop_bio),
+        looking_for: get(looking_for),
     });
     validationErrors.set(errors);
     return errors.length === 0;
@@ -103,13 +116,16 @@ export function validateEditProfile() {
 
 // --- Derived: auto-validate on change ---
 export const readyToSubmit = derived(
-    [name, dob, username, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
-    ([$name, $dob, $username, $gender, $country, $latitude, $longitude, $location, $bio, $selectedInterests, $socials], set) => {
-        const ok = validateEditProfile();
-        set(ok);
-    },
-    false
+    [
+        name, dob, username, gender, country,
+        latitude, longitude, location, bio,
+        selectedInterests, socials,
+        star_sign, mbti, loop_bio, looking_for,
+    ],
+    (_, set) => set(validateEditProfile()),
+    false,
 );
+
 
 
 // --- Comparison helper ---
@@ -121,7 +137,12 @@ function valuesEqual(a, b) {
         return Math.abs(a - b) < 1e-6;
     }
 
-    if (a instanceof Date || b instanceof Date || /^\d{4}-\d{2}-\d{2}$/.test(a) || /^\d{4}-\d{2}-\d{2}$/.test(b)) {
+    if (
+        a instanceof Date ||
+        b instanceof Date ||
+        (typeof a === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a)) ||
+        (typeof b === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b))
+    ) {
         const da = typeof a === "string" ? a : a.toISOString().slice(0, 10);
         const db = typeof b === "string" ? b : b.toISOString().slice(0, 10);
         return da === db;
@@ -137,41 +158,39 @@ function valuesEqual(a, b) {
 
 // --- Derived: track whether there are unsaved changes ---
 export const hasChanges = derived(
-    [profile, name, dob, username, gender, country, latitude, longitude, location, bio, selectedInterests, socials],
-    ([$profile, $name, $dob, $username, $gender, $country, $latitude, $longitude, $location, $bio, $selectedInterests, $socials], set) => {
-        if (!$profile) {
-            set(false);
-            return;
-        }
+    [
+        profile, name, dob, username, gender, country,
+        latitude, longitude, location, bio,
+        selectedInterests, socials,
+        star_sign, mbti, loop_bio, looking_for,
+    ],
+    ([
+        $profile, $name, $dob, $username, $gender, $country,
+        $latitude, $longitude, $location, $bio,
+        $selectedInterests, $socials,
+        $star_sign, $mbti, $loop_bio, $looking_for,
+    ], set) => {
+        if (!$profile) return set(false);
 
-        const current = normalizeProfile($profile || {});
+        const current = normalizeProfile($profile);
         const fields = normalizeProfile({
-            name: $name,
-            dob: $dob,
-            username: $username,
-            gender: $gender,
-            country_id: $country,
-            latitude: $latitude,
-            longitude: $longitude,
-            location: $location,
-            bio: $bio,
-            interests: $selectedInterests,
-            socials: $socials,
+            name: $name, dob: $dob, username: $username, gender: $gender,
+            country_id: $country, latitude: $latitude, longitude: $longitude,
+            location: $location, bio: $bio,
+            interests: $selectedInterests, socials: $socials,
+            star_sign: $star_sign, mbti: $mbti,
+            loop_bio: $loop_bio, looking_for: $looking_for,
         });
 
-        const changed = {};
-        for (const key in fields) {
-            const newVal = fields[key];
-            const oldVal = current[key] ?? null;
-            if (!valuesEqual(newVal, oldVal)) {
-                changed[key] = newVal;
-            }
-        }
+        const changed = Object.keys(fields).some(
+            (k) => !valuesEqual(fields[k], current[k] ?? null)
+        );
 
-        set(Object.keys(changed).length > 0);
+        set(changed);
     },
-    false
+    false,
 );
+
 
 
 // --- Save changes ---
@@ -197,6 +216,10 @@ export async function saveEdits() {
         bio: get(bio),
         interests: get(selectedInterests),
         socials: get(socials),
+        star_sign: get(star_sign),
+        mbti: get(mbti),
+        loop_bio: get(loop_bio),
+        looking_for: get(looking_for),
     });
 
     const changed = {};
@@ -217,6 +240,7 @@ export async function saveEdits() {
         const updated = await updateProfile(changed);
         profile.set(updated);
         profileEditState.set("success");
+        startEditing();
         addToast({
             text: "Profile updated successfully.",
             autoHideMs: 3000,
@@ -236,14 +260,14 @@ export async function saveEdits() {
 
 // --- Socials helpers ---
 export function removeSocial(i) {
-    socials.update(s => {
+    socials.update((s) => {
         s.splice(i, 1);
         return [...s];
     });
 }
 
 export function updateHandle(i, value) {
-    socials.update(s => {
+    socials.update((s) => {
         s[i].handle = value;
         return [...s];
     });
