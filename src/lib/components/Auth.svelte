@@ -182,7 +182,7 @@
 
 <!-- Status / Feedback Box -->
 {#if $error || $authFormStatus === "signedUp" || $authFormStatus === "resetEmailSent"}
-    <div class="container bordered fill">
+    <div class="container fill">
 
         <!-- Signup instructions -->
         {#if $authFormStatus === "signedUp"}

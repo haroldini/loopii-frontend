@@ -196,7 +196,7 @@ export const hasChanges = derived(
 // --- Save changes ---
 export async function saveEdits() {
     if (!get(readyToSubmit)) {
-        error.set("Please fix errors before saving.");
+        error.set("Please fix errors before saving");
         return;
     }
 

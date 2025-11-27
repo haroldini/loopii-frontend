@@ -41,3 +41,15 @@ export function updateProfile(data) {
         data
     });
 }
+
+// Check if a username is available
+export function checkUsernameAvailability(username) {
+    const query = new URLSearchParams();
+    if (username != null && username !== "") {
+        query.set("username", username);
+    }
+
+    return request(`/profile/username-available?${query.toString()}`, {
+        method: "GET"
+    });
+}

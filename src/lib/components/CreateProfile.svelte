@@ -7,9 +7,9 @@
 	import { 
 		username, name, dob, gender, country, bio, loop_bio, looking_for,
 		latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
-		error, readyToSubmit, validationErrors, currentPage, prefsState,
+		error, readyToSubmit, validationErrors, currentPage, prefsState, 
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
-		updateHandle, removeSocial, 
+		updateHandle, removeSocial, usernameAvailability, ensureUsernameAvailable
 	} from "$lib/stores/createProfile.js";
 
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
@@ -100,6 +100,15 @@
 	}
 
 	$: prefsValid = $prefsState.valid;
+
+	// Unique function for page 0 continue button to check username availability
+    async function handlePage0Continue() {
+        if (!$readyToSubmit) return;
+        const ok = await ensureUsernameAvailable();
+        if (!ok) return;
+        $currentPage = 1;
+    }
+
 </script>
 
 {#if $profileFormState === "submitting"}
@@ -112,8 +121,8 @@
 			<span
 				role="button"
 				tabindex="0"
-				on:click={() => location.reload()}
-				on:keydown={(e) => e.key === "Enter" && location.reload()}
+				on:click={() => window.location.replace("/")}
+				on:keydown={(e) => e.key === "Enter" && window.location.replace("/")}
 				class="button blue"
 			>
 				here
@@ -133,9 +142,22 @@
 	{#if $currentPage === 0}
 		<h3>Create Your Profile</h3>
 
-		<!-- Username + Display Name -->
+		<!-- Username  -->
 		<ProfileFields
-			fields={["username", "name"]}
+			fields={["username"]}
+			values={fieldValues}
+			setters={fieldSetters}
+			errors={$validationErrors}
+		/>
+
+		<!-- Username availability -->
+		{#if $usernameAvailability.state === "taken" || $usernameAvailability.state === "error"}
+			<p class="red">{$usernameAvailability.message}</p>
+		{/if}
+
+		<!-- Display name  -->
+		<ProfileFields
+			fields={["name"]}
 			values={fieldValues}
 			setters={fieldSetters}
 			errors={$validationErrors}
@@ -194,8 +216,16 @@
 		/>
 
 		<nav>
-			<button type="button" on:click={() => $currentPage = 1} disabled={!$readyToSubmit}>
-				Continue →
+			<button
+				type="button"
+				on:click={handlePage0Continue}
+				disabled={!$readyToSubmit || $usernameAvailability.state === "checking"}
+			>
+				{#if $usernameAvailability.state === "checking"}
+					Checking Username...
+				{:else}
+					Continue →
+				{/if}
 			</button>
 		</nav>
 	{/if}

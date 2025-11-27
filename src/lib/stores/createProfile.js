@@ -1,9 +1,9 @@
 
 import { writable, derived, get } from "svelte/store";
-import { createProfile, getProfile, createProfileInterests, createProfileSocials } from "$lib/api/profile.js";
+import { createProfile, getProfile, createProfileInterests, createProfileSocials, checkUsernameAvailability } from "$lib/api/profile.js";
 import { uploadProfileImage, setProfileAvatar } from "$lib/api/image.js";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
-import { profile } from "$lib/stores/profile.js";
+import { profile, profileState } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { addToast } from "$lib/stores/popups.js";
@@ -47,6 +47,17 @@ export const error = writable(null);
 export const submissionProgress = writable(null);
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "partial" | "error"
+
+// Username availability: "idle" | "checking" | "available" | "taken" | "error"
+export const usernameAvailability = writable({
+    state: "idle",
+    message: null,
+});
+
+// Reset username availability when username changes
+username.subscribe(() => {
+    usernameAvailability.set({ state: "idle", message: null });
+});
 
 // Onboarding prefs (from PrefsForm)
 export const prefsState = writable({
@@ -120,6 +131,44 @@ export function updateHandle(i, value) {
 		s[i].handle = value;
 		return [...s];
 	});
+}
+
+
+// --- Check username availability ---
+export async function ensureUsernameAvailable() {
+    const value = (get(username) || "").trim();
+
+    if (!value) {
+        usernameAvailability.set({
+            state: "error",
+            message: "Username is required",
+        });
+        return false;
+    }
+
+    try {
+        usernameAvailability.set({ state: "checking", message: null });
+
+        const res = await checkUsernameAvailability(value); // { available: boolean, username: string }
+
+        if (res.available) {
+            usernameAvailability.set({ state: "available", message: null });
+            return true;
+        } else {
+            usernameAvailability.set({
+                state: "taken",
+                message: "This username is already taken",
+            });
+            return false;
+        }
+    } catch (err) {
+        console.error("Username availability check failed:", err);
+        usernameAvailability.set({
+            state: "error",
+            message: "Could not check username availability, please try again",
+        });
+        return false;
+    }
 }
 
 
@@ -351,6 +400,7 @@ export async function submitProfile() {
 			submissionProgress.set("Done. Getting your profile");
 			const fetchedProfile = await getProfile();
 			profile.set(fetchedProfile);
+			profileState.set("loaded");
 		} catch {
 			// ignore
 		}
