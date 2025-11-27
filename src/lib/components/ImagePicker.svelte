@@ -352,10 +352,9 @@
     }
 
     .image-wrapper {
-        max-width: 90%;
+        max-width: 100%;
         max-height: 70vh;
         aspect-ratio: 1/1;
-        border-radius: 8px;
         background: var(--bg-1);
         display: flex;
         align-items: center;

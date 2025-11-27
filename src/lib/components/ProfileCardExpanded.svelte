@@ -25,10 +25,10 @@
 </script>
 
 
-<div class="container">
+<div class="container" style="padding: 0;">
     <button
     type="button"
-    class={"bare card" + (onAvatarClick ? " clickableImg" : "")}
+    class={"bare card" + (onAvatarClick ? " clickableImg imageBtn bordered" : "")}
     style={`background-image: url('${getAvatarUrl(profile)}');`}
     on:click={() => onAvatarClick && onAvatarClick()}
     aria-label={onAvatarClick ? "Close expanded profile view" : "Profile photo"}
@@ -213,14 +213,19 @@
         background-repeat: no-repeat;
         background-position: center;
         position: relative;
-        border-radius: 1rem;
         overflow: hidden;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
+    .imageBtn {
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+    }
+
     .clickableImg:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+        transform: scale(1.02);
     }
 
     /* ---------------- Bio ---------------- */
@@ -233,7 +238,6 @@
     .photo {
         width: 100%;
         height: auto;
-        border-radius: 8px;
         pointer-events: none;
     }
 

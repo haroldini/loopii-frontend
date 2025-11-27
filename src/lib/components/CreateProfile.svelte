@@ -15,13 +15,14 @@
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	import ProfileFields from "$lib/components/ProfileFields.svelte";
 	import PrefsForm from "$lib/components/PrefsForm.svelte";
+    import { goto } from "$app/navigation";
 
 	let avatarPicker;
 
 	onMount(() => {
 		const unsubscribe = profileFormState.subscribe((state) => {
 			if (state === "success" || state === "exists" || state === "partial") {
-				window.location.replace(window.location.origin);
+				goto("/");
 			}
 		});
 		return unsubscribe;

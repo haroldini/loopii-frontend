@@ -153,21 +153,30 @@
 </svelte:head>
 
 
-<div class="container bordered">
-    <h3>Your Loops</h3>
+{#if !$selectedLoop}
 
-    {#if $loopsStatus === "loading"}
-        <p>Loading...</p>
+    <div class="container bordered">
+        <h3>Your Loops</h3>
 
-    {:else if $loopsStatus === "error"}
-        <p>Error loading loops</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
+        {#if $loopsStatus === "loading"}
+            <p>Loading...</p>
 
-    {:else if $loopsStatus === "loaded" && $loops.length === 0}
-        <p>You don't have any loops yet.</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
+        {:else if $loopsStatus === "error"}
+            <p>Error loading loops</p>
+            <button on:click={refreshLoopsStore}>Refresh</button>
 
-    {:else if $selectedLoop}
+        {:else if $loopsStatus === "loaded" && $loops.length === 0}
+            <p>You don't have any loops yet.</p>
+            <button on:click={refreshLoopsStore}>Refresh</button>
+
+        {:else if $loopsStatus === "loaded" && $loops.length > 0}
+            <p>Showing { $loops.length } of { $loopsTotal } loops</p>
+            <button on:click={refreshLoopsStore}>Refresh</button>
+        {/if}
+    </div>
+
+{:else}
+    <div class="container" style="margin-top: 1rem; padding: 0;">
         <ProfileCardExpanded
             profile={$selectedLoop.profile}
             loop={$selectedLoop.loop}
@@ -175,29 +184,23 @@
             on:toggleFav={handleFav}
             on:unloop={handleUnloop}
         />
-    
-    {:else if $loopsStatus === "loaded" && $loops.length > 0}
-        <p>Showing { $loops.length } of { $loopsTotal } loops</p>
-        <button on:click={refreshLoopsStore}>Refresh</button>
-    {/if}
-</div>
+    </div>
+{/if}
 
 <!-- Loops content -->
 {#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-    <div class="container">
+    <div class="container" style="padding: 0;">
 
         <!-- Profile Cards Grid -->
         <div class="grid grid-2">
             {#each $loops as { loop, profile }}
-                <div style="aspect-ratio: 1 / 1;">
-                    <ProfileCardPreview
-                        profile={profile}
-                        loop={loop}
-                        on:toggleFav={handleFav}
-                        on:unloop={handleUnloop}
-                        on:expand={() => expandProfile({ loop, profile })}
-                    />
-                </div>
+                <ProfileCardPreview
+                    profile={profile}
+                    loop={loop}
+                    on:toggleFav={handleFav}
+                    on:unloop={handleUnloop}
+                    on:expand={() => expandProfile({ loop, profile })}
+                />
             {/each}
         </div>
 

@@ -35,32 +35,34 @@
 </div>
 
 
-<div class="container bordered">
     
-    {#if $peerStatus === "loading"}
-        <p>Loading next profile...</p>
+{#if $peerStatus === "loading"}
+    <p>Loading next profile...</p>
 
-    {:else if $peerStatus === "error"}
-        <p>An error occurred while loading the feed. Please try refreshing.</p>
+{:else if $peerStatus === "error"}
+    <p>An error occurred while loading the feed. Please try refreshing.</p>
 
-    {:else if $peerStatus === "hidden"}
-        <p>Your profile is hidden. Update your visibility settings to see other profiles.</p>
+{:else if $peerStatus === "hidden"}
+    <p>Your profile is hidden. Update your visibility settings to see other profiles.</p>
 
-    {:else if $peerStatus === "empty"}
-        <p>We couldn't find any matching profiles. Try refreshing or expanding your search preferences.</p>
+{:else if $peerStatus === "empty"}
+    <p>We couldn't find any matching profiles. Try refreshing or expanding your search preferences.</p>
 
-    {:else if expanded}
-        <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
+{:else if expanded}
+    <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
+    <div class="container bordered">
         <nav>
             <button style="flex:1;" on:click={() => {handleDecision(false); close()}}>Pass</button>
             <button style="flex:1;" on:click={() => {handleDecision(true); close()}}>Connect</button>
         </nav>
-
-    {:else}
-        <ProfileCard profile={$peer} on:expand={open} />
+    </div>
+{:else}
+    <ProfileCard profile={$peer} on:expand={open} />
+    <div class="container bordered">
         <nav>
             <button style="flex:1;" on:click={() => handleDecision(false)}>Pass</button>
             <button style="flex:1;" on:click={() => handleDecision(true)}>Connect</button>
         </nav>
-    {/if}
-</div>
+    </div>
+{/if}
+

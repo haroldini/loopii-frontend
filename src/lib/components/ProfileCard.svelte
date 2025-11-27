@@ -12,10 +12,10 @@
     }
 </script>
 
-<div class="container">
+<div class="container" style="padding: 0;">
     <button
         type="button"
-        class="bare card clickableImg"
+        class="bare card clickableImg imageBtn bordered"
         style={`background-image: url('${getAvatarUrl(profile)}');`}
         on:click={open}
         aria-label="Open profile details">
@@ -59,9 +59,13 @@
         background-repeat: no-repeat;
         background-position: center;
         position: relative;
-        border-radius: 1rem;
-        overflow: hidden;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .imageBtn {
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
     }
 
     /* All text inside the overlayed container gets a shadow for readability */
@@ -81,8 +85,7 @@
 
     /* Hover zoom */
     .clickableImg:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+        transform: scale(1.02);
     }
 
     /* Tags follow global theme */

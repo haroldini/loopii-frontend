@@ -41,7 +41,7 @@
 
 
 <div
-    class="preview-card"
+    class="preview-card bordered"
     role="button"
     tabindex="0"
     aria-label="Open profile preview"
@@ -98,26 +98,24 @@
     .preview-card {
         display: flex;
         flex-direction: column;
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
+        border-radius: 0;
         background: var(--surface-2);
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
         width: 100%;
         cursor: pointer;
         text-align: left;
         color: var(--text-primary);
+        transition: border 0.15s ease;
+    }
+
+    .preview-card {
+        background: var(--bg-2);
+        border-color: var(--border-3);
     }
 
     .preview-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    .preview-card:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
+        border-radius: 2px;
+        background: var(--bg-hover);
     }
 
     .avatar {
