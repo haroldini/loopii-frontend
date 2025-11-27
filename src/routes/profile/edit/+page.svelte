@@ -42,6 +42,16 @@
         interests: $selectedInterests,
     };
 
+    // cooldown timestamps passed into ProfileFields
+    $: profileCooldowns = $profile
+        ? {
+              username: $profile.last_username_change_at,
+              dob: $profile.last_dob_change_at,
+              gender: $profile.last_gender_change_at,
+              country: $profile.last_country_change_at,
+          }
+        : null;
+
     // setters passed into ProfileFields
     const fieldSetters = {
         username: (v) => username.set(v),
@@ -92,7 +102,7 @@
             on:click={cancelEditingAndGoBack}
             disabled={$profileEditState === "saving"}
         >
-            {#if $profileEditState === "editing" || $profileEditState === "saving"}
+            {#if $hasChanges}
                 Discard Changes
             {:else}
                 Back to Profile
@@ -114,22 +124,10 @@
 {:else}
 
     <div class="container bordered">
-        <h3>Profile Details</h3>
-
-        <ProfileFields
-            fields={["name", "username", "dob", "gender", "country"]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-            allCountries={$allCountries}
-        />
-    </div>
-
-    <div class="container bordered">
         <h3>About You</h3>
 
         <ProfileFields
-            fields={["location", "bio"]}
+            fields={["name", "location", "bio"]}
             values={fieldValues}
             setters={fieldSetters}
             errors={$validationErrors}
@@ -137,15 +135,15 @@
     </div>
 
     <div class="container bordered">
-        <h3>Help others discover you</h3>
+        <h3>Help Others Discover You</h3>
 
         <ProfileFields
             fields={[
                 {
                     key: "map",
-                    hint: "Select your approximate location to appear in proximity searches",
+                    hint: "Select your approximate location to appear in location searches.",
                     // optional overrides:
-                    // clearLabel: "Clear location",
+                    // clearLabel: "Clear Location",
                     // pickLabel: "Pick Location",
                     // defaultLat: 51.505,
                     // defaultLng: -0.09,
@@ -170,7 +168,7 @@
     </div>
 
     <div class="container bordered">
-        <h3>What your Loops see</h3>
+        <h3>What Your Loops See</h3>
 
         <ProfileFields
             fields={[{ key: "socials", label: "Social Media Links" }]}
@@ -182,6 +180,21 @@
             onSocialRemove={removeSocial}
             onSocialHandleChange={updateHandle}
             onSocialAdd={handleSocialAdd}
+        />
+    </div>
+
+
+    <div class="container bordered">
+        <h3>Your Essential Info</h3>
+        <p class="hint">These fields cannot be changed more than once within a certain time period.</p>
+
+        <ProfileFields
+            fields={["username", "dob", "gender", "country"]}
+            values={fieldValues}
+            setters={fieldSetters}
+            errors={$validationErrors}
+            allCountries={$allCountries}
+            cooldowns={profileCooldowns}
         />
     </div>
 

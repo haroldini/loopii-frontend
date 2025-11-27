@@ -203,9 +203,9 @@
 			fields={[
 				{
 					key: "map",
-					hint: "Select your approximate location to appear in location searches",
+					hint: "Select your approximate location to appear in location searches.",
 					// optional overrides if needed later:
-					// clearLabel: "Clear location",
+					// clearLabel: "Clear Location",
 					// pickLabel: "Pick Location",
 					// defaultLat: 51.505,
 					// defaultLng: -0.09,
@@ -259,7 +259,7 @@
 	{/if}
 
 	{#if $currentPage === 3}
-		<h3>Preferences</h3>
+		<h3>Your Preferences</h3>
 		<p class="hint">Choose who you see in your feed. We'll also only show your profile to genders you select.</p>
 
 		<PrefsForm

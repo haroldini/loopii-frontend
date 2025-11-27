@@ -1,4 +1,3 @@
-
 <script>
     import MapPicker from "$lib/components/MapPicker.svelte";
 
@@ -53,6 +52,10 @@
     export let onSocialHandleChange = null;    // (index, handle) => void
     export let onSocialAdd = null;             // (platformId) => void
 
+    // cooldown info, optional: map field key -> last change timestamp (ISO string or Date)
+    // e.g. { username, dob, gender, country }
+    export let cooldowns = null;
+
     // --- internal state for multi-selects ---
     let localInterests = [];
 
@@ -72,6 +75,20 @@
         map: "Location",
     };
 
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    // Must match backend cooldown periods:
+    // USERNAME_COOLDOWN = timedelta(days=30)
+    // DOB_COOLDOWN      = timedelta(days=182)
+    // GENDER_COOLDOWN   = timedelta(days=28)
+    // COUNTRY_COOLDOWN  = timedelta(days=28)
+    const COOLDOWN_DURATIONS = {
+        username: 30 * DAY_MS,
+        dob: 182 * DAY_MS,
+        gender: 28 * DAY_MS,
+        country: 28 * DAY_MS,
+    };
+
     function isRequired(fieldCfg) {
         if (fieldCfg.required !== undefined) return fieldCfg.required;
         // sane defaults; override via field.required if you need
@@ -89,10 +106,12 @@
     }
 
     function mapError() {
-        return errors?.find(
-            (e) =>
-                ["latitude", "longitude"].includes(e.field) &&
-                e.display
+        return (
+            errors?.find(
+                (e) =>
+                    ["latitude", "longitude"].includes(e.field) &&
+                    e.display
+            ) || null
         );
     }
 
@@ -114,6 +133,89 @@
     $: normalizedFields = fields.map((f) =>
         typeof f === "string" ? { key: f } : f
     );
+
+    function cooldownInfoMessage(fieldKey) {
+        switch (fieldKey) {
+            case "username":
+                return "You can only change your username once every 28 days.";
+            case "dob":
+                return "You can only change your date of birth once every 6 months.";
+            case "gender":
+                return "You can only change your gender once every 28 days.";
+            case "country":
+                return "You can only change your country once every 28 days.";
+            default:
+                return "";
+        }
+    }
+
+    // Mirrors backend logic:
+    function computeCooldownState(fieldKey) {
+        const duration = COOLDOWN_DURATIONS[fieldKey];
+
+        // no cooldown config or not a cooldown-managed field
+        if (!cooldowns || !duration) {
+            return {
+                managed: false,
+                disabled: false,
+                message: "",
+            };
+        }
+
+        const raw = cooldowns[fieldKey];
+
+        // no last-change info, but still show generic info about the limit
+        if (!raw) {
+            return {
+                managed: true,
+                disabled: false,
+                message: cooldownInfoMessage(fieldKey),
+            };
+        }
+
+        let lastChanged = null;
+
+        if (raw instanceof Date) {
+            lastChanged = raw;
+        } else {
+            const parsed = new Date(raw);
+            if (!Number.isNaN(parsed.getTime())) {
+                lastChanged = parsed;
+            }
+        }
+
+        // fallback: unparsable date -> show generic info, do not disable
+        if (!lastChanged) {
+            return {
+                managed: true,
+                disabled: false,
+                message: cooldownInfoMessage(fieldKey),
+            };
+        }
+
+        const now = new Date();
+        const until = new Date(lastChanged.getTime() + duration);
+
+        if (now < until) {
+            const formattedDate = until.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+            });
+
+            return {
+                managed: true,
+                disabled: true,
+                message: `You can change this again on ${formattedDate}.`,
+            };
+        }
+
+        return {
+            managed: true,
+            disabled: false,
+            message: cooldownInfoMessage(fieldKey),
+        };
+    }
 </script>
 
 
@@ -123,15 +225,20 @@
 {#each normalizedFields as field}
 
     {#if field.key === "username"}
+        {@const cd = computeCooldownState("username")}
         <label for="username">{labelFor(field)}</label>
         <input
             id="username"
             value={values.username ?? ""}
             required={isRequired(field)}
+            disabled={cd.disabled}
             on:input={(e) => setters.username && setters.username(e.target.value)}
         />
         {#if errorMap.username}
             <p class="red">{errorMap.username.message}</p>
+        {/if}
+        {#if cd.managed}
+            <p class="hint">{cd.message}</p>
         {/if}
 
     {:else if field.key === "name"}
@@ -146,24 +253,31 @@
         {/if}
 
     {:else if field.key === "dob"}
+        {@const cd = computeCooldownState("dob")}
         <label for="dob">{labelFor(field)}</label>
         <input
             id="dob"
             type="date"
             value={values.dob ?? ""}
             required={isRequired(field)}
+            disabled={cd.disabled}
             on:input={(e) => setters.dob && setters.dob(e.target.value)}
         />
         {#if errorMap.dob}
             <p class="red">{errorMap.dob.message}</p>
         {/if}
+        {#if cd.managed}
+            <p class="hint">{cd.message}</p>
+        {/if}
 
     {:else if field.key === "gender"}
+        {@const cd = computeCooldownState("gender")}
         <label for="gender">{labelFor(field)}</label>
         <select
             id="gender"
             required={isRequired(field)}
             value={values.gender ?? ""}
+            disabled={cd.disabled}
             on:change={(e) => setters.gender && setters.gender(e.target.value)}
         >
             <option value="" disabled>Select Gender</option>
@@ -174,13 +288,18 @@
         {#if errorMap.gender}
             <p class="red">{errorMap.gender.message}</p>
         {/if}
+        {#if cd.managed}
+            <p class="hint">{cd.message}</p>
+        {/if}
 
     {:else if field.key === "country"}
+        {@const cd = computeCooldownState("country")}
         <label for="country">{labelFor(field)}</label>
         <select
             id="country"
             required={isRequired(field)}
             value={values.country ?? ""}
+            disabled={cd.disabled}
             on:change={(e) => setters.country && setters.country(e.target.value)}
         >
             <option value="" disabled>Select Country</option>
@@ -190,6 +309,9 @@
         </select>
         {#if errorMap.country}
             <p class="red">{errorMap.country.message}</p>
+        {/if}
+        {#if cd.managed}
+            <p class="hint">{cd.message}</p>
         {/if}
 
     {:else if field.key === "location"}
@@ -240,7 +362,7 @@
                     setters.longitude && setters.longitude(null);
                 }}
             >
-                {field.clearLabel ?? "Clear location"}
+                {field.clearLabel ?? "Clear Location"}
             </button>
         {:else}
             <button
