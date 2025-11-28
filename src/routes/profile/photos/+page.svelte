@@ -51,7 +51,7 @@
             photosState.set("settingAvatar");
             await setProfileAvatar(imageId);
             profile.update(p => ({
-                    ...p,
+                ...p,
                 images: sortImages(
                     (p.images || []).map(img => ({
                         ...img,
@@ -76,32 +76,62 @@
     }
 
 
-    // Handle deleting an image
-    async function handleDelete(imageId) {
-        if (!confirm("Delete this image?")) return;
-        try {
-            photosState.set("deleting");
-            await deleteProfileImage(imageId);
-            profile.update(p => ({
-                ...p,
-                images: sortImages(
-                    (p.images || []).filter(img => img.id !== imageId)
-                )
-            }));
-            photosState.set("deleted");
-            addToast({
-                text: "Image successfully deleted.",
-                autoHideMs: 3000,
-            });
-        } catch (err) {
-            console.error("Error deleting image:", err);
-            photosState.set("errorDeleting");
-            addToast({
-                text: "Failed to delete image.",
-                description: "We couldn't delete the image. Please try again later.",
-                autoHideMs: 5000,
-            });
-        }
+    // Handle deleting an image (optimistic + modal)
+    function handleDelete(imageId) {
+        addToast({
+            variant: "modal",
+            text: "Delete this photo?",
+            description: "This will permanently remove the photo from your profile.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Cancel",
+                    variant: "secondary",
+                },
+                {
+                    label: "Delete",
+                    variant: "danger",
+                    onClick: async () => {
+                        const currentProfile = get(profile);
+                        if (!currentProfile) return;
+
+                        const prevImages = currentProfile.images || [];
+                        const nextImages = prevImages.filter(img => img.id !== imageId);
+
+                        // Optimistic update
+                        photosState.set("deleting");
+                        profile.update(p => ({
+                            ...p,
+                            images: sortImages(nextImages),
+                        }));
+
+                        try {
+                            await deleteProfileImage(imageId);
+                            photosState.set("deleted");
+                            addToast({
+                                text: "Image successfully deleted.",
+                                autoHideMs: 3000,
+                            });
+                        } catch (err) {
+                            console.error("Error deleting image:", err);
+                            photosState.set("errorDeleting");
+
+                            // Revert optimistic change
+                            profile.update(p => ({
+                                ...p,
+                                images: sortImages(prevImages),
+                            }));
+
+                            addToast({
+                                text: "Failed to delete image.",
+                                description: "We couldn't delete the image. Please try again later.",
+                                autoHideMs: 5000,
+                            });
+                        }
+                    },
+                },
+            ],
+        });
     }
 
 
@@ -203,19 +233,19 @@
 <div class="container bordered">
     <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
     <ImagePicker
-    bind:this={imagePicker}
-    initialOriginalUrl={$newImageOriginalUrl}
-    initialEditedUrl={$newImageUrl}
-    initialCropState={$newImageCropState}
-    on:confirm={(e) => {
-        photosState.set("idle");
-        newImageFile.set(e.detail.editedFile);
-        newImageOriginalUrl.set(e.detail.originalUrl);
-        newImageCropState.set(e.detail.cropState);
-    }}
-    on:back={() => {
-        photosState.set("idle");
-    }}
+        bind:this={imagePicker}
+        initialOriginalUrl={$newImageOriginalUrl}
+        initialEditedUrl={$newImageUrl}
+        initialCropState={$newImageCropState}
+        on:confirm={(e) => {
+            photosState.set("idle");
+            newImageFile.set(e.detail.editedFile);
+            newImageOriginalUrl.set(e.detail.originalUrl);
+            newImageCropState.set(e.detail.cropState);
+        }}
+        on:back={() => {
+            photosState.set("idle");
+        }}
     />
     <nav>
         {#if $newImageUrl}
@@ -260,27 +290,27 @@
 
 {#if $profile.images.length > 0}
     {#each $profile.images as img (img.id)}
-    <div class="container bordered">
-        <img src={img.urls.medium} class="photo" alt="" />
-        <nav>
-            {#if !img.is_avatar}
-                <button
-                    on:click={() => handleSetAvatar(img.id)}
-                    disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}>
-                    {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
-                </button>
-            {:else}
-                <button class="green" disabled>Current Avatar</button>
-            {/if}
+        <div class="container bordered">
+            <img src={img.urls.medium} class="photo" alt="" />
+            <nav>
+                {#if !img.is_avatar}
+                    <button
+                        on:click={() => handleSetAvatar(img.id)}
+                        disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}>
+                        {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
+                    </button>
+                {:else}
+                    <button class="green" disabled>Current Avatar</button>
+                {/if}
 
-            <button
-                on:click={() => handleDelete(img.id)}
-                disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}>
-                {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
-            </button>
-            <p>{timeAgo(img.created_at)}</p>
-        </nav>
-    </div>
+                <button
+                    on:click={() => handleDelete(img.id)}
+                    disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}>
+                    {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
+                </button>
+                <p>{timeAgo(img.created_at)}</p>
+            </nav>
+        </div>
     {/each}
 {:else}
     <p class="no-photos">No photos uploaded yet.</p>
