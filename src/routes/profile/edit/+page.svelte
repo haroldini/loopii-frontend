@@ -7,11 +7,11 @@
     import {
         saveEdits, cancelEditing, startEditing,
         name, dob, gender, country, latitude, longitude, location, bio,
-        selectedInterests, socials, username,
+        selectedInterests, socials, username, audio,
         star_sign, mbti, loop_bio, looking_for,
         validationErrors, profileEditState, error,
         readyToSubmit, hasChanges,
-        removeSocial, updateHandle,
+        removeSocial, updateHandle
     } from "$lib/stores/editProfile.js";
     import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
@@ -71,6 +71,7 @@
         mbti: $mbti,
         loop_bio: $loop_bio,
         looking_for: $looking_for,
+        audioUrl: $profile?.audio?.url ?? null,
     };
 
     // cooldown timestamps passed into ProfileFields
@@ -99,6 +100,7 @@
         mbti: (v) => mbti.set(v),
         loop_bio: (v) => loop_bio.set(v),
         looking_for: (v) => looking_for.set(v),
+        audio: (payload) => audio.set(payload),
     };
 
     // social add handler (was inline before)
@@ -186,6 +188,11 @@
                 "looking_for",
                 "star_sign",
                 "mbti",
+                {
+                    key: "audio",
+                    recordable: true,
+                    maxDuration: 15,
+                },
             ]}
             values={fieldValues}
             setters={fieldSetters}

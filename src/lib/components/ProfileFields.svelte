@@ -1,6 +1,7 @@
 
 <script>
     import MapPicker from "$lib/components/MapPicker.svelte";
+    import AudioPicker from "$lib/components/AudioPicker.svelte";
 
     /**
      * fields: array of either:
@@ -18,6 +19,7 @@
      *  - "mbti"             (dropdown)
      *  - "loop_bio"         (text area, loops-only)
      *  - "looking_for"      (text area, visible to all)
+     *  - "audio"            (voice intro)
      *
      * or objects:
      *  { key: "username", label?: "Username *", required?: true, hint?: "..." }
@@ -30,6 +32,7 @@
     //   location, bio, latitude, longitude,
     //   interests, // array of interest IDs
     //   star_sign, mbti, loop_bio, looking_for,
+    //   audioUrl,  // current profile audio URL (if any)
     // }
     export let values = {};
 
@@ -43,6 +46,7 @@
     //   mbti: (v) => {},
     //   loop_bio: (v) => {},
     //   looking_for: (v) => {},
+    //   audio: (payload) => {}, // { blob, url, duration, mimeType }
     //   ...
     // }
     export let setters = {};
@@ -87,6 +91,7 @@
         mbti: "Personality Type",
         loop_bio: "Loops-only Bio",
         looking_for: "What You're Looking For",
+        audio: "Voice Intro",
     };
 
     const DAY_MS = 24 * 60 * 60 * 1000;
@@ -569,6 +574,22 @@
         >{values.looking_for ?? ""}</textarea>
         {#if errorMap.looking_for}
             <p class="red">{errorMap.looking_for.message}</p>
+        {/if}
+
+    {:else if field.key === "audio"}
+        <label for="audio">{labelFor(field)}</label>
+        <AudioPicker
+            audio={values.audioUrl ?? null}
+            maxDuration={field.maxDuration ?? 15}
+            recordable={field.recordable ?? false}
+            disabled={field.disabled ?? false}
+            on:recorded={(e) => {
+                // e.detail = { blob, url, duration, mimeType }
+                setters.audio && setters.audio(e.detail);
+            }}
+        />
+        {#if errorMap.audio}
+            <p class="red">{errorMap.audio.message}</p>
         {/if}
     {/if}
 {/each}

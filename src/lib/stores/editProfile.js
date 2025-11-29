@@ -4,6 +4,7 @@ import { profile } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { updateProfile } from "$lib/api/profile.js";
+import { uploadProfileAudio } from "$lib/api/audio.js";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 import { addToast } from "$lib/stores/popups.js";
 
@@ -35,6 +36,7 @@ export const star_sign = writable(null);
 export const mbti = writable(null);
 export const loop_bio = writable(null);
 export const looking_for = writable(null);
+export const audio = writable(null);
 
 
 // --- UI + Validation state ---
@@ -76,6 +78,8 @@ export function startEditing() {
     mbti.set(current.mbti || "");
     loop_bio.set(current.loop_bio || "");
     looking_for.set(current.looking_for || "");
+    audio.set(null);
+
     profileEditState.set("editing");
 }
 
@@ -97,6 +101,8 @@ export function cancelEditing() {
     mbti.set(null);
     loop_bio.set(null);
     looking_for.set(null);
+    audio.set(null);
+
     validationErrors.set([]);
     error.set(null);
     profileEditState.set("idle");
@@ -174,12 +180,14 @@ export const hasChanges = derived(
         latitude, longitude, location, bio,
         selectedInterests, socials,
         star_sign, mbti, loop_bio, looking_for,
+        audio,
     ],
     ([
         $profile, $name, $dob, $username, $gender, $country,
         $latitude, $longitude, $location, $bio,
         $selectedInterests, $socials,
         $star_sign, $mbti, $loop_bio, $looking_for,
+        $audio,
     ], set) => {
         if (!$profile) return set(false);
 
@@ -193,9 +201,14 @@ export const hasChanges = derived(
             loop_bio: $loop_bio, looking_for: $looking_for,
         });
 
-        const changed = Object.keys(fields).some(
+        let changed = Object.keys(fields).some(
             (k) => !valuesEqual(fields[k], current[k] ?? null)
         );
+
+        // Any local recording counts as a change
+        if (!changed && $audio) {
+            changed = true;
+        }
 
         set(changed);
     },
@@ -203,14 +216,36 @@ export const hasChanges = derived(
 );
 
 
-// Helper to save changes to profile
-async function performProfileUpdate(changed) {
+// Helper to save changes to profile (and optional audio)
+async function performProfileUpdate(changed, audioPayload) {
     profileEditState.set("saving");
     error.set(null);
 
     try {
-        const updated = await updateProfile(changed);
-        profile.set(updated);
+        const currentProfile = get(profile);
+        let updatedProfile = currentProfile;
+
+        // Save normal profile fields if something changed
+        if (changed && Object.keys(changed).length > 0) {
+            updatedProfile = await updateProfile(changed);
+        }
+
+        // Save audio if we have a new recording
+        let newAudio = null;
+        if (audioPayload && audioPayload.blob) {
+            newAudio = await uploadProfileAudio(audioPayload.blob);
+        }
+
+        const mergedProfile = {
+            ...updatedProfile,
+            ...(newAudio ? { audio: newAudio } : {}),
+        };
+
+        profile.set(mergedProfile);
+
+        // Clear local audio state now that it's saved
+        audio.set(null);
+
         profileEditState.set("success");
         startEditing();
         addToast({
@@ -267,7 +302,10 @@ export async function saveEdits() {
         }
     }
 
-    if (Object.keys(changed).length === 0) {
+    const audioPayload = get(audio);
+
+    // Nothing changed at all
+    if (Object.keys(changed).length === 0 && !audioPayload) {
         profileEditState.set("editing");
         return;
     }
@@ -284,7 +322,7 @@ export async function saveEdits() {
         else if (labels.length === 2) listText = labels.join(" and ");
         else listText = `${labels.slice(0, -1).join(", ")} and ${labels.at(-1)}`;
 
-        pendingSave = { changed };
+        pendingSave = { changed, audioPayload };
 
         addToast({
             variant: "modal",
@@ -309,7 +347,7 @@ export async function saveEdits() {
         return;
     }
 
-    await performProfileUpdate(changed);
+    await performProfileUpdate(changed, audioPayload);
 }
 
 
@@ -317,10 +355,10 @@ export async function saveEdits() {
 export async function confirmCooldownSave() {
     if (!pendingSave) return;
 
-    const { changed } = pendingSave;
+    const { changed, audioPayload } = pendingSave;
     pendingSave = null;
 
-    await performProfileUpdate(changed);
+    await performProfileUpdate(changed, audioPayload);
 }
 
 
