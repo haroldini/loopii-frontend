@@ -80,77 +80,81 @@
 </div>
 
 <div class="container bordered header-card">
-    <div class="header-row top-row">
-        <div class="top-left">
-            <h2 class="display-name">{displayName}</h2>
+    <div class="header-main">
+        <div class="header-left">
+            <div class="header-left-top">
+                <div class="top-left">
+                    <h2 class="display-name">{displayName}</h2>
 
-            {#if profile.last_seen_at}
-                <div class="status-pill {isOnline ? 'online' : ''}">
-                    <span class="status-dot"></span>
-                    {#if isOnline}
-                        <span>Online</span>
-                    {:else}
-                        <span>{formatLastSeenShort(lastSeenDate)}</span>
+                    {#if profile.last_seen_at}
+                        <div class="status-pill {isOnline ? 'online' : ''}">
+                            <span class="status-dot"></span>
+                            {#if isOnline}
+                                <span>Online</span>
+                            {:else}
+                                <span>{formatLastSeenShort(lastSeenDate)}</span>
+                            {/if}
+                        </div>
                     {/if}
+                </div>
+
+                {#if hasSeparateUsername}
+                    <p class="username">@{profile.username}</p>
+                {/if}
+
+                {#if profile.star_sign || profile.mbti}
+                    <div class="traits-row">
+                        {#if profile.star_sign}
+                            <span class="trait-pill">
+                                {formatStarSign(profile.star_sign)}
+                            </span>
+                        {/if}
+                        {#if profile.mbti}
+                            <span class="trait-pill">
+                                {profile.mbti}
+                            </span>
+                        {/if}
+                    </div>
+                {/if}
+            </div>
+
+            {#if metaItems.length}
+                <div class="meta-row">
+                    <div class="meta-left">
+                        {#each metaItems as item, i}
+                            {#if i > 0}
+                                <span class="meta-separator">•</span>
+                            {/if}
+                            <span class="meta-item">{item}</span>
+                        {/each}
+                    </div>
                 </div>
             {/if}
         </div>
 
-        <div class="top-right">
-            <div class="top-right-main">
-                <span class="age">{profile.age}</span>
+        <div class="header-right">
+            <div class="right-top">
+                <div class="top-right-main">
+                    <span class="age">{profile.age}</span>
 
-                <span
-                    class="gender-icon"
-                    style={`--icon-url: url('${genderMeta.icon}'); background-color: ${genderMeta.color};`}
-                ></span>
+                    <span
+                        class="gender-icon"
+                        style={`--icon-url: url('${genderMeta.icon}'); background-color: ${genderMeta.color};`}
+                    ></span>
 
-                {#if $countryMap[profile.country_id]?.flag_url}
-                    <img
-                        src={$countryMap[profile.country_id].flag_url}
-                        alt="Country flag"
-                        class="flag"
-                    />
-                {/if}
-            </div>
+                    {#if $countryMap[profile.country_id]?.flag_url}
+                        <img
+                            src={$countryMap[profile.country_id].flag_url}
+                            alt="Country flag"
+                            class="flag"
+                        />
+                    {/if}
+                </div>
 
-            {#if profile.location}
-                <p class="location location-right">
-                    {profile.location}
-                </p>
-            {/if}
-        </div>
-    </div>
-
-    {#if hasSeparateUsername}
-        <p class="username">@{profile.username}</p>
-    {/if}
-
-    {#if profile.star_sign || profile.mbti}
-        <div class="traits-row">
-            {#if profile.star_sign}
-                <span class="trait-pill">
-                    {formatStarSign(profile.star_sign)}
-                </span>
-            {/if}
-            {#if profile.mbti}
-                <span class="trait-pill">
-                    {profile.mbti}
-                </span>
-            {/if}
-        </div>
-    {/if}
-
-    {#if metaItems.length || profile.audio?.url}
-        <div class="meta-row">
-            <div class="meta-left">
-                {#if metaItems.length}
-                    {#each metaItems as item, i}
-                        {#if i > 0}
-                            <span class="meta-separator">•</span>
-                        {/if}
-                        <span class="meta-item">{item}</span>
-                    {/each}
+                {#if profile.location}
+                    <p class="location location-right">
+                        {profile.location}
+                    </p>
                 {/if}
             </div>
 
@@ -166,7 +170,7 @@
                 </div>
             {/if}
         </div>
-    {/if}
+    </div>
 </div>
 
 {#if profile.audio?.url || profile.bio || profile.looking_for || profile.interests?.length}
@@ -345,17 +349,45 @@
 
     .header-card {
         text-align: left;
-        gap: 0.75rem;
         align-items: stretch;
     }
 
-    .header-row {
+    .header-main {
         display: flex;
-        align-items: flex-start;
+        align-items: stretch;
         justify-content: space-between;
         gap: 0.75rem;
-        flex-wrap: wrap;
         width: 100%;
+    }
+
+    .header-left {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .header-left-top {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 0;
+    }
+
+    .header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.4rem;
+        flex-shrink: 0;
+    }
+
+    .right-top {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
     }
 
     .top-left {
@@ -364,14 +396,6 @@
         gap: 0.25rem;
         min-width: 0;
         flex: 1;
-    }
-
-    .top-right {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.25rem;
-        flex-shrink: 0;
     }
 
     .top-right-main {
@@ -384,6 +408,7 @@
         display: flex;
         justify-content: flex-end;
         flex-shrink: 0;
+        margin-top: auto;
     }
 
     .display-name {
@@ -412,7 +437,8 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.4rem;
-        margin-top: 0.25rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .trait-pill {
@@ -427,9 +453,7 @@
     .meta-row {
         width: 100%;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
+        justify-content: flex-start;
         margin-top: 0.35rem;
         font-size: 0.85rem;
         color: var(--text-muted);
@@ -514,15 +538,6 @@
     .gender-icon:hover {
         opacity: 1;
         transform: scale(1.05);
-    }
-
-    .about-block {
-        width: 100%;
-        text-align: left;
-        margin-top: 0.6rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
     }
 
     h4 {
@@ -713,11 +728,26 @@
     }
 
     @media (max-width: 480px) {
-        .top-right {
+        .header-main {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .header-right {
             align-items: flex-start;
         }
+
+        .right-top {
+            align-items: flex-start;
+        }
+
         .location-right {
             text-align: left;
+        }
+
+        .voice-intro-inline {
+            justify-content: flex-start;
+            margin-top: 0.35rem;
         }
     }
 </style>

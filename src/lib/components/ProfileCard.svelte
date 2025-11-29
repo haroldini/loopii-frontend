@@ -4,7 +4,11 @@
     import { interestMap, countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { profile as profileStore } from "$lib/stores/profile.js";
     import { getAvatarUrl } from "$lib/utils/profile.js";
-    import { timeAgo, distanceKm } from "$lib/utils/misc.js";
+    import {
+        timeAgo,
+        formatLastSeenShort,
+        computeDistanceLabel
+    } from "$lib/utils/misc.js";
 
     export let profile;
 
@@ -37,78 +41,6 @@
     $: isOnline =
         lastSeenDate &&
         Date.now() - lastSeenDate.getTime() <= 10 * 60 * 1000;
-
-    function formatLastSeenShort(date) {
-        if (!date) return "";
-        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
-        if (seconds < 60) return "Just now";
-
-        const mins = Math.floor(seconds / 60);
-        if (mins < 60) return `${mins}m ago`;
-
-        const hours = Math.floor(mins / 60);
-        if (hours < 24) return `${hours}h ago`;
-
-        const days = Math.floor(hours / 24);
-        if (days < 30) return `${days}d ago`;
-
-        const months = Math.floor(days / 30);
-        if (months < 12) return `${months}mo ago`;
-
-        const years = Math.floor(months / 12);
-        return `${years}y ago`;
-    }
-
-    function formatNumber(n) {
-        if (typeof n !== "number" || !isFinite(n)) return "";
-        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-
-    function computeDistanceLabel(target, viewer) {
-        if (!target || !viewer) return null;
-        if (!target.id || !viewer.id) return null;
-        if (target.id === viewer.id) return null;
-
-        const hasTargetCoords =
-            typeof target.latitude === "number" &&
-            typeof target.longitude === "number";
-        const hasViewerCoords =
-            typeof viewer.latitude === "number" &&
-            typeof viewer.longitude === "number";
-
-        if (!hasTargetCoords || !hasViewerCoords) return null;
-
-        const d = distanceKm(
-            target.latitude,
-            target.longitude,
-            viewer.latitude,
-            viewer.longitude
-        );
-
-        if (d == null || !isFinite(d)) return null;
-
-        const prefs = viewer.search_prefs || null;
-        const hasProximityFilters =
-            prefs &&
-            typeof prefs.proximity_km === "number" &&
-            typeof prefs.proximity_lat === "number" &&
-            typeof prefs.proximity_lng === "number";
-
-        if (!hasProximityFilters && d >= 100) return null;
-
-        if (d < 1) return "<1 km away";
-
-        if (d < 100) {
-            const rounded = Math.round(d * 10) / 10;
-            return `${rounded.toLocaleString
-                ? rounded.toLocaleString("en-US")
-                : rounded} km away`;
-        }
-
-        const rounded = Math.round(d);
-        return `${formatNumber(rounded)} km away`;
-    }
 
     $: distanceLabel = computeDistanceLabel(profile, $profileStore);
 
