@@ -105,7 +105,7 @@
         cursor: pointer;
         text-align: left;
         color: var(--text-primary);
-        transition: border 0.15s ease;
+        transition: background 0.15s ease;
     }
 
     .preview-card {
@@ -114,7 +114,6 @@
     }
 
     .preview-card:hover {
-        border-radius: 2px;
         background: var(--bg-hover);
     }
 

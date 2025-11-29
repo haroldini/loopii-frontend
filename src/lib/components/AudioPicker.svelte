@@ -11,6 +11,7 @@
     export let maxDuration = 30; // seconds
     export let recordable = false;
     export let disabled = false;
+    export let previewLabel = "";
 
     // Reset token to clear local recording
     export let resetToken = 0;
@@ -86,23 +87,60 @@
     $: progress =
         effectiveDuration > 0 ? Math.min(1, currentTime / effectiveDuration) : 0;
 
+    $: remainingSeconds = (() => {
+        if (!effectiveDuration || !Number.isFinite(effectiveDuration)) return 0;
+        const remaining = Math.max(0, effectiveDuration - currentTime);
+        return Math.ceil(remaining);
+    })();
+
     // ------------- Playback -------------
+
+    function forceReset() {
+        if (!audioEl) return;
+        audioEl.pause();
+
+        // brute-force reset sequence
+        audioEl.currentTime = 0;
+
+        // force browser to acknowledge the seek
+        audioEl.src = audioEl.src; // reassign same URL
+        audioEl.load();
+
+        currentTime = 0;
+        isPlaying = false;
+    }
 
     function togglePlay() {
         if (!audioEl || !effectiveUrl || disabled || isRecording) return;
 
+        // PREVIEW MODE (recordable = false)
+        if (!recordable) {
+
+            // STOP → reset fully
+            if (isPlaying) {
+                forceReset();
+                return;
+            }
+
+            // PLAY → always start from zero
+            forceReset();
+
+            audioEl.play().catch(err => {
+                console.error("Audio play failed:", err);
+                errorMessage = "Unable to play audio on this device.";
+            });
+
+            return;
+        }
+
+        // NORMAL MODE (recordable = true)
         if (isPlaying) {
             audioEl.pause();
         } else {
-            audioEl
-                .play()
-                .then(() => {
-                    // ok
-                })
-                .catch((err) => {
-                    console.error("Audio play failed:", err);
-                    errorMessage = "Unable to play audio on this device.";
-                });
+            audioEl.play().catch((err) => {
+                console.error("Audio play failed:", err);
+                errorMessage = "Unable to play audio on this device.";
+            });
         }
     }
 
@@ -495,43 +533,48 @@
     {:else}
         <!-- Playback-only mode -->
         {#if effectiveUrl}
-            <div class="shell">
-                <button
-                    type="button"
-                    class="icon-button"
-                    on:click={togglePlay}
-                    disabled={disabled}
-                >
-                    {#if isPlaying}
-                        ❚❚
-                    {:else}
-                        ▶
+            <button
+                type="button"
+                class="shell preview"
+                on:click={togglePlay}
+                disabled={disabled}
+                aria-label="Play voice note"
+            >
+                <div class="preview-icon">
+                    <span class="preview-icon-symbol">
+                        {#if isPlaying}
+                            ■
+                        {:else}
+                            ▶
+                        {/if}
+                    </span>
+                    {#if isPlaying && remainingSeconds > 0}
+                        <span class="preview-remaining">
+                            {remainingSeconds}
+                        </span>
                     {/if}
-                </button>
+                </div>
 
-                <button
-                    type="button"
-                    class="track track-button"
-                    on:click={seek}
-                    on:keydown={handleTrackKeydown}
-                    aria-label="Audio playback timeline"
-                >
-                    <div class="bar">
-                        <div
-                            class="bar-fill"
-                            style={`width: ${progress * 100}%;`}
-                        ></div>
-                    </div>
-                    <div class="time">
-                        <span>{formatTime(currentTime)}</span>
-                        {#if effectiveDuration}
-                            <span class="time-total">
-                                / {formatTime(effectiveDuration)}
-                            </span>
+                {#if previewLabel}
+                    <div class="preview-body">
+                        <span
+                            class="preview-text"
+                            style={`visibility: ${isPlaying ? "hidden" : "visible"};`}
+                        >
+                            {previewLabel}
+                        </span>
+
+                        {#if isPlaying}
+                            <div class="preview-bar">
+                                <div
+                                    class="preview-bar-fill"
+                                    style={`width: ${progress * 100}%;`}
+                                ></div>
+                            </div>
                         {/if}
                     </div>
-                </button>
-            </div>
+                {/if}
+            </button>
         {:else}
             <p class="placeholder">No voice intro yet.</p>
         {/if}
@@ -713,4 +756,82 @@
         font-size: 0.8rem;
         color: var(--red);
     }
+
+    .shell.preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: auto;
+        max-width: none;
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid var(--border-3);
+        background: var(--bg-2);
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .shell.preview:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    .preview-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--accent-blue);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+    }
+
+    .preview-icon-symbol {
+        line-height: 1;
+    }
+
+    .preview-remaining {
+        position: absolute;
+        bottom: -0.35rem;
+        right: -0.35rem;
+        font-size: 0.55rem;
+        padding: 0.05rem 0.25rem;
+        border-radius: 999px;
+        background: var(--bg-2);
+        color: var(--text-3);
+    }
+
+    .preview-body {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        height: 3px;
+        min-width: 60px;
+    }
+
+    .preview-bar {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        background: var(--border-3);
+    }
+
+    .preview-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent-blue);
+        transition: width 0.05s linear;
+    }
+
+    .preview-text {
+        font-size: 0.75rem;
+        color: var(--text-3);
+        white-space: nowrap;
+    }
+
 </style>

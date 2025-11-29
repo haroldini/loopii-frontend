@@ -52,16 +52,16 @@
     <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
     <div class="container bordered">
         <nav>
-            <button style="flex:1;" on:click={() => {handleDecision(false); close()}}>Pass</button>
-            <button style="flex:1;" on:click={() => {handleDecision(true); close()}}>Connect</button>
+            <button style="flex:1;" on:click={() => {handleDecision(false); close()}}>Skip</button>
+            <button style="flex:1;" on:click={() => {handleDecision(true); close()}}>Like</button>
         </nav>
     </div>
 {:else}
     <ProfileCard profile={$peer} on:expand={open} />
     <div class="container bordered">
         <nav>
-            <button style="flex:1;" on:click={() => handleDecision(false)}>Pass</button>
-            <button style="flex:1;" on:click={() => handleDecision(true)}>Connect</button>
+            <button style="flex:1;" on:click={() => handleDecision(false)}>Skip</button>
+            <button style="flex:1;" on:click={() => handleDecision(true)}>Like</button>
         </nav>
     </div>
 {/if}
