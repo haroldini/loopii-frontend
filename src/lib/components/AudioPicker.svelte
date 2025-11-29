@@ -8,9 +8,18 @@
     // - recordable: if true, show record/replace controls
     // - disabled: global disable
     export let audio = null;
-    export let maxDuration = 15; // seconds
+    export let maxDuration = 30; // seconds
     export let recordable = false;
     export let disabled = false;
+
+    // Reset token to clear local recording
+    export let resetToken = 0;
+    let lastResetToken = resetToken;
+
+    $: if (resetToken !== lastResetToken) {
+        lastResetToken = resetToken;
+        clearLocalRecording();
+    }
 
     const dispatch = createEventDispatcher();
 
@@ -21,7 +30,7 @@
 
     // Playback state
     let isPlaying = false;
-    let duration = 0; // actual media duration
+    let duration = 0; // actual media duration (seconds)
     let currentTime = 0; // current playback time (seconds)
 
     // Recording state
@@ -35,24 +44,43 @@
     // Errors
     let errorMessage = null;
 
+    function resetPlaybackState() {
+        if (audioEl) {
+            try {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            } catch {
+                // ignore
+            }
+        }
+        isPlaying = false;
+        currentTime = 0;
+        duration = 0;
+    }
+
     // Track external audio changes. If parent changes `audio` while we don't
     // have a local recording, reset playback state.
     let lastAudioProp = null;
     $: if (audio !== lastAudioProp) {
         lastAudioProp = audio;
         if (!localUrl) {
-            currentTime = 0;
-            duration = 0;
-            isPlaying = false;
+            resetPlaybackState();
+            errorMessage = null;
         }
     }
 
     // Effective URL: prefer local recording if present
     $: effectiveUrl = localUrl || audio || null;
 
-    // Effective duration for UI / seeking: clamp to maxDuration if provided
-    $: effectiveDuration =
-        maxDuration && duration ? Math.min(duration, maxDuration) : duration || 0;
+    // Effective duration for UI / seeking: clamp to maxDuration if provided,
+    // and fall back to maxDuration if metadata never loads.
+    $: effectiveDuration = (() => {
+        if (duration && Number.isFinite(duration)) {
+            return maxDuration ? Math.min(duration, maxDuration) : duration;
+        }
+        if (maxDuration) return maxDuration;
+        return 0;
+    })();
 
     // Progress 0–1
     $: progress =
@@ -80,6 +108,7 @@
 
     function onAudioPlay() {
         isPlaying = true;
+        errorMessage = null;
     }
 
     function onAudioPause() {
@@ -91,6 +120,9 @@
         const d = audioEl.duration;
         if (Number.isFinite(d) && d > 0) {
             duration = d;
+        } else if (!duration && maxDuration) {
+            // Browser reported 0/Infinity: fall back so UI is still usable
+            duration = maxDuration;
         }
     }
 
@@ -98,6 +130,14 @@
         if (!audioEl) return;
         const t = audioEl.currentTime || 0;
         currentTime = t;
+
+        // Try to capture duration lazily if it becomes available later
+        if (!duration || !Number.isFinite(duration) || duration === Infinity) {
+            const d = audioEl.duration;
+            if (Number.isFinite(d) && d > 0) {
+                duration = d;
+            }
+        }
 
         if (maxDuration && t >= maxDuration) {
             // Hard-stop playback after maxDuration
@@ -296,8 +336,8 @@
             }
         }
         localUrl = null;
-        currentTime = 0;
-        duration = 0;
+        resetPlaybackState();
+        errorMessage = null;
         dispatch("cleared");
     }
 
@@ -319,6 +359,7 @@
                 // ignore
             }
         }
+        resetPlaybackState();
         stopStream();
     });
 </script>
@@ -340,9 +381,9 @@
                 <span class="dot"></span>
                 <span>
                     {#if maxDuration}
-                        Tap to record (max {maxDuration}s)
+                        Record (max {maxDuration}s)
                     {:else}
-                        Tap to record
+                        Record
                     {/if}
                 </span>
             </button>
@@ -444,7 +485,7 @@
                                 on:click={clearLocalRecording}
                                 disabled={disabled}
                             >
-                                Discard local
+                                Discard Changes
                             </button>
                         {/if}
                     {/if}
@@ -673,4 +714,3 @@
         color: var(--red);
     }
 </style>
-

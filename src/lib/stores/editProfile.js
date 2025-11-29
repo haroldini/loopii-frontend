@@ -4,7 +4,7 @@ import { profile } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { updateProfile } from "$lib/api/profile.js";
-import { uploadProfileAudio } from "$lib/api/audio.js";
+import { uploadProfileAudio, deleteProfileAudio } from "$lib/api/audio.js";
 import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 import { addToast } from "$lib/stores/popups.js";
 
@@ -36,7 +36,7 @@ export const star_sign = writable(null);
 export const mbti = writable(null);
 export const loop_bio = writable(null);
 export const looking_for = writable(null);
-export const audio = writable(null);
+export const audio = writable(null); // { blob, url, duration, mimeType } OR { delete: true }
 
 
 // --- UI + Validation state ---
@@ -205,7 +205,7 @@ export const hasChanges = derived(
             (k) => !valuesEqual(fields[k], current[k] ?? null)
         );
 
-        // Any local recording counts as a change
+        // Any local audio change (new recording or delete flag) counts as a change
         if (!changed && $audio) {
             changed = true;
         }
@@ -230,16 +230,39 @@ async function performProfileUpdate(changed, audioPayload) {
             updatedProfile = await updateProfile(changed);
         }
 
-        // Save audio if we have a new recording
+        // Handle audio delete / upload
+        const wantDelete = !!(audioPayload && audioPayload.delete);
+        const hasExistingAudio = !!currentProfile?.audio?.id;
+
+        if (wantDelete && hasExistingAudio) {
+            try {
+                await deleteProfileAudio(currentProfile.audio.id);
+            } catch (err) {
+                console.error("Error deleting profile audio:", err);
+                addToast({
+                    text: "Failed to delete voice intro.",
+                    description: err.message || "You can try again later.",
+                    autoHideMs: 5000,
+                });
+            }
+        }
+
         let newAudio = null;
         if (audioPayload && audioPayload.blob) {
             newAudio = await uploadProfileAudio(audioPayload.blob);
         }
 
-        const mergedProfile = {
+        let mergedProfile = {
             ...updatedProfile,
-            ...(newAudio ? { audio: newAudio } : {}),
         };
+
+        if (wantDelete) {
+            mergedProfile.audio = null;
+        }
+
+        if (newAudio) {
+            mergedProfile.audio = newAudio;
+        }
 
         profile.set(mergedProfile);
 

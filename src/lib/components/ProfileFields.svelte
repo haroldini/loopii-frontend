@@ -46,7 +46,7 @@
     //   mbti: (v) => {},
     //   loop_bio: (v) => {},
     //   looking_for: (v) => {},
-    //   audio: (payload) => {}, // { blob, url, duration, mimeType }
+    //   audio: (payload) => {}, // { blob, url, duration, mimeType } OR { delete: true }
     //   ...
     // }
     export let setters = {};
@@ -72,6 +72,9 @@
 
     // --- internal state for multi-selects ---
     let localInterests = [];
+
+    // --- AudioPicker reset token ---
+    let audioResetToken = 0;
 
     // keep localInterests in sync with incoming values
     $: localInterests = values.interests ?? [];
@@ -580,14 +583,29 @@
         <label for="audio">{labelFor(field)}</label>
         <AudioPicker
             audio={values.audioUrl ?? null}
-            maxDuration={field.maxDuration ?? 15}
+            maxDuration={field.maxDuration ?? 30}
             recordable={field.recordable ?? false}
             disabled={field.disabled ?? false}
+            resetToken={audioResetToken}
             on:recorded={(e) => {
                 // e.detail = { blob, url, duration, mimeType }
                 setters.audio && setters.audio(e.detail);
             }}
         />
+
+        {#if values.audioUrl}
+            <button
+                type="button"
+                on:click={() => {
+                    // mark existing audio for deletion on save
+                    setters.audio && setters.audio({ delete: true });
+                    audioResetToken += 1;
+                }}
+            >
+                {field.clearLabel ?? "Remove Voice Intro"}
+            </button>
+        {/if}
+
         {#if errorMap.audio}
             <p class="red">{errorMap.audio.message}</p>
         {/if}

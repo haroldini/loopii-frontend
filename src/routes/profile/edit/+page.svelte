@@ -71,7 +71,10 @@
         mbti: $mbti,
         loop_bio: $loop_bio,
         looking_for: $looking_for,
-        audioUrl: $profile?.audio?.url ?? null,
+        // If audio is marked for delete in this session, hide it in the UI
+        audioUrl: $audio?.delete
+            ? null
+            : $profile?.audio?.url ?? null,
     };
 
     // cooldown timestamps passed into ProfileFields
@@ -100,6 +103,7 @@
         mbti: (v) => mbti.set(v),
         loop_bio: (v) => loop_bio.set(v),
         looking_for: (v) => looking_for.set(v),
+        // payload: { blob, url, duration, mimeType } OR { delete: true }
         audio: (payload) => audio.set(payload),
     };
 
@@ -164,7 +168,14 @@
         <h3>About You</h3>
 
         <ProfileFields
-            fields={["name", "location", "bio"]}
+            fields={[
+                "name", "location", "bio",
+                {
+                    key: "audio",
+                    recordable: true,
+                    maxDuration: 30,
+                }
+            ]}
             values={fieldValues}
             setters={fieldSetters}
             errors={$validationErrors}
@@ -188,11 +199,6 @@
                 "looking_for",
                 "star_sign",
                 "mbti",
-                {
-                    key: "audio",
-                    recordable: true,
-                    maxDuration: 15,
-                },
             ]}
             values={fieldValues}
             setters={fieldSetters}
