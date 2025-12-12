@@ -1,0 +1,29 @@
+/* styles/forms.css */
+
+input,
+textarea,
+select {
+	width: 100%;
+	padding: var(--space-2) var(--space-3);
+	border: var(--border-width) solid var(--border-color);
+	border-radius: var(--radius-md);
+	background: var(--bg-surface);
+	color: var(--text-secondary);
+	font: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--accent);
+}
+
+textarea {
+	resize: vertical;
+	min-height: 4rem;
+}
+
+select {
+	appearance: none;
+	padding-right: calc(var(--space-3) * 2);
+}

@@ -1,0 +1,16 @@
+/* styles/reset.css */
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html,
+body {
+	font-family: var(--font-ui);
+	background: var(--bg-app);
+	color: var(--text-secondary);
+	line-height: var(--line-height);
+	min-height: 100vh;
+}

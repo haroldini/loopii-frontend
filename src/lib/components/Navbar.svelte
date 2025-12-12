@@ -9,105 +9,27 @@
 </script>
 
 
-<nav class="nav">
-    <!-- Brand -->
-    <div class="brand">
-        <a href="/">loopii</a>
-    </div>
+<nav class="app-nav" aria-label="Primary navigation">
+	<a href="/" class="app-nav__link" class:active={isActive("/")} aria-label="Find loops">
+		🧭
+	</a>
 
-    <!-- Navigation Links -->
-    <ul class="nav-links">
-        <li><a href="/" class:active={isActive("/")}>Find Loops</a></li>
-        <li>
-            <a href="/requests" class:active={isActive("/requests")}>
-                Requests
-                {#if $newRequestsCount > 0}
-                    <span class="badge">{$newRequestsCount}</span>
-                {/if}
-            </a>
-        </li>
-        <li>
-            <a href="/loops" class:active={isActive("/loops")}>
-                Loops
-                {#if $newLoopsCount > 0}
-                    <span class="badge">{$newLoopsCount}</span>
-                {/if}
-            </a>
-        </li>
-        <li><a href="/profile" class:active={isActive("/profile")}>Your Profile</a></li>
-    </ul>
+	<a href="/requests" class="app-nav__link" class:active={isActive("/requests")} aria-label="Requests">
+		📩
+		{#if $newRequestsCount > 0}
+			<span class="app-nav__badge">{$newRequestsCount}</span>
+		{/if}
+	</a>
+
+	<a href="/loops" class="app-nav__link" class:active={isActive("/loops")} aria-label="Loops">
+		🔁
+		{#if $newLoopsCount > 0}
+			<span class="app-nav__badge">{$newLoopsCount}</span>
+		{/if}
+	</a>
+
+	<a href="/profile" class="app-nav__link" class:active={isActive("/profile")} aria-label="Your profile">
+		👤
+	</a>
 </nav>
 
-
-<style>
-    .nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 4rem;
-        padding: 0 1.5rem;
-        background-color: var(--bg-1);
-        border-bottom: 1px solid var(--border-1);
-    }
-
-    .brand a {
-        font-size: 1.25rem;
-        font-weight: 600;
-        text-decoration: none;
-        color: var(--text-1);
-    }
-
-    .nav-links {
-        display: flex;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        height: 100%;
-    }
-
-    .nav-links li {
-        height: 100%;
-    }
-
-    .nav-links li a {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        padding: 0 1rem;
-        text-decoration: none;
-        color: var(--text-2);
-        cursor: pointer;
-        border: none;
-        background: none;
-        font: inherit;
-        transition: background 0.2s, color 0.2s, border-bottom 0.2s;
-        position: relative;
-    }
-
-    .nav-links li a:hover {
-        background: var(--bg-hover);
-        color: var(--accent-blue);
-    }
-
-    /* Highlight active link */
-    .nav-links li a.active {
-        color: var(--accent-blue);
-        border-bottom: 2px solid var(--accent-blue);
-        font-weight: 600;
-    }
-
-    .badge {
-        position: absolute;
-        top: 8px;
-        right: -10px;
-        min-width: 18px;
-        height: 18px;
-        padding: 0 6px;
-        border-radius: 999px;
-        background: var(--red);
-        color: white;
-        font-size: 12px;
-        line-height: 18px;
-        text-align: center;
-    }
-</style>

@@ -1,0 +1,26 @@
+/* styles/buttons.css */
+
+button {
+	padding: var(--space-2) var(--space-3);
+	border-radius: var(--radius-md);
+	border: var(--border-width) solid var(--border-color);
+	background: var(--bg-surface);
+	color: var(--text-secondary);
+	cursor: pointer;
+}
+
+button:hover {
+	background: var(--bg-hover);
+}
+
+button.primary {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--bg-app);
+}
+
+button.bare {
+	background: none;
+	border: none;
+	padding: 0;
+}

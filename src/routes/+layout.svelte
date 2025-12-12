@@ -147,10 +147,12 @@
 
 <!-- Fully authenticated + profile loaded -->
 {:else if $authState === "authenticated" && $profileState === "loaded"}
-    <Navbar />
-    <div class="flex-vertical">
-        {@render children?.()}
-    </div>
+	<div class="app">
+		<Navbar />
+		<div class="app-body">
+			{@render children?.()}
+		</div>
+	</div>
 
 <!-- Fallback -->
 {:else}
