@@ -25,36 +25,55 @@
 </svelte:head>
 
 
-<div class="page page--has-actionbar">
-	<header class="bar bar--header">
-		<div class="bar__inner">
-			<div class="bar__title">
-				<h3>@{$profile?.username}</h3>
-				<p class="hint">Manage your profile settings and preferences.</p>
-			</div>
+<div class="page page--viewport page--has-actionbar">
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>@{$profile?.username}</h3>
+                <p class="hint">Manage your profile settings and preferences.</p>
+            </div>
 
-			<div class="bar__actions">
-				<button type="button" on:click={() => goto("/profile/visibility-preferences")}>Visibility</button>
-				<button type="button" on:click={() => goto("/account")}>Settings</button>
-			</div>
-		</div>
-	</header>
+            <div class="bar__actions">
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => goto("/profile/visibility-preferences")}
+                >
+                    Visibility
+                </button>
 
-	<div class="content stack">
-		{#if expanded}
-			<ProfileCardExpanded profile={$profile} onAvatarClick={close} />
-		{:else}
-			<ProfileCard profile={$profile} on:expand={open} />
-		{/if}
-	</div>
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => goto("/account")}
+                >
+                    Settings
+                </button>
+            </div>
+        </div>
+    </header>
 
-	<div class="bar bar--actionbar">
-		<div class="bar__inner">
-			<div class="actionbar">
-				<button type="button" on:click={() => goto("/profile/edit")}>Edit</button>
-				<button type="button" on:click={() => goto("/profile/photos")}>Photos</button>
-				<button type="button" on:click={() => goto("/profile/style")}>Style</button>
-			</div>
-		</div>
-	</div>
+    <div class="content stack">
+        {#if expanded}
+            <ProfileCardExpanded profile={$profile} onAvatarClick={close} />
+        {:else}
+            <ProfileCard profile={$profile} on:expand={open} />
+        {/if}
+    </div>
+
+    <div class="bar bar--actionbar">
+        <div class="bar__inner">
+            <div class="actionbar">
+                <button type="button" class="btn btn--ghost" on:click={() => goto("/profile/edit")}>
+                    Edit
+                </button>
+                <button type="button" class="btn btn--ghost" on:click={() => goto("/profile/photos")}>
+                    Photos
+                </button>
+                <button type="button" class="btn btn--ghost" on:click={() => goto("/profile/style")}>
+                    Style
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

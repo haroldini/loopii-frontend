@@ -71,6 +71,20 @@
     width: 100%;
 }
 
+/* Opt-in: lock the page to the viewport and prevent page-scroll.
+   Components inside (e.g. ProfileCardExpanded) can still scroll internally. */
+.page--viewport {
+    height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.page--viewport > .content {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 /* reserve space for optional fixed actionbar on pages that have one */
 .page--has-actionbar {
     padding-bottom: var(--actionbar-height);
@@ -80,12 +94,7 @@
     width: 100%;
     max-width: var(--content-max);
     margin-inline: auto;
-
-    /* horizontal gutter */
     padding-inline: var(--gutter);
-
-    /* global vertical rhythm (fixes header-to-content gap everywhere) */
-    padding-block: var(--space-4);
 }
 
 /* ===== Legacy classes (temporary bridge; remove after template pass) ===== */

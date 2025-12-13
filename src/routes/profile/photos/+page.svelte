@@ -227,6 +227,7 @@
             <div class="bar__actions">
                 <button
                     type="button"
+                    class="btn btn--ghost"
                     on:click={() => goto("/profile")}
                     disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                 >
@@ -237,26 +238,28 @@
     </header>
 
     <div class="content stack">
-        <div class="container bordered">
-            <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
-            <ImagePicker
-                bind:this={imagePicker}
-                initialOriginalUrl={$newImageOriginalUrl}
-                initialEditedUrl={$newImageUrl}
-                initialCropState={$newImageCropState}
-                on:confirm={(e) => {
-                    photosState.set("idle");
-                    newImageFile.set(e.detail.editedFile);
-                    newImageOriginalUrl.set(e.detail.originalUrl);
-                    newImageCropState.set(e.detail.cropState);
-                }}
-                on:back={() => {
-                    photosState.set("idle");
-                }}
-            />
-            <nav>
+        <section class="card">
+            <div class="section stack">
+                <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
+
+                <ImagePicker
+                    bind:this={imagePicker}
+                    initialOriginalUrl={$newImageOriginalUrl}
+                    initialEditedUrl={$newImageUrl}
+                    initialCropState={$newImageCropState}
+                    on:confirm={(e) => {
+                        photosState.set("idle");
+                        newImageFile.set(e.detail.editedFile);
+                        newImageOriginalUrl.set(e.detail.originalUrl);
+                        newImageCropState.set(e.detail.cropState);
+                    }}
+                    on:back={() => {
+                        photosState.set("idle");
+                    }}
+                />
+
                 {#if $newImageUrl}
-                    <div>
+                    <div class="row">
                         <input
                             type="checkbox"
                             id="newImageAsAvatar"
@@ -265,63 +268,81 @@
                         <label for="newImageAsAvatar">Set as Avatar</label>
                     </div>
 
-                    <button
-                        type="button"
-                        on:click={handleUpload}
-                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                    >
-                        {#if $photosState === "uploading"}
-                            Uploading...
-                        {:else if $photosState === "settingAvatar"}
-                            Setting avatar...
-                        {:else}
-                            Upload Photo
-                        {/if}
-                    </button>
-                    <button
-                        type="button"
-                        on:click={resetPicker}
-                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                    >
-                        Cancel
-                    </button>
+                    <div class="actions actions--end">
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={handleUpload}
+                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                        >
+                            {#if $photosState === "uploading"}
+                                Uploading…
+                            {:else if $photosState === "settingAvatar"}
+                                Setting avatar…
+                            {:else}
+                                Upload Photo
+                            {/if}
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={resetPicker}
+                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 {:else}
-                    <button
-                        type="button"
-                        on:click={() => imagePicker.open()}
-                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                    >
-                        Upload New Photo
-                    </button>
+                    <div class="actions actions--end">
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={() => imagePicker.open()}
+                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                        >
+                            Upload New Photo
+                        </button>
+                    </div>
                 {/if}
-            </nav>
-        </div>
+            </div>
+        </section>
 
         {#if $profile.images.length > 0}
             {#each $profile.images as img (img.id)}
-                <div class="container bordered">
-                    <img src={img.urls.medium} class="photo" alt="" />
-                    <nav>
-                        {#if !img.is_avatar}
-                            <button
-                                on:click={() => handleSetAvatar(img.id)}
-                                disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
-                            >
-                                {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
-                            </button>
-                        {:else}
-                            <button class="green" disabled>Current Avatar</button>
-                        {/if}
+                <section class="card">
+                    <div class="section stack">
+                        <img src={img.urls.medium} class="photo" alt="" />
 
-                        <button
-                            on:click={() => handleDelete(img.id)}
-                            disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
-                        >
-                            {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
-                        </button>
-                        <p>{timeAgo(img.created_at)}</p>
-                    </nav>
-                </div>
+                        <div class="toolbar">
+                            <div class="toolbar__group">
+                                {#if !img.is_avatar}
+                                    <button
+                                        type="button"
+                                        class="btn btn--ghost"
+                                        on:click={() => handleSetAvatar(img.id)}
+                                        disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
+                                    >
+                                        {$photosState === "settingAvatar" ? "Setting avatar…" : "Set as Avatar"}
+                                    </button>
+                                {:else}
+                                    <span class="pill pill--success">Current Avatar</span>
+                                {/if}
+
+                                <button
+                                    type="button"
+                                    class="btn btn--danger"
+                                    on:click={() => handleDelete(img.id)}
+                                    disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
+                                >
+                                    {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting…" : "Delete")}
+                                </button>
+                            </div>
+
+                            <p class="hint">{timeAgo(img.created_at)}</p>
+                        </div>
+                    </div>
+                </section>
             {/each}
         {:else}
             <p class="no-photos">No photos uploaded yet.</p>
@@ -329,12 +350,11 @@
     </div>
 </div>
 
-
 <style>
     .photo {
         width: 100%;
         height: auto;
-        border-radius: 8px;
+        border-radius: var(--radius-lg);
         pointer-events: none;
     }
 

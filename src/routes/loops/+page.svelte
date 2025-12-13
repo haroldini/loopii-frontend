@@ -138,65 +138,79 @@
 
 
 <div class="page">
-	<header class="bar bar--header">
-		<div class="bar__inner">
-			<div class="bar__title">
-				<h3>Loops</h3>
-				{#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-					<p class="hint">Showing {$loops.length} of {$loopsTotal}</p>
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>Loops</h3>
+
+                {#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
+                    <p class="hint">Showing {$loops.length} of {$loopsTotal}</p>
                 {:else if $loopsStatus === "loaded" && $loops.length === 0 && !$selectedLoop}
                     <p class="hint">You don't have any loops yet.</p>
                 {:else if $loopsStatus === "loading"}
-                    <p class="hint">Loading...</p>
+                    <p class="hint">Loading…</p>
                 {:else if $loopsStatus === "error"}
                     <p class="hint">Error loading loops</p>
-				{/if}
-			</div>
+                {/if}
+            </div>
 
-			<div class="bar__actions">
-				{#if $selectedLoop}
-					<button type="button" on:click={close}>Back</button>
-				{/if}
-				<button type="button" on:click={refreshLoopsStore} disabled={$loopsStatus === "loading" || $loopsState.loading}>
-					{$loopsStatus === "loading" ? "Loading" : "Refresh"}
-				</button>
-			</div>
-		</div>
-	</header>
+            <div class="bar__actions">
+                {#if $selectedLoop}
+                    <button type="button" class="btn btn--ghost" on:click={close}>
+                        Back
+                    </button>
+                {/if}
 
-	<div class="content stack">
-		{#if $selectedLoop}
-			<ProfileCardExpanded
-				profile={$selectedLoop.profile}
-				loop={$selectedLoop.loop}
-				onAvatarClick={close}
-				on:toggleFav={handleFav}
-				on:unloop={handleUnloop}
-			/>
-		{:else}
-			{#if $loopsStatus === "loading"}
-				<p>Loading...</p>
-			{:else if $loopsStatus === "error"}
-				<p>Error loading loops</p>
-			{:else if $loopsStatus === "loaded" && $loops.length > 0}
-				<div class="grid grid-2">
-					{#each $loops as { loop, profile }}
-						<ProfileCardPreview
-							profile={profile}
-							loop={loop}
-							on:toggleFav={handleFav}
-							on:unloop={handleUnloop}
-							on:expand={() => expandProfile({ loop, profile })}
-						/>
-					{/each}
-				</div>
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={refreshLoopsStore}
+                    disabled={$loopsStatus === "loading" || $loopsState.loading}
+                >
+                    {$loopsStatus === "loading" ? "Loading…" : "Refresh"}
+                </button>
+            </div>
+        </div>
+    </header>
 
-				{#if !$loopsState.end}
-					<button on:click={loadMoreLoops} disabled={$loopsState.loading}>
-						{$loopsState.loading ? "Loading…" : "Load More"}
-					</button>
-				{/if}
-			{/if}
-		{/if}
-	</div>
+    <div class="content stack">
+        {#if $selectedLoop}
+            <ProfileCardExpanded
+                profile={$selectedLoop.profile}
+                loop={$selectedLoop.loop}
+                onAvatarClick={close}
+                on:toggleFav={handleFav}
+                on:unloop={handleUnloop}
+            />
+        {:else}
+            {#if $loopsStatus === "loading"}
+                <p class="hint">Loading…</p>
+            {:else if $loopsStatus === "error"}
+                <p class="red">Error loading loops</p>
+            {:else if $loopsStatus === "loaded" && $loops.length > 0}
+                <div class="grid grid-2">
+                    {#each $loops as { loop, profile }}
+                        <ProfileCardPreview
+                            profile={profile}
+                            loop={loop}
+                            on:toggleFav={handleFav}
+                            on:unloop={handleUnloop}
+                            on:expand={() => expandProfile({ loop, profile })}
+                        />
+                    {/each}
+                </div>
+
+                {#if !$loopsState.end}
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={loadMoreLoops}
+                        disabled={$loopsState.loading}
+                    >
+                        {$loopsState.loading ? "Loading…" : "Load More"}
+                    </button>
+                {/if}
+            {/if}
+        {/if}
+    </div>
 </div>

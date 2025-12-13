@@ -127,84 +127,108 @@
 
 
 <div class="page" class:page--has-actionbar={$selectedRequest}>
-	<header class="bar bar--header">
-		<div class="bar__inner">
-			<div class="bar__title">
-				<h3>Requests</h3>
-				{#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
-					<p class="hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
-				{:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0 && !$selectedRequest}
-					<p class="hint">You don't have any requests at the moment.</p>
-				{:else if $loopRequestsStatus === "loading"}
-					<p class="hint">Loading...</p>
-				{:else if $loopRequestsStatus === "error"}
-					<p class="hint">Error loading requests</p>
-				{/if}
-			</div>
-			<div class="bar__actions">
-				{#if $selectedRequest}
-					<button type="button" on:click={close}>Back</button>
-				{/if}
-				<button type="button" on:click={refreshLoopRequestsStore} disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}>
-					{$loopRequestsStatus === "loading" ? "Loading" : "Refresh"}
-				</button>
-			</div>
-		</div>
-	</header>
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>Requests</h3>
 
-	<div class="content stack">
-		{#if $selectedRequest}
-			<ProfileCardExpanded
-				profile={$selectedRequest.profile}
-				onAvatarClick={close}
-			/>
-		{:else}
-			{#if $loopRequestsStatus === "loading"}
-				<p>Loading...</p>
-			{:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
-				<div class="grid grid-2">
-					{#each $loopRequests as entry}
-						{#if entry?.profile}
-							<div style="aspect-ratio: 1 / 1;">
-								<ProfileCardPreview
-									profile={entry.profile}
-									on:expand={() => expandRequest(entry)}
-								/>
-								<div class="actions-inline">
-									<button on:click={() => handleAccept(entry)}>Accept</button>
-									<button on:click={() => handleDecline(entry)}>Decline</button>
-								</div>
-							</div>
-						{/if}
-					{/each}
-				</div>
+                {#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
+                    <p class="hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
+                {:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0 && !$selectedRequest}
+                    <p class="hint">You don't have any requests at the moment.</p>
+                {:else if $loopRequestsStatus === "loading"}
+                    <p class="hint">Loading…</p>
+                {:else if $loopRequestsStatus === "error"}
+                    <p class="hint">Error loading requests</p>
+                {/if}
+            </div>
 
-				{#if !$loopRequestsState.end}
-					<button on:click={loadMoreLoopRequests} disabled={$loopRequestsState.loading}>
-						{$loopRequestsState.loading ? "Loading" : "Load More"}
-					</button>
-				{/if}
-			{/if}
-		{/if}
-	</div>
+            <div class="bar__actions">
+                {#if $selectedRequest}
+                    <button type="button" class="btn btn--ghost" on:click={close}>
+                        Back
+                    </button>
+                {/if}
 
-	{#if $selectedRequest}
-		<div class="bar bar--actionbar">
-			<div class="bar__inner">
-				<div class="actionbar">
-					<button on:click={declineSelected}>Decline</button>
-					<button on:click={acceptSelected}>Accept</button>
-				</div>
-			</div>
-		</div>
-	{/if}
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={refreshLoopRequestsStore}
+                    disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}
+                >
+                    {$loopRequestsStatus === "loading" ? "Loading…" : "Refresh"}
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="content stack">
+        {#if $selectedRequest}
+            <ProfileCardExpanded
+                profile={$selectedRequest.profile}
+                onAvatarClick={close}
+            />
+        {:else}
+            {#if $loopRequestsStatus === "loading"}
+                <p class="hint">Loading…</p>
+            {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
+                <div class="grid grid-2">
+                    {#each $loopRequests as entry}
+                        {#if entry?.profile}
+                            <div class="stack" style="aspect-ratio: 1 / 1;">
+                                <ProfileCardPreview
+                                    profile={entry.profile}
+                                    on:expand={() => expandRequest(entry)}
+                                />
+
+                                <div class="actions actions--center">
+                                    <button
+                                        type="button"
+                                        class="btn btn--primary"
+                                        on:click={() => handleAccept(entry)}
+                                    >
+                                        Accept
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn--danger"
+                                        on:click={() => handleDecline(entry)}
+                                    >
+                                        Decline
+                                    </button>
+                                </div>
+                            </div>
+                        {/if}
+                    {/each}
+                </div>
+
+                {#if !$loopRequestsState.end}
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={loadMoreLoopRequests}
+                        disabled={$loopRequestsState.loading}
+                    >
+                        {$loopRequestsState.loading ? "Loading…" : "Load More"}
+                    </button>
+                {/if}
+            {/if}
+        {/if}
+    </div>
+
+    {#if $selectedRequest}
+        <div class="bar bar--actionbar">
+            <div class="bar__inner">
+                <div class="actionbar">
+                    <button type="button" class="btn btn--danger" on:click={declineSelected}>
+                        Decline
+                    </button>
+                    <button type="button" class="btn btn--primary" on:click={acceptSelected}>
+                        Accept
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
 </div>
-
-<style>
-	.actions-inline {
-		margin-top: 0.5rem;
-		display: flex;
-		gap: 0.5rem;
-		justify-content: center;
-	}
-</style>

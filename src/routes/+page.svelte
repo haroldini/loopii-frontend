@@ -27,45 +27,95 @@
 </svelte:head>
 
 
-<div class="page" class:page--has-actionbar={$peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}>
-	<header class="bar bar--header">
-		<div class="bar__inner">
-			<div class="bar__title">
-				<h3>loopii</h3>
-			</div>
-			<div class="bar__actions">
-				<button on:click={refreshPeerStore} disabled={$peerStatus === "loading"}>
-					{$peerStatus === "loading" ? "Loading" : "Refresh"}
-				</button>
-				<button on:click={() => goto("/profile/search-preferences")}>Preferences</button>
-			</div>
-		</div>
-	</header>
+<div
+    class="page page--viewport"
+    class:page--has-actionbar={$peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}
+>
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>loopii</h3>
+            </div>
 
-	<div class="content stack">
-		{#if $peerStatus === "loading"}
-			<p>Loading next profile...</p>
-		{:else if $peerStatus === "error"}
-			<p>An error occurred while loading the feed. Please try refreshing.</p>
-		{:else if $peerStatus === "hidden"}
-			<p>Your profile is hidden. Update your visibility settings to see other profiles.</p>
-		{:else if $peerStatus === "empty"}
-			<p>We couldn't find any matching profiles. Try refreshing or expanding your search preferences.</p>
-		{:else if expanded}
-			<ProfileCardExpanded profile={$peer} onAvatarClick={close} />
-		{:else}
-			<ProfileCard profile={$peer} on:expand={open} />
-		{/if}
-	</div>
+            <div class="bar__actions">
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={refreshPeerStore}
+                    disabled={$peerStatus === "loading"}
+                >
+                    {$peerStatus === "loading" ? "Loading…" : "Refresh"}
+                </button>
 
-	{#if $peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}
-		<div class="bar bar--actionbar">
-			<div class="bar__inner">
-				<div class="actionbar">
-					<button on:click={() => { handleDecision(false); if (expanded) close(); }}>Skip</button>
-					<button on:click={() => { handleDecision(true); if (expanded) close(); }}>Like</button>
-				</div>
-			</div>
-		</div>
-	{/if}
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => goto("/profile/search-preferences")}
+                >
+                    Preferences
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="content stack">
+        {#if $peerStatus === "loading"}
+            <p class="hint">Loading next profile…</p>
+        {:else if $peerStatus === "error"}
+            <div class="card">
+                <div class="section stack">
+                    <p>An error occurred while loading the feed.</p>
+                    <p class="hint">Try refreshing.</p>
+                </div>
+            </div>
+        {:else if $peerStatus === "hidden"}
+            <div class="card">
+                <div class="section stack">
+                    <p>Your profile is hidden.</p>
+                    <p class="hint">Update your visibility settings to see other profiles.</p>
+                </div>
+            </div>
+        {:else if $peerStatus === "empty"}
+            <div class="card">
+                <div class="section stack">
+                    <p>We couldn't find any matching profiles.</p>
+                    <p class="hint">Try refreshing or expanding your search preferences.</p>
+                </div>
+            </div>
+        {:else if expanded}
+            <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
+        {:else}
+            <ProfileCard profile={$peer} on:expand={open} />
+        {/if}
+    </div>
+
+    {#if $peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}
+        <div class="bar bar--actionbar">
+            <div class="bar__inner">
+                <div class="actionbar">
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={() => {
+                            handleDecision(false);
+                            if (expanded) close();
+                        }}
+                    >
+                        Skip
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => {
+                            handleDecision(true);
+                            if (expanded) close();
+                        }}
+                    >
+                        Like
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
 </div>

@@ -139,7 +139,7 @@
             </div>
 
             <div class="bar__actions">
-                <button type="button" on:click={confirmDiscardAndGoBack}>
+                <button type="button" class="btn btn--ghost" on:click={confirmDiscardAndGoBack}>
                     {hasChanges ? "Discard changes" : "Back"}
                 </button>
             </div>
@@ -147,19 +147,20 @@
     </header>
 
     <div class="content stack">
-
         {#if status === "error"}
             <p class="red">{error}</p>
         {/if}
 
-        <div class="container bordered">
-            <PrefsForm
-                mode="search"
-                on:change={handleChange}
-                bind:valid={canSave}
-                {clearSignal}
-            />
-        </div>
+        <section class="card">
+            <div class="section stack">
+                <PrefsForm
+                    mode="search"
+                    on:change={handleChange}
+                    bind:valid={canSave}
+                    {clearSignal}
+                />
+            </div>
+        </section>
     </div>
 
     <div class="bar bar--actionbar">
@@ -167,6 +168,7 @@
             <div class="actionbar">
                 <button
                     type="button"
+                    class="btn btn--ghost"
                     on:click={triggerClearAll}
                     disabled={status === "saving"}
                 >
@@ -175,10 +177,11 @@
 
                 <button
                     type="button"
+                    class="btn btn--primary"
                     on:click={save}
                     disabled={status === "saving" || !canSave || !hasChanges}
                 >
-                    {status === "saving" ? "Saving..." : "Save"}
+                    {status === "saving" ? "Saving…" : "Save"}
                 </button>
             </div>
         </div>

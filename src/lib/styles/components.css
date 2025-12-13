@@ -14,11 +14,6 @@
     box-shadow: var(--shadow-1);
 }
 
-/* Panel wrapper for “window-like” surfaces that contain headers/strips */
-.card--panel {
-    overflow: hidden;
-}
-
 /* Internal section within a larger surface (no outer border by default) */
 .section {
     padding: var(--space-3);
@@ -30,8 +25,28 @@
     border: var(--border-width) solid var(--border-color);
 }
 
-/* ===== Tags (legacy; profile components still use these) ===== */
+/* ===== Chips / tags ===== */
 
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    background: var(--bg-hover);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Legacy alias: existing profile components use .tags/.tag */
 .tags {
     display: flex;
     flex-wrap: wrap;
@@ -45,6 +60,44 @@
     border-radius: var(--radius-full);
     font-size: 0.8rem;
     color: var(--text-secondary);
+}
+
+/* ===== Badges / pills ===== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+
+    border-radius: var(--radius-full);
+    background: var(--danger);
+    color: var(--bg-app);
+
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.pill--success {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success);
 }
 
 /* ===== Toolbars / action rows ===== */
@@ -78,60 +131,21 @@
     justify-content: flex-end;
 }
 
-/* ===== Dividers / form actions ===== */
+/* ===== Segmented control (Account) ===== */
 
-.divider {
-    width: 100%;
-    height: var(--border-width);
-    background: var(--border-color);
-}
-
-.form-actions {
-    margin-top: var(--space-3);
-    padding-top: var(--space-3);
-    border-top: var(--border-width) solid var(--border-color);
-
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    justify-content: flex-end;
-}
-
-.form-actions > .btn {
-    width: 100%;
-}
-
-@media (min-width: 480px) {
-    .form-actions > .btn {
-        width: auto;
-    }
-}
-
-/* ===== Segmented control (global) ===== */
-
-/* Attach-first: no rounding by default (so it can connect to a panel/card). */
 .segmented {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
 
     background: var(--bg-surface);
-    border: 0;
-    border-radius: 0;
-    overflow: hidden;
-
-    /* separator between tab strip and body when attached */
-    border-bottom: var(--border-width) solid var(--border-color);
-}
-
-/* Standalone segmented (explicitly opt-in) */
-.segmented--standalone {
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-lg);
-    border-bottom: var(--border-width) solid var(--border-color);
+    overflow: hidden;
 }
 
-.segmented__item {
+.segmented > button,
+.segmented > a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,38 +155,56 @@
 
     color: var(--text-muted);
     background: transparent;
-
-    border: 0;
-    border-right: var(--border-width) solid var(--border-color);
-
-    /* defeat any inherited rounding */
-    border-radius: 0;
 }
 
-.segmented__item:last-child {
-    border-right: 0;
-}
-
-.segmented__item:hover {
+.segmented > button:hover,
+.segmented > a:hover {
     background: var(--bg-hover);
     color: var(--text-secondary);
 }
 
-/* Current selection via aria-current OR aria-selected */
-.segmented__item[aria-current="page"],
-.segmented__item[aria-selected="true"] {
+/* Current selection via aria-current (your template already sets this) */
+.segmented > button[aria-current="page"],
+.segmented > a[aria-current="page"] {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
 
-.segmented__item:focus-visible {
-    outline: var(--focus-ring-width) solid var(--focus-ring-color);
-    outline-offset: var(--focus-ring-offset);
+/* Legacy alias: current templates use .tab-selector */
+.tab-selector {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
-/* Removed: .tab-selector (legacy). If something breaks, migrate it to .segmented. */
+.tab-selector > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-/* ===== Fullscreen overlay pattern ===== */
+    padding: var(--space-2) var(--space-2);
+    cursor: pointer;
+
+    color: var(--text-muted);
+    background: transparent;
+}
+
+.tab-selector > button:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+.tab-selector > button[aria-current="page"] {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* ===== Fullscreen overlay pattern (for ImagePicker/MapPicker next) ===== */
 
 /* Root overlay covers viewport; panel handles actual UI. */
 .overlay {
@@ -306,7 +338,7 @@
 /* page header: sticky */
 .bar--header {
     position: sticky;
-    top: var(--nav-top-space);
+    top: 0;
     z-index: var(--z-header);
     border-bottom-width: var(--border-width);
 }
@@ -433,4 +465,14 @@
     font-size: 12px;
     line-height: 18px;
     text-align: center;
+}
+
+/* ===== Leaflet z-index clamp =====
+   Leaflet ships with very high z-index values for controls/attribution, which can
+   render above our sticky header when a map scrolls under it. Keep Leaflet below
+   app chrome. */
+.leaflet-control-container,
+.leaflet-top,
+.leaflet-bottom {
+    z-index: 100;
 }
