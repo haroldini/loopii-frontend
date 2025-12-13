@@ -67,6 +67,30 @@
     border-radius: var(--radius-full);
 }
 
+/* Text link button/anchor (for “click here” patterns) */
+.link {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    cursor: pointer;
+}
+
+.link:hover {
+    color: var(--text-primary);
+}
+
+.link:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: 4px;
+}
+
 /* Legacy aliases used in existing templates/components (temporary) */
 .bare {
     background: transparent;

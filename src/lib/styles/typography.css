@@ -31,10 +31,14 @@ p {
 .hint {
     font-size: 0.9rem;
     color: var(--text-muted);
-    margin-bottom: var(--space-2);
+    margin: 0;
 }
 
 /* small helper */
 .muted {
     color: var(--text-muted);
+}
+
+.no-select {
+    user-select: none;
 }

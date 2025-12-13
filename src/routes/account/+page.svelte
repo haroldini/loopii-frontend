@@ -167,9 +167,11 @@
     }
 </script>
 
+
 <svelte:head>
     <title>loopii • Account</title>
 </svelte:head>
+
 
 <div class="page">
     <header class="bar bar--header">
@@ -179,153 +181,213 @@
             </div>
 
             <div class="bar__actions">
-                <button type="button" on:click={() => goto("/profile")}>Back</button>
-                <button type="button" on:click={confirmLocalSignOut}>Log Out</button>
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => goto("/profile")}
+                >
+                    Back
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn--danger"
+                    on:click={confirmLocalSignOut}
+                >
+                    Log Out
+                </button>
             </div>
         </div>
     </header>
 
     <div class="content stack">
-        <div class="tab-selector">
-            <button type="button" on:click={() => select("password")} aria-current={$mode === "password" ? "page" : undefined}>
-                Password
-            </button>
-            <button type="button" on:click={() => select("email")} aria-current={$mode === "email" ? "page" : undefined}>
-                Email
-            </button>
-            <button type="button" on:click={() => select("revoke")} aria-current={$mode === "revoke" ? "page" : undefined}>
-                Revoke
-            </button>
-            <button type="button" on:click={() => select("delete")} aria-current={$mode === "delete" ? "page" : undefined}>
-                Delete
-            </button>
-        </div>
-
-        {#if $mode === "password" || $mode === "delete"}
-            <input
-                type="password"
-                placeholder="Current password"
-                value={$currentPassword}
-                on:input={(e) => currentPassword.set(e.target.value)}
-            />
-        {/if}
-
-        {#if $mode === "password"}
-            <input
-                type="password"
-                placeholder="New password"
-                value={$newPassword}
-                on:input={(e) => newPassword.set(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Confirm new password"
-                value={$confirmNewPassword}
-                on:input={(e) => confirmNewPassword.set(e.target.value)}
-            />
-            <p>
-                This will automatically sign you out on all other devices. Click
-                <span
-                    role="button"
-                    tabindex="0"
-                    on:click={() => setMode("reset")}
-                    on:keydown={(e) => e.key === "Enter" && setMode("reset")}
-                    class="button blue"
+        <div class="card card--panel" role="region" aria-label="Account settings">
+            <div class="segmented" role="tablist" aria-label="Account settings sections">
+                <button
+                    type="button"
+                    class="segmented__item"
+                    role="tab"
+                    aria-selected={$mode === "password"}
+                    aria-current={$mode === "password" ? "page" : undefined}
+                    tabindex={$mode === "password" ? 0 : -1}
+                    on:click={() => select("password")}
                 >
-                    here
-                </span>
-                if you've forgotten your current password.
-            </p>
+                    Password
+                </button>
 
-        {:else if $mode === "email"}
-            <p>Current email: <strong>{$user?.email}</strong></p>
-            <input
-                type="email"
-                placeholder="New email"
-                value={$newEmail}
-                on:input={(e) => newEmail.set(e.target.value.trim())}
-            />
-            <input
-                type="email"
-                placeholder="Confirm new email"
-                value={$confirmNewEmail}
-                on:input={(e) => confirmNewEmail.set(e.target.value.trim())}
-            />
-
-        {:else if $mode === "delete"}
-            <input
-                placeholder={$expectedPhrase}
-                value={$confirmPhrase}
-                on:input={(e) => confirmPhrase.set(e.target.value)}
-            />
-            <p><span class="red">This action permanently deletes your account and data.</span></p>
-            <p>
-                To confirm, type <strong style="user-select:none;">{$expectedPhrase}</strong> above.
-            </p>
-            <p>
-                Click
-                <span
-                    role="button"
-                    tabindex="0"
-                    on:click={() => setMode("reset")}
-                    on:keydown={(e) => e.key === "Enter" && setMode("reset")}
-                    class="button blue"
+                <button
+                    type="button"
+                    class="segmented__item"
+                    role="tab"
+                    aria-selected={$mode === "email"}
+                    aria-current={$mode === "email" ? "page" : undefined}
+                    tabindex={$mode === "email" ? 0 : -1}
+                    on:click={() => select("email")}
                 >
-                    here
-                </span>
-                if you've forgotten your current password.
-            </p>
+                    Email
+                </button>
 
-        {:else if $mode === "reset"}
-            <p>
-                Click the button below to send a password reset email to your inbox ({$user?.email}).
-            </p>
+                <button
+                    type="button"
+                    class="segmented__item"
+                    role="tab"
+                    aria-selected={$mode === "revoke"}
+                    aria-current={$mode === "revoke" ? "page" : undefined}
+                    tabindex={$mode === "revoke" ? 0 : -1}
+                    on:click={() => select("revoke")}
+                >
+                    Revoke
+                </button>
 
-        {:else if $mode === "revoke"}
-            <p>
-                Click the button below to sign out of all sessions on all devices, including this one.
-            </p>
-        {/if}
-
-        {#if $validationErrors.filter((e) => e.display).length || $error || ["failed", "emailPending"].includes($status)}
-            <div class="container fill">
-                {#each $validationErrors.filter((e) => e.display) as err}
-                    <p class="red">{err.message}</p>
-                {/each}
-
-                {#if $error}
-                    <p class="red">{$error}</p>
-                {/if}
-
-                {#if $status === "emailPending" && $mode === "email"}
-                    <p class="green">
-                        Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.
-                    </p>
-                {:else if $status === "emailPending" && $mode === "reset"}
-                    <p class="green">
-                        Password reset email sent! Check your inbox ({$user?.email}).
-                    </p>
-                {/if}
+                <button
+                    type="button"
+                    class="segmented__item"
+                    role="tab"
+                    aria-selected={$mode === "delete"}
+                    aria-current={$mode === "delete" ? "page" : undefined}
+                    tabindex={$mode === "delete" ? 0 : -1}
+                    on:click={() => select("delete")}
+                >
+                    Delete
+                </button>
             </div>
-        {/if}
 
-        <nav>
-            <button
-                type="button"
-                disabled={!$readyToSubmit || $isSubmitting}
-                on:click={handleSubmit}
-            >
-                {#if $isSubmitting}
-                    Submitting...
-                {:else}
-                    {#if $mode === "password"}Update Password
-                    {:else if $mode === "email"}Update Email
-                    {:else if $mode === "delete"}Delete Account
-                    {:else if $mode === "reset"}Send reset Email
-                    {:else if $mode === "revoke"}Sign Out Everywhere
-                    {/if}
+            <div class="section stack" role="tabpanel">
+                {#if $mode === "password" || $mode === "delete"}
+                    <input
+                        type="password"
+                        placeholder="Current password"
+                        value={$currentPassword}
+                        on:input={(e) => currentPassword.set(e.target.value)}
+                    />
                 {/if}
-            </button>
-        </nav>
+
+                {#if $mode === "password"}
+                    <input
+                        type="password"
+                        placeholder="New password"
+                        value={$newPassword}
+                        on:input={(e) => newPassword.set(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={$confirmNewPassword}
+                        on:input={(e) => confirmNewPassword.set(e.target.value)}
+                    />
+
+                    <p class="hint">
+                        This will automatically sign you out on all other devices. Click
+                        <button
+                            type="button"
+                            class="link"
+                            on:click={() => setMode("reset")}
+                        >
+                            here
+                        </button>
+                        if you've forgotten your current password.
+                    </p>
+
+                {:else if $mode === "email"}
+                    <p class="hint">
+                        Current email: <strong>{$user?.email}</strong>
+                    </p>
+
+                    <input
+                        type="email"
+                        placeholder="New email"
+                        value={$newEmail}
+                        on:input={(e) => newEmail.set(e.target.value.trim())}
+                    />
+                    <input
+                        type="email"
+                        placeholder="Confirm new email"
+                        value={$confirmNewEmail}
+                        on:input={(e) => confirmNewEmail.set(e.target.value.trim())}
+                    />
+
+                {:else if $mode === "delete"}
+                    <input
+                        placeholder={$expectedPhrase}
+                        value={$confirmPhrase}
+                        on:input={(e) => confirmPhrase.set(e.target.value)}
+                    />
+
+                    <p class="red">
+                        This action permanently deletes your account and data.
+                    </p>
+
+                    <p class="hint">
+                        To confirm, type <strong class="no-select">{$expectedPhrase}</strong> above.
+                    </p>
+
+                    <p class="hint">
+                        Click
+                        <button
+                            type="button"
+                            class="link"
+                            on:click={() => setMode("reset")}
+                        >
+                            here
+                        </button>
+                        if you've forgotten your current password.
+                    </p>
+
+                {:else if $mode === "reset"}
+                    <p class="hint">
+                        Click the button below to send a password reset email to your inbox (<strong>{$user?.email}</strong>).
+                    </p>
+
+                {:else if $mode === "revoke"}
+                    <p class="hint">
+                        Click the button below to sign out of all sessions on all devices, including this one.
+                    </p>
+                {/if}
+
+                {#if $validationErrors.filter((e) => e.display).length || $error || ["failed", "emailPending"].includes($status)}
+                    <div class="divider"></div>
+
+                    <div class="stack">
+                        {#each $validationErrors.filter((e) => e.display) as err}
+                            <p class="red">{err.message}</p>
+                        {/each}
+
+                        {#if $error}
+                            <p class="red">{$error}</p>
+                        {/if}
+
+                        {#if $status === "emailPending" && $mode === "email"}
+                            <p class="green">
+                                Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.
+                            </p>
+                        {:else if $status === "emailPending" && $mode === "reset"}
+                            <p class="green">
+                                Password reset email sent! Check your inbox (<strong>{$user?.email}</strong>).
+                            </p>
+                        {/if}
+                    </div>
+                {/if}
+
+                <div class="form-actions">
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        disabled={!$readyToSubmit || $isSubmitting}
+                        on:click={handleSubmit}
+                    >
+                        {#if $isSubmitting}
+                            Submitting...
+                        {:else}
+                            {#if $mode === "password"}Update Password
+                            {:else if $mode === "email"}Update Email
+                            {:else if $mode === "delete"}Delete Account
+                            {:else if $mode === "reset"}Send reset Email
+                            {:else if $mode === "revoke"}Sign Out Everywhere
+                            {/if}
+                        {/if}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -80,7 +80,12 @@
     width: 100%;
     max-width: var(--content-max);
     margin-inline: auto;
+
+    /* horizontal gutter */
     padding-inline: var(--gutter);
+
+    /* global vertical rhythm (fixes header-to-content gap everywhere) */
+    padding-block: var(--space-4);
 }
 
 /* ===== Legacy classes (temporary bridge; remove after template pass) ===== */
