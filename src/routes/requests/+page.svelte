@@ -133,14 +133,21 @@
 				<h3>Requests</h3>
 				{#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
 					<p class="hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
+				{:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0 && !$selectedRequest}
+					<p class="hint">You don't have any requests at the moment.</p>
+				{:else if $loopRequestsStatus === "loading"}
+					<p class="hint">Loading...</p>
+				{:else if $loopRequestsStatus === "error"}
+					<p class="hint">Error loading requests</p>
 				{/if}
 			</div>
-
 			<div class="bar__actions">
 				{#if $selectedRequest}
 					<button type="button" on:click={close}>Back</button>
 				{/if}
-				<button type="button" on:click={refreshLoopRequestsStore}>Refresh</button>
+				<button type="button" on:click={refreshLoopRequestsStore} disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}>
+					{$loopRequestsStatus === "loading" ? "Loading" : "Refresh"}
+				</button>
 			</div>
 		</div>
 	</header>
@@ -154,10 +161,6 @@
 		{:else}
 			{#if $loopRequestsStatus === "loading"}
 				<p>Loading...</p>
-			{:else if $loopRequestsStatus === "error"}
-				<p>Error loading requests</p>
-			{:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0}
-				<p>You don't have any requests yet.</p>
 			{:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
 				<div class="grid grid-2">
 					{#each $loopRequests as entry}
@@ -178,7 +181,7 @@
 
 				{#if !$loopRequestsState.end}
 					<button on:click={loadMoreLoopRequests} disabled={$loopRequestsState.loading}>
-						{$loopRequestsState.loading ? "Loading…" : "Load More"}
+						{$loopRequestsState.loading ? "Loading" : "Load More"}
 					</button>
 				{/if}
 			{/if}

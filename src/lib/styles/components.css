@@ -163,6 +163,11 @@ nav {
 	line-height: 1;
 }
 
+.app-nav__link:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
 .app-nav__link.active {
 	color: var(--accent);
 }

@@ -31,10 +31,12 @@
 	<header class="bar bar--header">
 		<div class="bar__inner">
 			<div class="bar__title">
-				<h3>Find Loops</h3>
+				<h3>loopii</h3>
 			</div>
 			<div class="bar__actions">
-				<button on:click={refreshPeerStore}>Refresh</button>
+				<button on:click={refreshPeerStore} disabled={$peerStatus === "loading"}>
+					{$peerStatus === "loading" ? "Loading" : "Refresh"}
+				</button>
 				<button on:click={() => goto("/profile/search-preferences")}>Preferences</button>
 			</div>
 		</div>

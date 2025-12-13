@@ -5,7 +5,8 @@
     import PrefsForm from "$lib/components/PrefsForm.svelte";
     import { updateSearchPrefs } from "$lib/api/prefs.js";
     import { profile } from "$lib/stores/profile.js";
-    import { addToast } from "$lib/stores/popups";
+    import { addToast } from "$lib/stores/popups.js";
+    import { initPeerStore, peerStatus, refreshPeerStore } from "$lib/stores/feed.js";
 
     let body = null;
     let original = null;
@@ -71,6 +72,12 @@
                 text: "Search preferences updated.",
                 autoHideMs: 3000,
             });
+
+            if (get(peerStatus) === "unloaded") {
+                initPeerStore();
+            } else {
+                refreshPeerStore();
+            }
 
         } catch (err) {
             console.error("Error updating search prefs:", err);

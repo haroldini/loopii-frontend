@@ -231,7 +231,7 @@
 
 {#if mode === "visibility"}
 <label for="global-visibility">Profile visibility</label>
-<p class="hint">Profiles who cannot see you will not appear in your searches either.</p>
+<p class="hint">You won't be shown profiles that aren't allowed to view you.</p>
 <label class="visibility-toggle">
     <input
     type="checkbox"

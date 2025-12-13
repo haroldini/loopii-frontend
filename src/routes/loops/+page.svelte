@@ -144,6 +144,12 @@
 				<h3>Loops</h3>
 				{#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
 					<p class="hint">Showing {$loops.length} of {$loopsTotal}</p>
+                {:else if $loopsStatus === "loaded" && $loops.length === 0 && !$selectedLoop}
+                    <p class="hint">You don't have any loops yet.</p>
+                {:else if $loopsStatus === "loading"}
+                    <p class="hint">Loading...</p>
+                {:else if $loopsStatus === "error"}
+                    <p class="hint">Error loading loops</p>
 				{/if}
 			</div>
 
@@ -151,7 +157,9 @@
 				{#if $selectedLoop}
 					<button type="button" on:click={close}>Back</button>
 				{/if}
-				<button type="button" on:click={refreshLoopsStore}>Refresh</button>
+				<button type="button" on:click={refreshLoopsStore} disabled={$loopsStatus === "loading" || $loopsState.loading}>
+					{$loopsStatus === "loading" ? "Loading" : "Refresh"}
+				</button>
 			</div>
 		</div>
 	</header>
@@ -170,8 +178,6 @@
 				<p>Loading...</p>
 			{:else if $loopsStatus === "error"}
 				<p>Error loading loops</p>
-			{:else if $loopsStatus === "loaded" && $loops.length === 0}
-				<p>You don't have any loops yet.</p>
 			{:else if $loopsStatus === "loaded" && $loops.length > 0}
 				<div class="grid grid-2">
 					{#each $loops as { loop, profile }}

@@ -30,6 +30,7 @@
 		<div class="bar__inner">
 			<div class="bar__title">
 				<h3>@{$profile?.username}</h3>
+				<p class="hint">Manage your profile settings and preferences.</p>
 			</div>
 
 			<div class="bar__actions">
