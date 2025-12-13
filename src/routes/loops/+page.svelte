@@ -137,62 +137,60 @@
 </svelte:head>
 
 
-{#if !$selectedLoop}
+<div class="page">
+	<header class="bar bar--header">
+		<div class="bar__inner">
+			<div class="bar__title">
+				<h3>Loops</h3>
+				{#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
+					<p class="hint">Showing {$loops.length} of {$loopsTotal}</p>
+				{/if}
+			</div>
 
-    <div class="container bordered">
-        <h3>Your Loops</h3>
+			<div class="bar__actions">
+				{#if $selectedLoop}
+					<button type="button" on:click={close}>Back</button>
+				{/if}
+				<button type="button" on:click={refreshLoopsStore}>Refresh</button>
+			</div>
+		</div>
+	</header>
 
-        {#if $loopsStatus === "loading"}
-            <p>Loading...</p>
+	<div class="content stack">
+		{#if $selectedLoop}
+			<ProfileCardExpanded
+				profile={$selectedLoop.profile}
+				loop={$selectedLoop.loop}
+				onAvatarClick={close}
+				on:toggleFav={handleFav}
+				on:unloop={handleUnloop}
+			/>
+		{:else}
+			{#if $loopsStatus === "loading"}
+				<p>Loading...</p>
+			{:else if $loopsStatus === "error"}
+				<p>Error loading loops</p>
+			{:else if $loopsStatus === "loaded" && $loops.length === 0}
+				<p>You don't have any loops yet.</p>
+			{:else if $loopsStatus === "loaded" && $loops.length > 0}
+				<div class="grid grid-2">
+					{#each $loops as { loop, profile }}
+						<ProfileCardPreview
+							profile={profile}
+							loop={loop}
+							on:toggleFav={handleFav}
+							on:unloop={handleUnloop}
+							on:expand={() => expandProfile({ loop, profile })}
+						/>
+					{/each}
+				</div>
 
-        {:else if $loopsStatus === "error"}
-            <p>Error loading loops</p>
-            <button on:click={refreshLoopsStore}>Refresh</button>
-
-        {:else if $loopsStatus === "loaded" && $loops.length === 0}
-            <p>You don't have any loops yet.</p>
-            <button on:click={refreshLoopsStore}>Refresh</button>
-
-        {:else if $loopsStatus === "loaded" && $loops.length > 0}
-            <p>Showing { $loops.length } of { $loopsTotal } loops</p>
-            <button on:click={refreshLoopsStore}>Refresh</button>
-        {/if}
-    </div>
-
-{:else}
-    <div class="container" style="margin-top: 1rem; padding: 0;">
-        <ProfileCardExpanded
-            profile={$selectedLoop.profile}
-            loop={$selectedLoop.loop}
-            onAvatarClick={close}
-            on:toggleFav={handleFav}
-            on:unloop={handleUnloop}
-        />
-    </div>
-{/if}
-
-<!-- Loops content -->
-{#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-    <div class="container" style="padding: 0;">
-
-        <!-- Profile Cards Grid -->
-        <div class="grid grid-2">
-            {#each $loops as { loop, profile }}
-                <ProfileCardPreview
-                    profile={profile}
-                    loop={loop}
-                    on:toggleFav={handleFav}
-                    on:unloop={handleUnloop}
-                    on:expand={() => expandProfile({ loop, profile })}
-                />
-            {/each}
-        </div>
-
-        <!-- Load More Button -->
-        {#if !$loopsState.end}
-            <button on:click={loadMoreLoops} disabled={$loopsState.loading}>
-                {$loopsState.loading ? "Loading…" : "Load More"}
-            </button>
-        {/if}
-    </div>
-{/if}
+				{#if !$loopsState.end}
+					<button on:click={loadMoreLoops} disabled={$loopsState.loading}>
+						{$loopsState.loading ? "Loading…" : "Load More"}
+					</button>
+				{/if}
+			{/if}
+		{/if}
+	</div>
+</div>

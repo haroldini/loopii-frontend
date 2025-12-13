@@ -21,38 +21,39 @@
 
 
 <svelte:head>
-    <title>loopii • Your Profile</title>
+	<title>loopii • Your Profile</title>
 </svelte:head>
 
 
-<!-- Account settings buttons -->
-<div class="container bordered">
-    {#if $profile?.username?.slice(-1) === "s"}
-        <h3>{$profile?.username}' Profile</h3>
-    {:else}
-        <h3>{$profile?.username}'s Profile</h3>
-    {/if}
-    <nav>
-        <button type="button" on:click={() => goto("/profile/edit")}>
-            Edit
-        </button>
-        <button type="button" on:click={() => goto("/profile/photos")}>
-            Edit Photos
-        </button>
-        <button type="button" on:click={() => goto("/profile/customization")}>
-            Customization
-        </button>
-        <button type="button" on:click={() => goto("/profile/visibility-preferences")}>
-            Visibility
-        </button>
-        <button type="button" on:click={() => goto("/account")}>
-            Account Settings
-        </button>
-    </nav>
-</div>
+<div class="page page--has-actionbar">
+	<header class="bar bar--header">
+		<div class="bar__inner">
+			<div class="bar__title">
+				<h3>@{$profile?.username}</h3>
+			</div>
 
-{#if expanded}
-    <ProfileCardExpanded profile={$profile} onAvatarClick={close} />
-{:else}
-    <ProfileCard profile={$profile} on:expand={open} />
-{/if}
+			<div class="bar__actions">
+				<button type="button" on:click={() => goto("/profile/visibility-preferences")}>Visibility</button>
+				<button type="button" on:click={() => goto("/account")}>Settings</button>
+			</div>
+		</div>
+	</header>
+
+	<div class="content stack">
+		{#if expanded}
+			<ProfileCardExpanded profile={$profile} onAvatarClick={close} />
+		{:else}
+			<ProfileCard profile={$profile} on:expand={open} />
+		{/if}
+	</div>
+
+	<div class="bar bar--actionbar">
+		<div class="bar__inner">
+			<div class="actionbar">
+				<button type="button" on:click={() => goto("/profile/edit")}>Edit</button>
+				<button type="button" on:click={() => goto("/profile/photos")}>Photos</button>
+				<button type="button" on:click={() => goto("/profile/style")}>Style</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -100,6 +100,7 @@ nav {
 	flex: 1 1 0;
 }
 
+
 /* ===== App navbar ===== */
 .app-nav {
 	position: fixed;
@@ -110,13 +111,21 @@ nav {
 	height: calc(var(--nav-height) + var(--safe-bottom));
 	padding-bottom: var(--safe-bottom);
 
+	display: flex;
+	justify-content: center;
+	align-items: stretch;
+
+	background: var(--bg-surface);
+	border-top: var(--border-width) solid var(--border-color);
+}
+
+.app-nav__inner {
+	width: 100%;
+	max-width: var(--content-max);
 	display: grid;
 	grid-auto-flow: column;
 	grid-auto-columns: 1fr;
 	align-items: center;
-
-	background: var(--bg-surface);
-	border-top: var(--border-width) solid var(--border-color);
 }
 
 @media (min-width: 768px) {
@@ -158,6 +167,19 @@ nav {
 	color: var(--accent);
 }
 
+/* simple active indicator */
+.app-nav__link.active::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: 6px;
+	width: 18px;
+	height: 2px;
+	border-radius: var(--radius-full);
+	background: var(--accent);
+}
+
 .app-nav__badge {
 	position: absolute;
 	top: 8px;
@@ -175,3 +197,4 @@ nav {
 	line-height: 18px;
 	text-align: center;
 }
+
