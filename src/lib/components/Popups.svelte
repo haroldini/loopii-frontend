@@ -18,9 +18,11 @@
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        padding-top: 1rem;
+
+        padding-top: calc(var(--space-3) + var(--safe-top));
         gap: 0.75rem;
-        z-index: 1000;
+
+        z-index: var(--z-toast);
         pointer-events: none;
     }
 

@@ -1,16 +1,52 @@
 /* styles/reset.css */
 
 * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html,
 body {
-	font-family: var(--font-ui);
-	background: var(--bg-app);
-	color: var(--text-secondary);
-	line-height: var(--line-height);
-	min-height: 100vh;
+    font-family: var(--font-ui);
+    background: var(--bg-app);
+    color: var(--text-secondary);
+    line-height: var(--line-height);
+    min-height: 100vh;
+}
+
+/* Make interactive elements inherit typography by default.
+   Visual styling is class-driven (e.g. .btn, .pressable). */
+button,
+input,
+textarea,
+select {
+    font: inherit;
+    color: inherit;
+}
+
+/* Remove default button chrome so wrapper-buttons (images, cards) behave predictably.
+   Use .btn when you want a styled button. */
+button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    text-align: inherit;
+}
+
+/* Links default to inherit; style with classes where needed. */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Accessible focus baseline (class patterns may override). */
+:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }

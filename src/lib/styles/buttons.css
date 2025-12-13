@@ -1,32 +1,95 @@
 /* styles/buttons.css */
 
-button {
-	padding: var(--space-2) var(--space-3);
-	border-radius: var(--radius-md);
-	border: var(--border-width) solid var(--border-color);
-	background: var(--bg-surface);
-	color: var(--text-secondary);
-	cursor: pointer;
+/* ===== Interactive primitives ===== */
+
+/* Use on any element (button/a/div) when it's clickable but shouldn't look like a button.
+   This replaces the old need for global button styling + "bare" exceptions. */
+.pressable {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-button:not(:disabled):hover {
-	background: var(--bg-hover);
+/* Base button styling is class-driven. */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    border: var(--border-width) solid var(--border-color);
+
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-button:disabled,
-button[disabled] {
-	opacity: 0.5;
-	cursor: not-allowed;
+.btn:hover {
+    background: var(--bg-hover);
 }
 
-button.primary {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--bg-app);
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-button.bare {
-	background: none;
-	border: none;
-	padding: 0;
+/* Variants */
+.btn--primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-app);
+}
+
+.btn--danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.btn--ghost {
+    background: transparent;
+}
+
+.btn--block {
+    width: 100%;
+}
+
+.btn--icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: var(--radius-full);
+}
+
+/* Legacy aliases used in existing templates/components (temporary) */
+.bare {
+    background: transparent;
+    border: 0;
+    padding: 0;
+}
+
+/* Popup template currently uses class="primary"/"danger" directly.
+   Keep these as aliases during the migration. */
+.primary {
+    background: var(--accent);
+    border: var(--border-width) solid var(--accent);
+    color: var(--bg-app);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.danger {
+    background: var(--danger);
+    border: var(--border-width) solid var(--danger);
+    color: #fff;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
 }

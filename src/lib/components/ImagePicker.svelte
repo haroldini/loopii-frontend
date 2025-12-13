@@ -221,152 +221,185 @@
 </script>
 
 {#if internalMode === "fullscreen"}
-    <div class="fullscreen-container">
-        <header class="header">
-            <button type="button" on:click={() => exitToPreview(false)}>Back</button>
-            <h2>Upload Image</h2>
-            <div class="header-actions">
-                {#if (workingUrl || originalUrl)}
-                    <button type="button" on:click={replaceImage}>Replace</button>
-                {:else}
-                    <button type="button" on:click={replaceImage}>Select</button>
-                {/if}
-                <button type="button" on:click={() => exitToPreview(true)}>Confirm</button>
-            </div>
-        </header>
+    <div class="overlay" role="dialog" aria-modal="true" aria-label="Upload image">
+        <div class="overlay__scrim"></div>
 
-        <main class="main">
-            {#if (workingUrl || originalUrl)}
-                <div class="image-wrapper">
-                    <img
-                        bind:this={imgElement}
-                        src={workingUrl || originalUrl}
-                        alt="Upload preview"
-                        class="full-img"
-                        on:load={onImageLoad}
-                    />
-                </div>
-            {:else}
-                <div
-                    class="no-image-placeholder"
-                    role="button"
-                    tabindex="0"
-                    on:click={replaceImage}
-                    on:keydown={(e) => e.key === "Enter" && replaceImage()}
+        <div class="overlay__panel">
+            <header class="overlay__header">
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => exitToPreview(false)}
                 >
-                    No image selected — click to choose
-                </div>
-            {/if}
-        </main>
+                    Back
+                </button>
 
-        <input
-            type="file"
-            accept="image/*"
-            bind:this={fileInput}
-            on:change={handleFileSelect}
-            style="display:none"
-        />
+                <div class="overlay__title">Upload Image</div>
+
+                <div class="overlay__actions">
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={replaceImage}
+                    >
+                        {#if (workingUrl || originalUrl)}
+                            Replace
+                        {:else}
+                            Select
+                        {/if}
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => exitToPreview(true)}
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </header>
+
+            <main class="overlay__body imagepicker__body">
+                {#if (workingUrl || originalUrl)}
+                    <div class="imagepicker__stage">
+                        <div class="imagepicker__image-wrapper">
+                            <img
+                                bind:this={imgElement}
+                                src={workingUrl || originalUrl}
+                                alt="Upload preview"
+                                class="imagepicker__full-img"
+                                on:load={onImageLoad}
+                            />
+                        </div>
+                    </div>
+                {:else}
+                    <div class="imagepicker__stage">
+                        <div
+                            class="imagepicker__no-image"
+                            role="button"
+                            tabindex="0"
+                            on:click={replaceImage}
+                            on:keydown={(e) => e.key === "Enter" && replaceImage()}
+                        >
+                            No image selected — click to choose
+                        </div>
+                    </div>
+                {/if}
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    bind:this={fileInput}
+                    on:change={handleFileSelect}
+                    style="display:none"
+                />
+            </main>
+        </div>
     </div>
 {:else}
     {#if editedUrl}
-        <button class="preview-button" on:click={enterFullscreen}>
-            <img src={editedUrl} alt="Upload preview" class="preview-img" />
+        <button
+            type="button"
+            class="imagepicker__preview pressable"
+            on:click={enterFullscreen}
+            aria-label="Open image picker"
+        >
+            <img src={editedUrl} alt="Upload preview" class="imagepicker__preview-img" />
         </button>
     {/if}
 {/if}
 
-
 <style>
-    .preview-button {
+    .imagepicker__preview {
         width: 100%;
         aspect-ratio: 1 / 1;
         padding: 0;
         margin: 0;
         overflow: hidden;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg-1);
-        border: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        border-radius: var(--radius-lg);
+        border: var(--border-width) solid var(--border-color);
+        background: var(--bg-surface);
+
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
 
-    .preview-button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    .imagepicker__preview:hover {
+        transform: scale(1.01);
+        box-shadow: var(--shadow-1);
+        background: var(--bg-hover);
     }
 
-    .preview-img {
+    .imagepicker__preview-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         pointer-events: none;
     }
 
-    .no-image-placeholder {
-        width: 100%;
-        height: 100%;
-        max-width: 90%;
-        max-height: 70vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-muted);
-        cursor: pointer;
-        border-radius: 8px;
-        border: 1px dashed var(--border-2);
-        background: var(--bg-1);
-        text-align: center;
-        padding: 1rem;
-    }
-
-    .fullscreen-container {
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
+    /* Fullscreen body: never scroll. Force stage to fit available height. */
+    .imagepicker__body {
+        overflow: hidden;
+        padding: var(--space-3);
         display: flex;
         flex-direction: column;
-        z-index: 1000;
+        min-height: 0;
     }
 
-    .header {
-        display: flex;
-        justify-content: space-between;
-        padding: 1rem;
-        background: var(--bg-2);
-        border-bottom: 1px solid var(--border-2);
-    }
+    /* Centers content and constrains it to available body height */
+    .imagepicker__stage {
+        flex: 1 1 auto;
+        min-height: 0;
 
-    .header-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .main {
-        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1rem;
     }
 
-    .image-wrapper {
+    /* The preview box must fit within body height and width.
+       Keeping aspect ratio, but clamping by max-height prevents scrolling. */
+    .imagepicker__image-wrapper {
+        width: min(100%, 900px);
+        aspect-ratio: 1 / 1;
+
+        max-height: 100%;
         max-width: 100%;
-        max-height: 70vh;
-        aspect-ratio: 1/1;
-        background: var(--bg-1);
+
+        background: var(--bg-app);
+        border: var(--border-width) solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
     }
 
-    .full-img {
+    .imagepicker__full-img {
         width: 100%;
         height: 100%;
         object-fit: contain;
         pointer-events: none;
+    }
+
+    .imagepicker__no-image {
+        width: min(100%, 900px);
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: var(--radius-lg);
+        border: 1px dashed var(--border-color);
+        background: var(--bg-surface);
+        text-align: center;
+        padding: var(--space-4);
     }
 
     /* Cropper overrides */
@@ -385,3 +418,4 @@
         border-radius: 50%;
     }
 </style>
+

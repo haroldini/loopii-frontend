@@ -68,7 +68,7 @@
         <div class="popup-header">
             <button
                 type="button"
-                class="popup-titleblock bare"
+                class="popup-titleblock bare pressable"
                 on:click={action}
                 on:keydown={handleKeyActivate}
             >
@@ -82,7 +82,7 @@
 
             <button
                 type="button"
-                class="dismiss bare"
+                class="dismiss bare pressable"
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -108,7 +108,7 @@
 {:else if variant === "popup"}
     <!-- Rich popup: text at top, optional component below -->
     <div
-        class="popup popup--rich"
+        class="popup popup--rich pressable"
         role="button"
         tabindex="0"
         on:click={action}
@@ -127,7 +127,7 @@
 
             <button
                 type="button"
-                class="dismiss bare"
+                class="dismiss bare pressable"
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -189,7 +189,7 @@
 
                 <button
                     type="button"
-                    class="dismiss bare"
+                    class="dismiss bare pressable"
                     on:click={(e) => {
                         e.stopPropagation();
                         dismiss();
@@ -217,11 +217,12 @@
                         <button
                             type="button"
                             class={
-                                act.variant === "primary"
-                                    ? "primary"
+                                "btn " +
+                                (act.variant === "primary"
+                                    ? "btn--primary"
                                     : act.variant === "danger"
-                                    ? "danger"
-                                    : ""
+                                    ? "btn--danger"
+                                    : "")
                             }
                             on:click={(e) => {
                                 e.stopPropagation();
@@ -244,9 +245,11 @@
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
-        background: var(--bg-2);
-        border: 1px solid var(--border-1);
-        border-radius: 8px;
+
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+
         padding: 0.75rem 0.9rem;
         max-width: 500px;
         width: 100%;
@@ -257,18 +260,16 @@
     }
 
     .popup--rich {
-        cursor: pointer;
         transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     .popup--rich:hover {
         background: var(--bg-hover);
-        border-color: var(--border-2);
     }
 
     .popup--rich:focus-visible {
-        outline: 2px solid var(--accent-blue);
-        outline-offset: 2px;
+        outline: var(--focus-ring-width) solid var(--focus-ring-color);
+        outline-offset: var(--focus-ring-offset);
     }
 
     /* Modal */
@@ -278,14 +279,16 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.35);
-        z-index: 1100;
+
+        background: rgba(0, 0, 0, 0.45);
+        z-index: var(--z-modal);
+        padding: var(--space-4);
     }
 
     .popup--modal {
         max-width: 480px;
-        width: min(480px, 100% - 2rem);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+        width: min(480px, 100%);
+        box-shadow: var(--shadow-2);
         cursor: default;
     }
 
@@ -295,14 +298,6 @@
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: 0.5rem;
-    }
-
-    /* Reuse global button styles.
-       Only add a danger variant here. */
-    button.danger {
-        background: var(--red);
-        border-color: var(--red);
-        color: #fff;
     }
 
     /* Header row: title on left, dismiss button on right */
@@ -326,14 +321,14 @@
     .popup-title {
         font-weight: 600;
         margin: 0;
-        color: var(--text-1);
+        color: var(--text-primary);
         overflow-wrap: anywhere;
     }
 
     .popup-detail {
         margin: 0;
         font-size: 0.9rem;
-        color: var(--text-2);
+        color: var(--text-secondary);
         overflow-wrap: anywhere;
     }
 
@@ -355,7 +350,7 @@
         border-radius: 999px;
         flex-shrink: 0;
         background: transparent;
-        color: var(--text-2);
+        color: var(--text-secondary);
     }
 
     .dismiss:hover {
@@ -365,7 +360,7 @@
     .dismiss-icon {
         font-size: 0.9rem;
         line-height: 1;
-        color: var(--text-2);
+        color: var(--text-secondary);
     }
 
     .dismiss svg.progress {
@@ -376,9 +371,10 @@
 
     .dismiss .circle {
         fill: none;
-        stroke: var(--text-3);
+        stroke: var(--text-muted);
         stroke-width: 2.5;
         stroke-linecap: round;
         transition: stroke-dasharray 0.1s linear;
     }
 </style>
+

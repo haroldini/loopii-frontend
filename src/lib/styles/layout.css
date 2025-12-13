@@ -1,108 +1,93 @@
 /* styles/layout.css */
 
-.container {
-	width: 600px;
-	max-width: 100%;
-	padding: var(--space-3);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--space-3);
-	text-align: center;
-}
+/* ===== Layout primitives ===== */
 
 .fill {
-	width: 100%;
+    width: 100%;
 }
 
 .fillvh {
-	min-height: 100vh;
-	padding-block: calc(var(--space-3) * 2);
-	gap: calc(var(--space-3) * 2);
+    min-height: 100vh;
+    padding-block: calc(var(--space-3) * 2);
 }
 
 .center {
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.flex-vertical {
-	display: flex;
-	flex-direction: column;
-	row-gap: var(--space-3);
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
 }
 
-.flex-horizontal {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-3);
+.row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.row--between {
+    justify-content: space-between;
 }
 
 .grid {
-	display: grid;
-	gap: var(--space-3);
-	width: 100%;
+    display: grid;
+    gap: var(--space-3);
+    width: 100%;
 }
 
 .grid-2 {
-	grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .grid-3 {
-	grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
 }
 
-
-
-
 /* ===== App shell ===== */
+
 .app {
-	min-height: 100svh;
-	background: var(--bg-app);
-	color: var(--text-secondary);
+    min-height: 100svh;
+    background: var(--bg-app);
+    color: var(--text-secondary);
 
-	/* reserve space for fixed nav */
-	padding-top: var(--nav-top-space);
-	padding-bottom: var(--nav-bottom-space);
+    /* reserve space for fixed nav */
+    padding-top: var(--nav-top-space);
+    padding-bottom: var(--nav-bottom-space);
 
-	overflow-x: clip;
+    overflow-x: clip;
 }
 
 .app-body {
-	min-height: 100%;
+    min-height: 100%;
 }
 
 /* ===== Page layout ===== */
+
 .page {
-	width: 100%;
+    width: 100%;
 }
 
 /* reserve space for optional fixed actionbar on pages that have one */
 .page--has-actionbar {
-	padding-bottom: var(--actionbar-height);
+    padding-bottom: var(--actionbar-height);
 }
 
 .content {
-	width: 100%;
-	max-width: var(--content-max);
-	margin-inline: auto;
-	padding-inline: var(--gutter);
+    width: 100%;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
 }
 
-.stack {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-3);
-}
+/* ===== Legacy classes (temporary bridge; remove after template pass) ===== */
 
-.row {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-}
-
-.row--between {
-	justify-content: space-between;
+/* Old .container used to do too much (centering, text-align, fixed widths).
+   Now: neutral block with padding. Combine with .content/.stack as needed. */
+.container {
+    width: 100%;
+    padding: var(--space-3);
 }

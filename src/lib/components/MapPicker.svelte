@@ -184,66 +184,83 @@
     });
 </script>
 
-<!-- Template (preview / fullscreen) -->
-<div class={mode === "fullscreen" ? "fullscreen-container" : "preview-container"}>
+<div class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}>
     {#if mode === "fullscreen"}
-        <header class="map-header">
-            <button on:click={() => exitToPreview(false)}>Back</button>
-            <h2>Select Location</h2>
-            <button on:click={() => exitToPreview(true)}>Confirm</button>
-        </header>
+        <div class="overlay__scrim"></div>
     {/if}
-    <button
-        type="button"
-        bind:this={mapContainer}
-        class="map"
-        on:click={mode === "preview" ? enterFullscreen : null}
-        aria-label="Open map in fullscreen">
-    </button>
+
+    <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
+        {#if mode === "fullscreen"}
+            <header class="overlay__header">
+                <button
+                    type="button"
+                    class="btn btn--ghost"
+                    on:click={() => exitToPreview(false)}
+                >
+                    Back
+                </button>
+
+                <div class="overlay__title">Select Location</div>
+
+                <div class="overlay__actions">
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => exitToPreview(true)}
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </header>
+        {/if}
+
+        <div class={mode === "fullscreen" ? "overlay__body mappicker__body" : "mappicker__body"}>
+            <!-- IMPORTANT: same element exists in both modes (no {#if} around it) -->
+            <button
+                type="button"
+                bind:this={mapContainer}
+                class="mappicker__map pressable"
+                on:click={mode === "preview" ? enterFullscreen : null}
+                aria-label="Open map in fullscreen"
+            ></button>
+        </div>
+    </div>
 </div>
 
 <style>
-    .map {
-        border: none;
-        border-radius: 0;
-        margin: 0;
-        padding: 0;
-        cursor: pointer;
-        width: 100%;
-        height: 100%;
-    }
-
-    .preview-container {
+    .mappicker__preview {
         width: 100%;
         aspect-ratio: 16 / 9;
         max-width: 600px;
-        border: 1px solid var(--border-2);
-        border-radius: 8px;
         overflow: hidden;
-        cursor: pointer;
-        background: var(--bg-1);
+        padding: 0;
+        border-radius: var(--radius-lg);
     }
 
-    .fullscreen-container {
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
+    .mappicker__panel {
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
-        z-index: 1000;
+        min-height: 0;
     }
 
-    .map-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: var(--bg-2);
-        border-bottom: 1px solid var(--border-2);
-        color: var(--text-2);
+    /* Works for both preview and fullscreen (in fullscreen it sits inside overlay__body) */
+    .mappicker__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
     }
 
-    .fullscreen-container .map {
-        flex: 1;
+    .mappicker__map {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        background: transparent;
     }
 </style>

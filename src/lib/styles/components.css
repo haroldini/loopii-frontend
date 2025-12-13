@@ -1,166 +1,430 @@
 /* styles/components.css */
 
-.bordered {
-	background: var(--bg-surface);
-	border: var(--border-width) solid var(--border-color);
+/* ===== Surfaces ===== */
+
+.card {
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
 }
 
+/* Optional elevation when you explicitly want it */
+.card--raised {
+    box-shadow: var(--shadow-1);
+}
+
+/* Internal section within a larger surface (no outer border by default) */
+.section {
+    padding: var(--space-3);
+}
+
+/* Legacy alias (temporary): lots of templates still use .bordered */
+.bordered {
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+}
+
+/* ===== Chips / tags ===== */
+
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    background: var(--bg-hover);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Legacy alias: existing profile components use .tags/.tag */
 .tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-2);
-	justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
 }
 
 .tag {
-	background: var(--bg-hover);
-	padding: var(--space-1) var(--space-2);
-	border-radius: var(--radius-full);
-	font-size: 0.8rem;
-	color: var(--text-secondary);
+    background: var(--bg-hover);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
-nav {
-	display: flex;
-	justify-content: center;
-	gap: var(--space-3);
+/* ===== Badges / pills ===== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+
+    border-radius: var(--radius-full);
+    background: var(--danger);
+    color: var(--bg-app);
+
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
 }
 
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full);
+
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.pill--success {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success);
+}
+
+/* ===== Toolbars / action rows ===== */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.toolbar__group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+/* Legacy replacement for global nav styling */
+.actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.actions--center {
+    justify-content: center;
+}
+
+.actions--end {
+    justify-content: flex-end;
+}
+
+/* ===== Segmented control (Account) ===== */
+
+.segmented {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.segmented > button,
+.segmented > a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: var(--space-2) var(--space-2);
+    cursor: pointer;
+
+    color: var(--text-muted);
+    background: transparent;
+}
+
+.segmented > button:hover,
+.segmented > a:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+/* Current selection via aria-current (your template already sets this) */
+.segmented > button[aria-current="page"],
+.segmented > a[aria-current="page"] {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Legacy alias: current templates use .tab-selector */
 .tab-selector {
-	display: flex;
-	gap: var(--space-3);
-	border-bottom: var(--border-width) solid var(--border-color);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
+.tab-selector > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-/* ===== Sticky bars ===== */
+    padding: var(--space-2) var(--space-2);
+    cursor: pointer;
+
+    color: var(--text-muted);
+    background: transparent;
+}
+
+.tab-selector > button:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+.tab-selector > button[aria-current="page"] {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* ===== Fullscreen overlay pattern (for ImagePicker/MapPicker next) ===== */
+
+/* Root overlay covers viewport; panel handles actual UI. */
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+
+    /* allow internal scrolling inside panel/body */
+    overflow: hidden;
+}
+
+.overlay__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.overlay__panel {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--bg-app);
+}
+
+/* Desktop: clamp panel + add radius/shadow */
+@media (min-width: 768px) {
+    .overlay {
+        align-items: center;
+        padding: var(--space-5);
+    }
+
+    .overlay__panel {
+        width: min(92vw, 1500px);
+        height: min(92vh, 900px);
+
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-2);
+        border: var(--border-width) solid var(--border-color);
+        overflow: hidden;
+        background: var(--bg-surface);
+    }
+}
+
+.overlay__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+
+    padding: var(--space-2) var(--space-3);
+    padding-top: calc(var(--space-2) + var(--safe-top));
+
+    background: var(--bg-surface);
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.overlay__title {
+    min-width: 0;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.overlay__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.overlay__body {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    /* components decide their own padding; default is none */
+    overflow: auto;
+}
+
+/* ===== Sticky bars (keep shell stable) ===== */
+
 .bar {
-	width: 100%;
-	background: var(--bg-surface);
-	border-color: var(--border-color);
-	border-style: solid;
-	border-width: 0;
+    width: 100%;
+    background: var(--bg-surface);
+    border-color: var(--border-color);
+    border-style: solid;
+    border-width: 0;
 }
 
 .bar__inner {
-	max-width: var(--content-max);
-	margin-inline: auto;
-	padding: var(--space-2) var(--gutter);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-2);
-	min-height: 44px;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding: var(--space-2) var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 44px;
 }
 
 .bar__title {
-	display: flex;
-	flex-direction: column;
-	gap: 0.125rem;
-	min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
 }
 
 .bar__title > * {
-	min-width: 0;
+    min-width: 0;
 }
 
 .bar__actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-2);
-	justify-content: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-end;
 }
 
 /* page header: sticky */
 .bar--header {
-	position: sticky;
-	top: var(--nav-top-space);
-	z-index: var(--z-header);
-	border-bottom-width: var(--border-width);
+    position: sticky;
+    top: var(--nav-top-space);
+    z-index: var(--z-header);
+    border-bottom-width: var(--border-width);
 }
 
 /* page actionbar: fixed above bottom nav */
 .bar--actionbar {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: var(--nav-bottom-space);
-	z-index: var(--z-actionbar);
-	border-top-width: var(--border-width);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--nav-bottom-space);
+    z-index: var(--z-actionbar);
+    border-top-width: var(--border-width);
 }
 
 /* actionbar button layout */
 .actionbar {
-	display: flex;
-	gap: var(--space-2);
-	width: 100%;
+    display: flex;
+    gap: var(--space-2);
+    width: 100%;
 }
 
 .actionbar > * {
-	flex: 1 1 0;
+    flex: 1 1 0;
 }
 
+/* ===== App navbar (keep your patched version) ===== */
 
-/* ===== App navbar ===== */
 .app-nav {
-	position: fixed;
-	left: 0;
-	right: 0;
-	z-index: var(--z-nav);
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: var(--z-nav);
 
-	height: calc(var(--nav-height) + var(--safe-bottom));
-	padding-bottom: var(--safe-bottom);
+    height: calc(var(--nav-height) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
 
-	display: flex;
-	justify-content: center;
-	align-items: stretch;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
 
-	background: var(--bg-surface);
-	border-top: var(--border-width) solid var(--border-color);
+    background: var(--bg-surface);
+    border-top: var(--border-width) solid var(--border-color);
 }
 
 .app-nav__inner {
-	width: 100%;
-	max-width: var(--content-max);
-	display: grid;
-	grid-auto-flow: column;
-	grid-auto-columns: 1fr;
-	align-items: center;
+    width: 100%;
+    max-width: var(--content-max);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
 }
 
 @media (min-width: 768px) {
-	.app-nav {
-		top: 0;
-		bottom: auto;
+    .app-nav {
+        top: 0;
+        bottom: auto;
 
-		height: calc(var(--nav-height) + var(--safe-top));
-		padding-top: var(--safe-top);
-		padding-bottom: 0;
+        height: calc(var(--nav-height) + var(--safe-top));
+        padding-top: var(--safe-top);
+        padding-bottom: 0;
 
-		border-top: 0;
-		border-bottom: var(--border-width) solid var(--border-color);
-	}
+        border-top: 0;
+        border-bottom: var(--border-width) solid var(--border-color);
+    }
 }
 
 @media (max-width: 767.98px) {
-	.app-nav {
-		top: auto;
-		bottom: 0;
-	}
+    .app-nav {
+        top: auto;
+        bottom: 0;
+    }
 }
 
 .app-nav__link {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-	height: var(--nav-height);
-	text-decoration: none;
-	color: var(--text-secondary);
+    height: var(--nav-height);
+    text-decoration: none;
+    color: var(--text-secondary);
 
-	font-size: 1.25rem;
-	line-height: 1;
+    font-size: 1.25rem;
+    line-height: 1;
 }
 
 .app-nav__link:hover {
@@ -169,37 +433,36 @@ nav {
 }
 
 .app-nav__link.active {
-	color: var(--accent);
+    color: var(--accent);
 }
 
 /* simple active indicator */
 .app-nav__link.active::after {
-	content: "";
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-	bottom: 6px;
-	width: 18px;
-	height: 2px;
-	border-radius: var(--radius-full);
-	background: var(--accent);
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 6px;
+    width: 18px;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
 }
 
 .app-nav__badge {
-	position: absolute;
-	top: 8px;
-	right: 14px;
+    position: absolute;
+    top: 8px;
+    right: 14px;
 
-	min-width: 18px;
-	height: 18px;
-	padding: 0 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
 
-	border-radius: var(--radius-full);
-	background: var(--danger);
-	color: var(--bg-app);
+    border-radius: var(--radius-full);
+    background: var(--danger);
+    color: var(--bg-app);
 
-	font-size: 12px;
-	line-height: 18px;
-	text-align: center;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
 }
-
