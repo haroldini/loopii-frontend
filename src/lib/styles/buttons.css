@@ -9,8 +9,14 @@ button {
 	cursor: pointer;
 }
 
-button:hover {
+button:not(:disabled):hover {
 	background: var(--bg-hover);
+}
+
+button:disabled,
+button[disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 button.primary {

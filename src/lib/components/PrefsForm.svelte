@@ -228,17 +228,19 @@
     }
 </script>
 
+
 {#if mode === "visibility"}
-    <label for="global-visibility">Profile visibility</label>
-    <label class="visibility-toggle">
-        <input
-            type="checkbox"
-            bind:checked={isVisible}
-        />
-        <span>
-            Show my profile in other people's feeds
-        </span>
-    </label>
+<label for="global-visibility">Profile visibility</label>
+<p class="hint">Profiles who cannot see you will not appear in your searches either.</p>
+<label class="visibility-toggle">
+    <input
+    type="checkbox"
+    bind:checked={isVisible}
+    />
+    <span>
+        Show my profile in other people's feeds
+    </span>
+</label>
 {/if}
 
 {#if mode !== "visibility" || isVisible}

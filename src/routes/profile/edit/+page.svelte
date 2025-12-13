@@ -130,127 +130,135 @@
 </svelte:head>
 
 
-<div class="container bordered">
-    <h3>Edit Profile</h3>
+<div class="page page--has-actionbar">
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>Edit Profile</h3>
+            </div>
 
-    {#if $profileEditState === "error"}
-        <p class="red">{$error}</p>
-    {/if}
+            <div class="bar__actions">
+                <button
+                    type="button"
+                    on:click={cancelEditingAndGoBack}
+                    disabled={$profileEditState === "saving"}
+                >
+                    {#if $hasChanges}
+                        Discard Changes
+                    {:else}
+                        Back to Profile
+                    {/if}
+                </button>
+            </div>
+        </div>
+    </header>
 
-    <nav>
-        <button
-            type="button"
-            on:click={cancelEditingAndGoBack}
-            disabled={$profileEditState === "saving"}
-        >
-            {#if $hasChanges}
-                Discard Changes
-            {:else}
-                Back to Profile
-            {/if}
-        </button>
+    <div class="content stack">
+        {#if $profileEditState === "error"}
+            <p class="red">{$error}</p>
+        {/if}
 
-        <button
-            type="button"
-            on:click={saveEdits}
-            disabled={$profileEditState === "saving" || ! $readyToSubmit || ! $hasChanges}
-        >
-            {$profileEditState === "saving" ? "Saving..." : "Save Changes"}
-        </button>
-    </nav>
+        {#if $profileEditState === "idle"}
+            <p>Loading profile...</p>
+        {:else}
+            <div class="container bordered">
+                <h3>About You</h3>
+
+                <ProfileFields
+                    fields={[
+                        "name", "location", "bio",
+                        {
+                            key: "audio",
+                            recordable: true,
+                            maxDuration: 30,
+                        }
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                />
+            </div>
+
+            <div class="container bordered">
+                <h3>Help Others Discover You</h3>
+
+                <ProfileFields
+                    fields={[
+                        {
+                            key: "map",
+                            hint: "Select your approximate location to appear in location searches.",
+                        },
+                        "looking_for",
+                        "star_sign",
+                        "mbti",
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                />
+            </div>
+
+            <div class="container bordered">
+                <h3>Your Interests</h3>
+
+                <ProfileFields
+                    fields={["interests"]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                    allInterests={$allInterests}
+                />
+            </div>
+
+            <div class="container bordered">
+                <h3>What Your Loops See</h3>
+
+                <ProfileFields
+                    fields={[
+                        { key: "socials", label: "Social Media Links" },
+                        "loop_bio"
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                    socials={$socials}
+                    allPlatforms={$allPlatforms}
+                    onSocialRemove={removeSocial}
+                    onSocialHandleChange={updateHandle}
+                    onSocialAdd={handleSocialAdd}
+                />
+            </div>
+
+            <div class="container bordered">
+                <h3>Your Essential Info</h3>
+                <p class="hint">These fields cannot be frequently changed.</p>
+
+                {#key JSON.stringify(profileCooldowns)}
+                    <ProfileFields
+                        fields={["username", "dob", "gender", "country"]}
+                        values={fieldValues}
+                        setters={fieldSetters}
+                        errors={$validationErrors}
+                        allCountries={$allCountries}
+                        cooldowns={profileCooldowns}
+                    />
+                {/key}
+            </div>
+        {/if}
+    </div>
+
+    <div class="bar bar--actionbar">
+        <div class="bar__inner">
+            <div class="actionbar">
+                <button
+                    type="button"
+                    on:click={saveEdits}
+                    disabled={$profileEditState === "saving" || !$readyToSubmit || !$hasChanges}
+                >
+                    {$profileEditState === "saving" ? "Saving..." : "Save Changes"}
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-{#if $profileEditState === "idle"}
-    <p>Loading profile...</p>
-{:else}
-
-    <div class="container bordered">
-        <h3>About You</h3>
-
-        <ProfileFields
-            fields={[
-                "name", "location", "bio",
-                {
-                    key: "audio",
-                    recordable: true,
-                    maxDuration: 30,
-                }
-            ]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-        />
-    </div>
-
-    <div class="container bordered">
-        <h3>Help Others Discover You</h3>
-
-        <ProfileFields
-            fields={[
-                {
-                    key: "map",
-                    hint: "Select your approximate location to appear in location searches.",
-                    // optional overrides:
-                    // clearLabel: "Clear Location",
-                    // pickLabel: "Pick Location",
-                    // defaultLat: 51.505,
-                    // defaultLng: -0.09,
-                },
-                "looking_for",
-                "star_sign",
-                "mbti",
-            ]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-        />
-    </div>
-
-    <div class="container bordered">
-        <h3>Your Interests</h3>
-
-        <ProfileFields
-            fields={["interests"]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-            allInterests={$allInterests}
-        />
-    </div>
-
-    <div class="container bordered">
-        <h3>What Your Loops See</h3>
-
-        <ProfileFields
-            fields={[
-                { key: "socials", label: "Social Media Links" },
-                "loop_bio"
-            ]}
-            values={fieldValues}
-            setters={fieldSetters}
-            errors={$validationErrors}
-            socials={$socials}
-            allPlatforms={$allPlatforms}
-            onSocialRemove={removeSocial}
-            onSocialHandleChange={updateHandle}
-            onSocialAdd={handleSocialAdd}
-        />
-    </div>
-
-    <div class="container bordered">
-        <h3>Your Essential Info</h3>
-        <p class="hint">These fields cannot be frequently changed.</p>
-
-        {#key JSON.stringify(profileCooldowns)}
-            <ProfileFields
-                fields={["username", "dob", "gender", "country"]}
-                values={fieldValues}
-                setters={fieldSetters}
-                errors={$validationErrors}
-                allCountries={$allCountries}
-                cooldowns={profileCooldowns}
-            />
-        {/key}
-    </div>
-
-{/if}

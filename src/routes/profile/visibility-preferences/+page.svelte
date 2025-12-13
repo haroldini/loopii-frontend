@@ -83,6 +83,33 @@
         goto("/profile");
     }
 
+    function confirmDiscardAndGoBack() {
+        if (!hasChanges) {
+            goBack();
+            return;
+        }
+
+        addToast({
+            variant: "modal",
+            text: "Discard your changes?",
+            description: "You have unsaved changes. If you leave now, they will be lost.",
+            autoHideMs: null,
+            actions: [
+                {
+                    label: "Keep editing",
+                    variant: "secondary",
+                },
+                {
+                    label: "Discard changes",
+                    variant: "danger",
+                    onClick: () => {
+                        goBack();
+                    },
+                },
+            ],
+        });
+    }
+
     function triggerClearAll() {
         clearSignal += 1;
         status = "idle";
@@ -96,38 +123,57 @@
 </svelte:head>
 
 
-<div class="container bordered">
-    <h3>Visibility Preferences</h3>
-    <p>Control who can see your profile.</p>
-    <br>
-    {#if status === "error"}
-        <p class="red">{error}</p>
-    {/if}
-    <nav style="justify-content: space-between;">
-        <button type="button" on:click={goBack}>
-            Back
-        </button>
-        <button
-            type="button"
-            on:click={save}
-            disabled={status === "saving" || !canSave || !hasChanges}
-        >
-            {status === "saving" ? "Saving..." : "Save"}
-        </button>
-        <button
-            type="button"
-            on:click={triggerClearAll}
-        >
-            Clear all
-        </button>
-    </nav>
-</div>
+<div class="page page--has-actionbar">
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>Visibility Preferences</h3>
+                <p class="hint">Control who can see your profile.</p>
+            </div>
 
-<div class="container bordered">
-    <PrefsForm
-        mode="visibility"
-        on:change={handleChange}
-        bind:valid={canSave}
-        {clearSignal}
-    />
+            <div class="bar__actions">
+                <button type="button" on:click={confirmDiscardAndGoBack}>
+                    {hasChanges ? "Discard changes" : "Back"}
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="content stack">
+
+        {#if status === "error"}
+            <p class="red">{error}</p>
+        {/if}
+
+        <div class="container bordered">
+            <PrefsForm
+                mode="visibility"
+                on:change={handleChange}
+                bind:valid={canSave}
+                {clearSignal}
+            />
+        </div>
+    </div>
+
+    <div class="bar bar--actionbar">
+        <div class="bar__inner">
+            <div class="actionbar">
+                <button
+                    type="button"
+                    on:click={triggerClearAll}
+                    disabled={status === "saving"}
+                >
+                    Clear all
+                </button>
+
+                <button
+                    type="button"
+                    on:click={save}
+                    disabled={status === "saving" || !canSave || !hasChanges}
+                >
+                    {status === "saving" ? "Saving..." : "Save"}
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

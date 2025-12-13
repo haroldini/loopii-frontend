@@ -217,104 +217,117 @@
 </svelte:head>
 
 
-<div class="container bordered">
-    <h3>Edit Photos</h3>
-    <nav>
-        <button
-            type="button"
-            on:click={() => goto("/profile")}
-            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
-            Back to Profile
-        </button>
-    </nav>
-</div>
-
-
-<div class="container bordered">
-    <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
-    <ImagePicker
-        bind:this={imagePicker}
-        initialOriginalUrl={$newImageOriginalUrl}
-        initialEditedUrl={$newImageUrl}
-        initialCropState={$newImageCropState}
-        on:confirm={(e) => {
-            photosState.set("idle");
-            newImageFile.set(e.detail.editedFile);
-            newImageOriginalUrl.set(e.detail.originalUrl);
-            newImageCropState.set(e.detail.cropState);
-        }}
-        on:back={() => {
-            photosState.set("idle");
-        }}
-    />
-    <nav>
-        {#if $newImageUrl}
-            <div>
-                <input
-                    type="checkbox"
-                    id="newImageAsAvatar"
-                    disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                />
-                <label for="newImageAsAvatar">Set as Avatar</label>
+<div class="page">
+    <header class="bar bar--header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h3>Edit Photos</h3>
             </div>
 
-            <button
-                type="button"
-                on:click={handleUpload}
-                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
-                {#if $photosState === "uploading"}
-                    Uploading...
-                {:else if $photosState === "settingAvatar"}
-                    Setting avatar...
-                {:else}
-                    Upload Photo
-                {/if}
-            </button>
-            <button
-                type="button"
-                on:click={resetPicker}
-                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
-                Cancel
-            </button>
-        {:else}
-            <button
-                type="button"
-                on:click={() => imagePicker.open()}
-                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}>
-                Upload New Photo
-            </button>
-        {/if}
-    </nav>
-</div>
+            <div class="bar__actions">
+                <button
+                    type="button"
+                    on:click={() => goto("/profile")}
+                    disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                >
+                    Back
+                </button>
+            </div>
+        </div>
+    </header>
 
-
-{#if $profile.images.length > 0}
-    {#each $profile.images as img (img.id)}
+    <div class="content stack">
         <div class="container bordered">
-            <img src={img.urls.medium} class="photo" alt="" />
+            <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
+            <ImagePicker
+                bind:this={imagePicker}
+                initialOriginalUrl={$newImageOriginalUrl}
+                initialEditedUrl={$newImageUrl}
+                initialCropState={$newImageCropState}
+                on:confirm={(e) => {
+                    photosState.set("idle");
+                    newImageFile.set(e.detail.editedFile);
+                    newImageOriginalUrl.set(e.detail.originalUrl);
+                    newImageCropState.set(e.detail.cropState);
+                }}
+                on:back={() => {
+                    photosState.set("idle");
+                }}
+            />
             <nav>
-                {#if !img.is_avatar}
+                {#if $newImageUrl}
+                    <div>
+                        <input
+                            type="checkbox"
+                            id="newImageAsAvatar"
+                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                        />
+                        <label for="newImageAsAvatar">Set as Avatar</label>
+                    </div>
+
                     <button
-                        on:click={() => handleSetAvatar(img.id)}
-                        disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}>
-                        {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
+                        type="button"
+                        on:click={handleUpload}
+                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                    >
+                        {#if $photosState === "uploading"}
+                            Uploading...
+                        {:else if $photosState === "settingAvatar"}
+                            Setting avatar...
+                        {:else}
+                            Upload Photo
+                        {/if}
+                    </button>
+                    <button
+                        type="button"
+                        on:click={resetPicker}
+                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                    >
+                        Cancel
                     </button>
                 {:else}
-                    <button class="green" disabled>Current Avatar</button>
+                    <button
+                        type="button"
+                        on:click={() => imagePicker.open()}
+                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                    >
+                        Upload New Photo
+                    </button>
                 {/if}
-
-                <button
-                    on:click={() => handleDelete(img.id)}
-                    disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}>
-                    {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
-                </button>
-                <p>{timeAgo(img.created_at)}</p>
             </nav>
         </div>
-    {/each}
-{:else}
-    <p class="no-photos">No photos uploaded yet.</p>
-{/if}
+
+        {#if $profile.images.length > 0}
+            {#each $profile.images as img (img.id)}
+                <div class="container bordered">
+                    <img src={img.urls.medium} class="photo" alt="" />
+                    <nav>
+                        {#if !img.is_avatar}
+                            <button
+                                on:click={() => handleSetAvatar(img.id)}
+                                disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
+                            >
+                                {$photosState === "settingAvatar" ? "Setting avatar..." : "Set as Avatar"}
+                            </button>
+                        {:else}
+                            <button class="green" disabled>Current Avatar</button>
+                        {/if}
+
+                        <button
+                            on:click={() => handleDelete(img.id)}
+                            disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
+                        >
+                            {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting..." : "Delete")}
+                        </button>
+                        <p>{timeAgo(img.created_at)}</p>
+                    </nav>
+                </div>
+            {/each}
+        {:else}
+            <p class="no-photos">No photos uploaded yet.</p>
+        {/if}
+    </div>
+</div>
 
 
 <style>
