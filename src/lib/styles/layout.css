@@ -71,15 +71,15 @@
     width: 100%;
 }
 
-/* Opt-in: lock the page to the viewport and prevent page-scroll.
-   Components inside (e.g. ProfileCardExpanded) can still scroll internally. */
+/* Clamp page to viewport (use on feed + profile). Prevents page scroll. */
 .page--viewport {
     height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
+/* Content becomes the flexible region inside a viewport-clamped page */
 .page--viewport > .content {
     flex: 1 1 auto;
     min-height: 0;
@@ -97,10 +97,13 @@
     padding-inline: var(--gutter);
 }
 
+/* Space between sticky header bar and the page content (all pages) */
+.page > .bar--header + .content {
+    margin-top: var(--space-4);
+}
+
 /* ===== Legacy classes (temporary bridge; remove after template pass) ===== */
 
-/* Old .container used to do too much (centering, text-align, fixed widths).
-   Now: neutral block with padding. Combine with .content/.stack as needed. */
 .container {
     width: 100%;
     padding: var(--space-3);
