@@ -10,3 +10,4 @@
 @import "./forms.css" layer(components);
 @import "./buttons.css" layer(components);
 @import "./components.css" layer(components);
+@import "./profile.css" layer(components);

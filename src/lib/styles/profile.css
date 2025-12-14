@@ -1,0 +1,723 @@
+/* styles/profile.css */
+
+/* ===== Shared profile primitives ===== */
+
+.profile-flag {
+    width: 1.2rem;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    object-fit: contain;
+}
+
+.gender-icon {
+    display: inline-block;
+    width: 1.1rem;
+    height: 1.1rem;
+    mask: var(--icon-url) no-repeat center / contain;
+    -webkit-mask: var(--icon-url) no-repeat center / contain;
+    background-color: var(--icon-color, var(--text-primary));
+    opacity: 0.9;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.gender-icon:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* Status dot for .pill */
+.status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--text-muted);
+}
+
+.pill.pill--online {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success);
+}
+
+.pill.pill--online .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.8);
+}
+
+/* Tags */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.tag {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--border-color);
+    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
+    color: var(--text-secondary);
+}
+
+.tag.more {
+    color: var(--text-muted);
+    opacity: 0.9;
+}
+
+/* Meta row */
+.meta-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.meta-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--border-color);
+}
+
+/* Line clamp helpers (includes standard property for your linter) */
+.clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.clamp-3 {
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+}
+
+.clamp-4 {
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+}
+
+.clamp-6 {
+    line-clamp: 6;
+    -webkit-line-clamp: 6;
+}
+
+/* ===== Profile media carousel (Instagram-style) ===== */
+
+.profile-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--bg-surface) 88%, var(--border-color));
+}
+
+.profile-media__track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-snap-stop: always;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.profile-media__track::-webkit-scrollbar {
+    display: none;
+}
+
+.profile-media__slide {
+    flex: 0 0 100%;
+    height: 100%;
+    scroll-snap-align: start;
+}
+
+.profile-media__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.profile-media__img.is-loaded {
+    opacity: 1;
+}
+
+.profile-media__count {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    z-index: 3;
+
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-full);
+    background: rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+
+    font-size: 0.85rem;
+    line-height: 1;
+
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+}
+
+.profile-media__count.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Dots */
+.profile-media__dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    pointer-events: none;
+}
+
+.profile-media__dot {
+    pointer-events: auto;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-full);
+    border: 0;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.profile-media__dot.is-active {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+/* Full-side nav zones. No circles. Big arrows. */
+.profile-media__nav {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12%;
+    z-index: 2;
+
+    border: 0;
+    background: transparent;
+
+    opacity: 0;
+    pointer-events: none;
+
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.profile-media__nav--prev {
+    left: 0;
+}
+
+.profile-media__nav--next {
+    right: 0;
+}
+
+.profile-media__nav--prev:hover {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+}
+
+.profile-media__nav--next:hover {
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+}
+
+.profile-media__nav:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.profile-media__navIcon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.profile-media__nav--prev .profile-media__navIcon {
+    left: 0.6rem;
+}
+
+.profile-media__nav--next .profile-media__navIcon {
+    right: 0.6rem;
+}
+
+.profile-media__nav:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .profile-media:hover .profile-media__nav {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .profile-media:hover .profile-media__count {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Preview card ===== */
+
+.profile-preview {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.profile-preview:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.profile-preview__media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background-size: cover;
+    background-position: center;
+}
+
+.profile-preview__badge {
+    position: absolute;
+    left: 0.5rem;
+    bottom: 0.5rem;
+    background: var(--accent);
+    color: var(--bg-app);
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+}
+
+.profile-preview__info {
+    padding: 0.6rem 0.75rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.profile-preview__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 550;
+}
+
+.profile-preview__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.profile-preview__date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.icon-btn-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--border-color);
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    opacity: 0.9;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: scale(1.04);
+    opacity: 1;
+}
+
+.icon-btn:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.icon-btn--fav {
+    color: color-mix(in oklab, var(--warning) 70%, var(--text-muted));
+}
+
+.icon-btn--fav.is-active {
+    color: var(--warning);
+}
+
+.icon-btn--danger {
+    color: color-mix(in oklab, var(--danger) 70%, var(--text-muted));
+}
+
+/* ===== Regular profile card ===== */
+
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    cursor: pointer;
+    text-align: left;
+}
+
+.profile-card__body {
+    /* content container already has gutter; don’t double-pad */
+    padding: 0.9rem 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 0;
+}
+
+.profile-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.profile-card__left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.profile-card__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.profile-card__right-main {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.profile-card__name {
+    font-size: 1.3rem;
+    line-height: 1.2;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.profile-card__username {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.profile-card__age {
+    font-weight: 650;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.profile-card__location {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: right;
+}
+
+/* ===== Expanded profile layout ===== */
+
+.profile-expanded {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+/* separators between sections */
+.profile-expanded > * + * {
+    border-top: var(--border-width) solid var(--border-color);
+}
+
+/* media wrap */
+.profile-expanded__media-wrap {
+    position: relative;
+    width: 100%;
+}
+
+/* close button */
+.profile-expanded__close {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 4;
+
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    backdrop-filter: blur(6px);
+}
+
+.profile-expanded__close:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* section padding: content already provides gutter */
+.profile-block {
+    padding: var(--space-3) 0;
+}
+
+.profile-expanded__header-main {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.profile-expanded__header-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-expanded__header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+.profile-expanded__right-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+}
+
+.traits-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.trait-pill {
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
+    border: var(--border-width) solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.voice-intro-inline {
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+.profile-section h3,
+.profile-section h4 {
+    margin-bottom: 0.35rem;
+}
+
+.profile-section .bio {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    text-align: left;
+    width: 100%;
+}
+
+/* Socials */
+.social-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    align-items: stretch;
+}
+
+.social-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.75rem;
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    cursor: pointer;
+}
+
+.social-item:hover {
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+}
+
+.social-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.social-icon img {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.social-icon-placeholder {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in oklab, var(--bg-surface) 70%, var(--border-color));
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.social-username {
+    flex-grow: 1;
+    color: var(--accent);
+    font-weight: 550;
+    word-break: break-all;
+}
+
+.social-username:hover {
+    text-decoration: underline;
+}
+
+.copy-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: 0.75rem;
+    flex-shrink: 0;
+}
+
+.copy-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+    color: var(--text-muted);
+}
+
+.copy-btn:hover {
+    background: color-mix(in oklab, var(--bg-surface) 78%, var(--border-color));
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .profile-card__right {
+        align-items: flex-start;
+    }
+
+    .profile-card__location {
+        text-align: left;
+    }
+
+    .profile-expanded__header-main {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-expanded__header-right,
+    .profile-expanded__right-top {
+        align-items: flex-start;
+    }
+
+    .voice-intro-inline {
+        justify-content: flex-start;
+        margin-top: 0.35rem;
+    }
+}

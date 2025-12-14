@@ -1,4 +1,4 @@
-/* tokens.css */
+/* styles/tokens.css */
 
 /* ===== Design constants ===== */
 :root {
@@ -110,31 +110,4 @@
     --warning: #b8860b;
 
     --focus-ring-color: rgba(25, 118, 210, 0.35);
-}
-
-/* ===== Compatibility aliases (temporary bridge; delete later) ===== */
-:root {
-    --bg: var(--bg-app);
-    --bg-1: var(--bg-surface);
-    --bg-2: var(--bg-surface);
-    --bg-3: var(--bg-surface);
-
-    --border: var(--border-color);
-    --border-1: var(--border-color);
-    --border-2: var(--border-color);
-    --border-3: var(--border-color);
-
-    --text-1: var(--text-primary);
-    --text-2: var(--text-secondary);
-    --text-3: var(--text-muted);
-
-    --accent-primary: var(--accent);
-    --accent-blue: var(--accent);
-
-    --green: var(--success);
-    --red: var(--danger);
-    --blue: var(--accent);
-
-    /* seen in some components */
-    --surface-2: var(--bg-surface);
 }

@@ -146,6 +146,14 @@
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-muted);
     font-size: 0.8rem;
+
+    /* critical: prevent flex-column parents from stretching it */
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pill--success {
@@ -355,11 +363,11 @@
     border-bottom-width: var(--border-width);
 }
 
+/* IMPORTANT CHANGE:
+   Actionbar is NOT fixed anymore.
+   Viewport pages place it in the 3rd grid row, so it can't overlap content. */
 .bar--actionbar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: var(--nav-bottom-space);
+    position: relative;
     z-index: var(--z-actionbar);
     border-top-width: var(--border-width);
 }
