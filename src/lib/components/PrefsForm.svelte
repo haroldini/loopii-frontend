@@ -229,153 +229,200 @@
 </script>
 
 
-{#if mode === "visibility"}
-<label for="global-visibility">Profile visibility</label>
-<p class="hint">You won't be shown profiles that aren't allowed to view you.</p>
-<label class="visibility-toggle">
-    <input
-    type="checkbox"
-    bind:checked={isVisible}
-    />
-    <span>
-        Show my profile in other people's feeds
-    </span>
-</label>
-{/if}
+<div class="prefs-form stack">
+    {#if mode === "visibility"}
+        <div class="field">
+            <label class="field__label" for="global-visibility">Profile visibility</label>
+            <p class="hint">You won't be shown profiles that aren't allowed to view you.</p>
 
-{#if mode !== "visibility" || isVisible}
-    <label for="genders">Genders</label>
-    <div class="grid grid-3">
-        <button
-            type="button"
-            class:selected={genders.includes("male")}
-            on:click={() => toggleGender("male")}
-        >
-            Men
-        </button>
-        <button
-            type="button"
-            class:selected={genders.includes("female")}
-            on:click={() => toggleGender("female")}
-        >
-            Women
-        </button>
-        <button
-            type="button"
-            class:selected={genders.includes("other")}
-            on:click={() => toggleGender("other")}
-        >
-            Non-binary / Other
-        </button>
-    </div>
+            <label class="switch" for="global-visibility">
+                <span class="switch__text">Show my profile in other people's feeds</span>
 
-    <label for="age-range">Age range</label>
-    <div class="grid grid-2">
-        <input
-            type="number"
-            min="18"
-            max="150"
-            placeholder="Min"
-            value={ageMin}
-            on:input={handleAgeMinChange}
-        />
-        <input
-            type="number"
-            min="18"
-            max="150"
-            placeholder="Max"
-            value={ageMax}
-            on:input={handleAgeMaxChange}
-        />
-    </div>
-    {#if ageError}
-        <p class="red">{ageError}</p>
+                <span class="switch__control">
+                    <input
+                        id="global-visibility"
+                        class="switch__input"
+                        type="checkbox"
+                        bind:checked={isVisible}
+                    />
+                    <span class="switch__track" aria-hidden="true"></span>
+                    <span class="switch__thumb" aria-hidden="true"></span>
+                </span>
+            </label>
+        </div>
     {/if}
 
-    <label for="countries">Countries</label>
-    <select multiple size="5" bind:value={countryIds}>
-        {#each $allCountries as country}
-            <option value={country.id}>
-                {country.name}
-            </option>
-        {/each}
-    </select>
+    {#if mode !== "visibility" || isVisible}
+        <fieldset class="field">
+            <legend class="field__label">Genders</legend>
 
-    <label for="location">Location</label>
-    {#if mode === "search"}
-        <p class="hint">Only show me people near a chosen location.</p>
-    {:else}
-        <p class="hint">Only show me to people near a chosen location.</p>
+            <div class="choice-grid">
+                <button
+                    type="button"
+                    class="btn btn--toggle"
+                    aria-pressed={genders.includes("male")}
+                    on:click={() => toggleGender("male")}
+                >
+                    Men
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn--toggle"
+                    aria-pressed={genders.includes("female")}
+                    on:click={() => toggleGender("female")}
+                >
+                    Women
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn--toggle"
+                    aria-pressed={genders.includes("other")}
+                    on:click={() => toggleGender("other")}
+                >
+                    Non-binary / Other
+                </button>
+            </div>
+        </fieldset>
+
+        <div class="field">
+            <div class="field__label">Age range</div>
+
+            <div class="age-range">
+                <input
+                    type="number"
+                    min="18"
+                    max="150"
+                    placeholder="Min"
+                    value={ageMin}
+                    on:input={handleAgeMinChange}
+                    aria-label="Minimum age"
+                />
+
+                <input
+                    type="number"
+                    min="18"
+                    max="150"
+                    placeholder="Max"
+                    value={ageMax}
+                    on:input={handleAgeMaxChange}
+                    aria-label="Maximum age"
+                />
+            </div>
+
+            {#if ageError}
+                <p class="field__error">{ageError}</p>
+            {/if}
+        </div>
+
+        <div class="field">
+            <label class="field__label" for="countries">Countries</label>
+            <select
+                id="countries"
+                class="multiselect"
+                multiple
+                size="8"
+                bind:value={countryIds}
+            >
+                {#each $allCountries as country}
+                    <option value={country.id}>{country.name}</option>
+                {/each}
+            </select>
+        </div>
+
+        <div class="field">
+            <div class="field__label">Location</div>
+
+            {#if mode === "search"}
+                <p class="hint">Only show me people near a chosen location.</p>
+            {:else}
+                <p class="hint">Only show me to people near a chosen location.</p>
+            {/if}
+
+            {#if proximityLat != null && proximityLng != null}
+                <div class="field__control">
+                    <MapPicker
+                        lat={proximityLat}
+                        lng={proximityLng}
+                        radius={proximityKm ? Number(proximityKm) * 1000 : 0}
+                        mode="preview"
+                        defaultZoom={11}
+                        on:confirm={(e) => {
+                            proximityLat = e.detail.lat;
+                            proximityLng = e.detail.lng;
+                        }}
+                    />
+                </div>
+
+                <div class="location-row">
+                    <select
+                        id="proximity"
+                        bind:value={proximityKm}
+                        on:change={handleProximitySelect}
+                        aria-label="Distance limit"
+                    >
+                        <option value="">No limit</option>
+                        <option value="2">Within 2 km</option>
+                        <option value="5">Within 5 km</option>
+                        <option value="10">Within 10 km</option>
+                        <option value="25">Within 25 km</option>
+                        <option value="50">Within 50 km</option>
+                        <option value="100">Within 100 km</option>
+                    </select>
+
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={clearLocationFilter}
+                    >
+                        Clear
+                    </button>
+                </div>
+            {:else}
+                <button type="button" class="btn btn--primary" on:click={pickLocation}>
+                    Enable Location Filter
+                </button>
+            {/if}
+        </div>
     {/if}
-
-    {#if proximityLat != null && proximityLng != null}
-        <MapPicker
-            lat={proximityLat}
-            lng={proximityLng}
-            radius={proximityKm ? Number(proximityKm) * 1000 : 0}
-            mode="preview"
-            defaultZoom={11}
-            on:confirm={(e) => {
-                proximityLat = e.detail.lat;
-                proximityLng = e.detail.lng;
-            }}
-        />
-        <button type="button" on:click={clearLocationFilter} style="margin-top: 0.5rem;">
-            Clear Location Filter
-        </button>
-
-        <select
-            id="proximity"
-            bind:value={proximityKm}
-            on:change={handleProximitySelect}
-            style="margin-top: 0.5rem;"
-        >
-            <option value="">
-                No limit
-            </option>
-            <option value="2">Within 2 km</option>
-            <option value="5">Within 5 km</option>
-            <option value="10">Within 10 km</option>
-            <option value="25">Within 25 km</option>
-            <option value="50">Within 50 km</option>
-            <option value="100">Within 100 km</option>
-        </select>
-    {:else}
-        <button type="button" on:click={pickLocation}>
-            Enable Location Filter
-        </button>
-    {/if}
-{/if}
-
+</div>
 
 <style>
-    button.selected {
-        background: var(--accent-primary);
-        border-color: var(--accent-primary);
-        color: #fff;
+    fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        min-inline-size: 0;
     }
 
-    .hint {
-        margin-bottom: 0.5rem;
-        font-size: 0.85rem;
-        color: var(--text-muted);
+    .choice-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--space-2);
     }
 
-    .visibility-toggle {
+    .age-range {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+        align-items: center;
+    }
+
+    .location-row {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        font-size: 0.95rem;
+        justify-content: space-between;
+        gap: var(--space-2);
+        flex-wrap: wrap;
     }
 
-    .visibility-toggle input {
-        width: 1.1rem;
-        height: 1.1rem;
-        cursor: pointer;
+    .location-row > select {
+        flex: 1 1 240px;
+        min-width: 220px;
     }
 
-    .visibility-toggle span {
-        font-weight: 500;
+    .location-row > .btn {
+        flex: 0 0 auto;
     }
 </style>

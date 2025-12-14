@@ -25,41 +25,181 @@
     border: var(--border-width) solid var(--border-color);
 }
 
-/* ===== Chips / tags ===== */
+/* ===== Form patterns ===== */
 
-.chip-list {
+.field {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: var(--space-2);
 }
 
-.chip {
-    display: inline-flex;
+.field__label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.field__control {
+    width: 100%;
+}
+
+.field__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.field__error {
+    color: var(--danger);
+}
+
+/* Switch (checkbox-based) */
+.switch {
+    display: flex;
     align-items: center;
-    gap: 0.35rem;
+    justify-content: space-between;
+    gap: var(--space-3);
 
-    background: var(--bg-hover);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-full);
+    padding: var(--space-2) var(--space-3);
 
-    font-size: 0.85rem;
+    background: var(--bg-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch__text {
     color: var(--text-secondary);
 }
 
-/* Legacy alias: existing profile components use .tags/.tag */
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    justify-content: center;
+.switch__control {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
-.tag {
-    background: var(--bg-hover);
-    padding: var(--space-1) var(--space-2);
+.switch__input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.switch__track {
+    position: absolute;
+    inset: 0;
     border-radius: var(--radius-full);
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    background: var(--border-color);
+    transition: background 0.15s ease;
+}
+
+.switch__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    background: var(--bg-app);
+    transition: transform 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.switch__input:checked ~ .switch__track {
+    background: var(--accent);
+}
+
+.switch__input:checked ~ .switch__thumb {
+    transform: translateX(20px);
+}
+
+.switch:focus-within {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* Dual range slider (two inputs, one visual track) */
+.range-dual {
+    position: relative;
+    height: 32px;
+    width: 100%;
+    min-width: 0;
+}
+
+.range-dual__track,
+.range-dual__fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 6px;
+    border-radius: var(--radius-full);
+}
+
+.range-dual__track {
+    background: var(--border-color);
+}
+
+.range-dual__fill {
+    background: var(--accent);
+
+    /* min/max in [18,150] => span is 132 */
+    left: calc((var(--min) - 18) * 100% / 132);
+    right: calc(100% - (var(--max) - 18) * 100% / 132);
+}
+
+.range-dual__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+
+    background: transparent;
+    pointer-events: none;
+    appearance: none;
+}
+
+.range-dual__input--max {
+    z-index: 2;
+}
+
+/* WebKit thumbs */
+.range-dual__input::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 6px;
+}
+
+.range-dual__input::-webkit-slider-thumb {
+    appearance: none;
+    pointer-events: auto;
+
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+
+    background: var(--bg-app);
+    border: var(--border-width) solid var(--border-color);
+}
+
+/* Firefox */
+.range-dual__input::-moz-range-track {
+    background: transparent;
+    height: 6px;
+}
+
+.range-dual__input::-moz-range-thumb {
+    pointer-events: auto;
+
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+
+    background: var(--bg-app);
+    border: var(--border-width) solid var(--border-color);
 }
 
 /* ===== Badges / pills ===== */
@@ -131,7 +271,7 @@
     justify-content: flex-end;
 }
 
-/* ===== Segmented control (Account) ===== */
+/* ===== Segmented control (Account / window tabs) ===== */
 
 .segmented {
     display: grid;
@@ -140,7 +280,10 @@
 
     background: var(--bg-surface);
     border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-lg);
+
+    /* top-only rounding (tab strip) */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
     overflow: hidden;
 }
 
@@ -163,14 +306,13 @@
     color: var(--text-secondary);
 }
 
-/* Current selection via aria-current (your template already sets this) */
 .segmented > button[aria-current="page"],
 .segmented > a[aria-current="page"] {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
 
-/* Legacy alias: current templates use .tab-selector */
+/* Legacy alias */
 .tab-selector {
     display: grid;
     grid-auto-flow: column;
@@ -178,7 +320,9 @@
 
     background: var(--bg-surface);
     border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-lg);
+
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
     overflow: hidden;
 }
 
@@ -204,9 +348,8 @@
     color: var(--text-primary);
 }
 
-/* ===== Fullscreen overlay pattern (for ImagePicker/MapPicker next) ===== */
+/* ===== Fullscreen overlay pattern ===== */
 
-/* Root overlay covers viewport; panel handles actual UI. */
 .overlay {
     position: fixed;
     inset: 0;
@@ -216,7 +359,6 @@
     align-items: stretch;
     justify-content: center;
 
-    /* allow internal scrolling inside panel/body */
     overflow: hidden;
 }
 
@@ -239,7 +381,6 @@
     background: var(--bg-app);
 }
 
-/* Desktop: clamp panel + add radius/shadow */
 @media (min-width: 768px) {
     .overlay {
         align-items: center;
@@ -291,8 +432,6 @@
 .overlay__body {
     flex: 1 1 auto;
     min-height: 0;
-
-    /* components decide their own padding; default is none */
     overflow: auto;
 }
 
@@ -335,7 +474,6 @@
     justify-content: flex-end;
 }
 
-/* page header: sticky */
 .bar--header {
     position: sticky;
     top: 0;
@@ -343,7 +481,6 @@
     border-bottom-width: var(--border-width);
 }
 
-/* page actionbar: fixed above bottom nav */
 .bar--actionbar {
     position: fixed;
     left: 0;
@@ -353,7 +490,6 @@
     border-top-width: var(--border-width);
 }
 
-/* actionbar button layout */
 .actionbar {
     display: flex;
     gap: var(--space-2);
@@ -436,7 +572,6 @@
     color: var(--accent);
 }
 
-/* simple active indicator */
 .app-nav__link.active::after {
     content: "";
     position: absolute;
@@ -467,10 +602,7 @@
     text-align: center;
 }
 
-/* ===== Leaflet z-index clamp =====
-   Leaflet ships with very high z-index values for controls/attribution, which can
-   render above our sticky header when a map scrolls under it. Keep Leaflet below
-   app chrome. */
+/* ===== Leaflet z-index clamp ===== */
 .leaflet-control-container,
 .leaflet-top,
 .leaflet-bottom {

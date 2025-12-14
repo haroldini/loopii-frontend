@@ -71,7 +71,26 @@
     width: 100%;
 }
 
-/* Clamp page to viewport (use on feed + profile). Prevents page scroll. */
+.content {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+/* Space between sticky header bar and the page content (all pages) */
+.page > .bar--header + .content {
+    margin-top: var(--space-4);
+}
+
+/* Reserve space for the FIXED actionbar so content doesn't sit underneath it.
+   Must be on the content region (not the page), because the fixed bar is a sibling. */
+.page--has-actionbar > .content {
+    padding-bottom: calc(var(--actionbar-height) + var(--space-4));
+}
+
+/* Clamp page to viewport and prevent page scrolling.
+   Use on feed + profile. Inner components can scroll instead. */
 .page--viewport {
     height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
     display: flex;
@@ -83,23 +102,10 @@
 .page--viewport > .content {
     flex: 1 1 auto;
     min-height: 0;
-}
 
-/* reserve space for optional fixed actionbar on pages that have one */
-.page--has-actionbar {
-    padding-bottom: var(--actionbar-height);
-}
-
-.content {
-    width: 100%;
-    max-width: var(--content-max);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-}
-
-/* Space between sticky header bar and the page content (all pages) */
-.page > .bar--header + .content {
-    margin-top: var(--space-4);
+    /* critical: prevent the page content region from scrolling;
+       later, ProfileCardExpanded will implement its own scroll container */
+    overflow: hidden;
 }
 
 /* ===== Legacy classes (temporary bridge; remove after template pass) ===== */

@@ -2,15 +2,12 @@
 
 /* ===== Interactive primitives ===== */
 
-/* Use on any element (button/a/div) when it's clickable but shouldn't look like a button.
-   This replaces the old need for global button styling + "bare" exceptions. */
 .pressable {
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Base button styling is class-driven. */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -65,6 +62,21 @@
     height: 40px;
     padding: 0;
     border-radius: var(--radius-full);
+}
+
+/* Toggle buttons (used for gender multi-select) */
+.btn--toggle {
+    background: transparent;
+}
+
+.btn--toggle[aria-pressed="true"] {
+    background: color-mix(in oklab, var(--accent) 18%, var(--bg-surface));
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--border-color));
+    color: var(--text-primary);
+}
+
+.btn--toggle[aria-pressed="true"]:hover {
+    background: color-mix(in oklab, var(--accent) 22%, var(--bg-surface));
 }
 
 /* Text link button/anchor (for “click here” patterns) */

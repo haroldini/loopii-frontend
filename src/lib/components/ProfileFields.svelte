@@ -265,368 +265,419 @@
 
 <!-- TEMPLATE -->
 
+<div class="profile-fields stack">
+    {#each normalizedFields as field}
+        {#if field.key === "username"}
+            {@const cd = computeCooldownState("username")}
+            <div class="field">
+                <label class="field__label" for="username">{labelFor(field)}</label>
+                <input
+                    id="username"
+                    value={values.username ?? ""}
+                    required={isRequired(field)}
+                    disabled={cd.disabled}
+                    on:input={(e) => setters.username && setters.username(e.target.value)}
+                />
+                {#if errorMap.username}
+                    <p class="field__error">{errorMap.username.message}</p>
+                {/if}
+                {#if cd.managed}
+                    <p class="hint">{cd.message}</p>
+                {/if}
+            </div>
 
-{#each normalizedFields as field}
+        {:else if field.key === "name"}
+            <div class="field">
+                <label class="field__label" for="name">{labelFor(field)}</label>
+                <input
+                    id="name"
+                    value={values.name ?? ""}
+                    on:input={(e) => setters.name && setters.name(e.target.value)}
+                />
+                {#if errorMap.name}
+                    <p class="field__error">{errorMap.name.message}</p>
+                {/if}
+            </div>
 
-    {#if field.key === "username"}
-        {@const cd = computeCooldownState("username")}
-        <label for="username">{labelFor(field)}</label>
-        <input
-            id="username"
-            value={values.username ?? ""}
-            required={isRequired(field)}
-            disabled={cd.disabled}
-            on:input={(e) => setters.username && setters.username(e.target.value)}
-        />
-        {#if errorMap.username}
-            <p class="red">{errorMap.username.message}</p>
-        {/if}
-        {#if cd.managed}
-            <p class="hint">{cd.message}</p>
-        {/if}
+        {:else if field.key === "dob"}
+            {@const cd = computeCooldownState("dob")}
+            <div class="field">
+                <label class="field__label" for="dob">{labelFor(field)}</label>
+                <input
+                    id="dob"
+                    type="date"
+                    value={values.dob ?? ""}
+                    required={isRequired(field)}
+                    disabled={cd.disabled}
+                    on:input={(e) => setters.dob && setters.dob(e.target.value)}
+                />
+                {#if errorMap.dob}
+                    <p class="field__error">{errorMap.dob.message}</p>
+                {/if}
+                {#if cd.managed}
+                    <p class="hint">{cd.message}</p>
+                {/if}
+            </div>
 
-    {:else if field.key === "name"}
-        <label for="name">{labelFor(field)}</label>
-        <input
-            id="name"
-            value={values.name ?? ""}
-            on:input={(e) => setters.name && setters.name(e.target.value)}
-        />
-        {#if errorMap.name}
-            <p class="red">{errorMap.name.message}</p>
-        {/if}
+        {:else if field.key === "gender"}
+            {@const cd = computeCooldownState("gender")}
+            <div class="field">
+                <label class="field__label" for="gender">{labelFor(field)}</label>
+                <select
+                    id="gender"
+                    required={isRequired(field)}
+                    value={values.gender ?? ""}
+                    disabled={cd.disabled}
+                    on:change={(e) => setters.gender && setters.gender(e.target.value)}
+                >
+                    <option value="" disabled>Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Non-Binary / Other</option>
+                </select>
+                {#if errorMap.gender}
+                    <p class="field__error">{errorMap.gender.message}</p>
+                {/if}
+                {#if cd.managed}
+                    <p class="hint">{cd.message}</p>
+                {/if}
+            </div>
 
-    {:else if field.key === "dob"}
-        {@const cd = computeCooldownState("dob")}
-        <label for="dob">{labelFor(field)}</label>
-        <input
-            id="dob"
-            type="date"
-            value={values.dob ?? ""}
-            required={isRequired(field)}
-            disabled={cd.disabled}
-            on:input={(e) => setters.dob && setters.dob(e.target.value)}
-        />
-        {#if errorMap.dob}
-            <p class="red">{errorMap.dob.message}</p>
-        {/if}
-        {#if cd.managed}
-            <p class="hint">{cd.message}</p>
-        {/if}
+        {:else if field.key === "country"}
+            {@const cd = computeCooldownState("country")}
+            <div class="field">
+                <label class="field__label" for="country">{labelFor(field)}</label>
+                <select
+                    id="country"
+                    required={isRequired(field)}
+                    value={values.country ?? ""}
+                    disabled={cd.disabled}
+                    on:change={(e) => setters.country && setters.country(e.target.value)}
+                >
+                    <option value="" disabled>Select Country</option>
+                    {#each allCountries as country}
+                        <option value={country.id}>{country.name}</option>
+                    {/each}
+                </select>
+                {#if errorMap.country}
+                    <p class="field__error">{errorMap.country.message}</p>
+                {/if}
+                {#if cd.managed}
+                    <p class="hint">{cd.message}</p>
+                {/if}
+            </div>
 
-    {:else if field.key === "gender"}
-        {@const cd = computeCooldownState("gender")}
-        <label for="gender">{labelFor(field)}</label>
-        <select
-            id="gender"
-            required={isRequired(field)}
-            value={values.gender ?? ""}
-            disabled={cd.disabled}
-            on:change={(e) => setters.gender && setters.gender(e.target.value)}
-        >
-            <option value="" disabled>Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Non-Binary / Other</option>
-        </select>
-        {#if errorMap.gender}
-            <p class="red">{errorMap.gender.message}</p>
-        {/if}
-        {#if cd.managed}
-            <p class="hint">{cd.message}</p>
-        {/if}
+        {:else if field.key === "location"}
+            <div class="field">
+                <label class="field__label" for="location">{labelFor(field)}</label>
+                <input
+                    id="location"
+                    value={values.location ?? ""}
+                    on:input={(e) => setters.location && setters.location(e.target.value)}
+                />
+                {#if errorMap.location}
+                    <p class="field__error">{errorMap.location.message}</p>
+                {/if}
+            </div>
 
-    {:else if field.key === "country"}
-        {@const cd = computeCooldownState("country")}
-        <label for="country">{labelFor(field)}</label>
-        <select
-            id="country"
-            required={isRequired(field)}
-            value={values.country ?? ""}
-            disabled={cd.disabled}
-            on:change={(e) => setters.country && setters.country(e.target.value)}
-        >
-            <option value="" disabled>Select Country</option>
-            {#each allCountries as country}
-                <option value={country.id}>{country.name}</option>
-            {/each}
-        </select>
-        {#if errorMap.country}
-            <p class="red">{errorMap.country.message}</p>
-        {/if}
-        {#if cd.managed}
-            <p class="hint">{cd.message}</p>
-        {/if}
+        {:else if field.key === "bio"}
+            <div class="field">
+                <label class="field__label" for="bio">{labelFor(field)}</label>
+                <textarea
+                    id="bio"
+                    on:input={(e) => setters.bio && setters.bio(e.target.value)}
+                >{values.bio ?? ""}</textarea>
+                {#if errorMap.bio}
+                    <p class="field__error">{errorMap.bio.message}</p>
+                {/if}
+            </div>
 
-    {:else if field.key === "location"}
-        <label for="location">{labelFor(field)}</label>
-        <input
-            id="location"
-            value={values.location ?? ""}
-            on:input={(e) => setters.location && setters.location(e.target.value)}
-        />
-        {#if errorMap.location}
-            <p class="red">{errorMap.location.message}</p>
-        {/if}
+        {:else if field.key === "map"}
+            <div class="field">
+                {#if field.label}
+                    <label class="field__label" for="map">{field.label}</label>
+                {:else}
+                    <label class="field__label" for="map">Location</label>
+                {/if}
 
-    {:else if field.key === "bio"}
-        <label for="bio">{labelFor(field)}</label>
-        <textarea
-            id="bio"
-            on:input={(e) => setters.bio && setters.bio(e.target.value)}
-        >{values.bio ?? ""}</textarea>
-        {#if errorMap.bio}
-            <p class="red">{errorMap.bio.message}</p>
-        {/if}
+                {#if field.hint}
+                    <p class="hint">{field.hint}</p>
+                {/if}
 
-    {:else if field.key === "map"}
-        {#if field.label}
-            <label for="map">{field.label}</label>
-        {/if}
-        {#if field.hint}
-            <p class="hint">{field.hint}</p>
-        {/if}
+                {#if values.latitude != null && values.longitude != null}
+                    <div class="field__control">
+                        <MapPicker
+                            lat={values.latitude}
+                            lng={values.longitude}
+                            radius={1000}
+                            mode="preview"
+                            defaultZoom={11}
+                            on:confirm={(e) => {
+                                setters.latitude && setters.latitude(e.detail.lat);
+                                setters.longitude && setters.longitude(e.detail.lng);
+                            }}
+                        />
+                    </div>
 
-        {#if values.latitude != null && values.longitude != null}
-            <MapPicker
-                lat={values.latitude}
-                lng={values.longitude}
-                radius={1000}
-                mode="preview"
-                defaultZoom={11}
-                on:confirm={(e) => {
-                    setters.latitude && setters.latitude(e.detail.lat);
-                    setters.longitude && setters.longitude(e.detail.lng);
-                }}
-            />
-            <button
-                type="button"
-                on:click={() => {
-                    setters.latitude && setters.latitude(null);
-                    setters.longitude && setters.longitude(null);
-                }}
-            >
-                {field.clearLabel ?? "Clear Location"}
-            </button>
-        {:else}
-            <button
-                type="button"
-                on:click={() => {
-                    // default to London-ish if nothing yet
-                    const lat = field.defaultLat ?? 51.505;
-                    const lng = field.defaultLng ?? -0.09;
-                    setters.latitude && setters.latitude(lat);
-                    setters.longitude && setters.longitude(lng);
-                }}
-            >
-                {field.pickLabel ?? "Pick Location"}
-            </button>
-        {/if}
-        {#if errorMap.latitude || errorMap.longitude}
-            <p class="red">
-                {(errorMap.latitude || errorMap.longitude).message}
-            </p>
-        {/if}
+                    <div class="field__actions">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => {
+                                setters.latitude && setters.latitude(null);
+                                setters.longitude && setters.longitude(null);
+                            }}
+                        >
+                            {field.clearLabel ?? "Clear Location"}
+                        </button>
+                    </div>
+                {:else}
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => {
+                            const lat = field.defaultLat ?? 51.505;
+                            const lng = field.defaultLng ?? -0.09;
+                            setters.latitude && setters.latitude(lat);
+                            setters.longitude && setters.longitude(lng);
+                        }}
+                    >
+                        {field.pickLabel ?? "Pick Location"}
+                    </button>
+                {/if}
 
-    {:else if field.key === "interests"}
-        <label for="interests">{labelFor(field)}</label>
-        <select
-            id="interests"
-            multiple
-            bind:value={localInterests}
-            style="height: 200px;"
-            on:change={() => {
-                setters.interests && setters.interests([...localInterests]);
-            }}
-        >
-            {#each allInterests as interest}
-                <option value={interest.id}>{interest.name}</option>
-            {/each}
-        </select>
-        {#if errorMap.interests}
-            <p class="red">{errorMap.interests.message}</p>
-        {/if}
+                {#if errorMap.latitude || errorMap.longitude}
+                    <p class="field__error">
+                        {(errorMap.latitude || errorMap.longitude).message}
+                    </p>
+                {/if}
+            </div>
 
-    {:else if field.key === "socials"}
-        {#if field.label}
-            <label for="socials">{field.label}</label>
-        {/if}
+        {:else if field.key === "interests"}
+            <div class="field">
+                <label class="field__label" for="interests">{labelFor(field)}</label>
+                <select
+                    id="interests"
+                    class="multiselect"
+                    multiple
+                    size="10"
+                    bind:value={localInterests}
+                    on:change={() => {
+                        setters.interests && setters.interests([...localInterests]);
+                    }}
+                >
+                    {#each allInterests as interest}
+                        <option value={interest.id}>{interest.name}</option>
+                    {/each}
+                </select>
+                {#if errorMap.interests}
+                    <p class="field__error">{errorMap.interests.message}</p>
+                {/if}
+            </div>
 
-        {#if socials && socials.length > 0}
-            <div class="socials-list">
-                {#each socials as social, i}
-                    {@const platform = allPlatforms.find((p) => p.id === social.platform_id)}
-                    {#if platform}
-                        {@const pattern = social.url_pattern || platform.url_pattern}
-                        {@const parts = pattern ? pattern.split("{handle}") : ["", ""]}
-                        {@const before = parts[0] ?? ""}
-                        {@const after = parts[1] ?? ""}
-                        <div class="social-row">
-                            <div class="social-icon">
-                                {#if platform.icon_url}
-                                    <img src={platform.icon_url} alt={platform.name} loading="lazy" />
-                                {:else}
-                                    <div class="social-icon-placeholder">
-                                        {platform.name?.[0] || "?"}
+        {:else if field.key === "socials"}
+            <div class="field">
+                {#if field.label}
+                    <label class="field__label" for="socials">{field.label}</label>
+                {:else}
+                    <label class="field__label" for="socials">Social links</label>
+                {/if}
+
+                {#if socials && socials.length > 0}
+                    <div class="socials-list">
+                        {#each socials as social, i}
+                            {@const platform = allPlatforms.find((p) => p.id === social.platform_id)}
+                            {#if platform}
+                                {@const pattern = social.url_pattern || platform.url_pattern}
+                                {@const parts = pattern ? pattern.split("{handle}") : ["", ""]}
+                                {@const before = parts[0] ?? ""}
+                                {@const after = parts[1] ?? ""}
+
+                                <div class="social-row">
+                                    <div class="social-icon">
+                                        {#if platform.icon_url}
+                                            <img src={platform.icon_url} alt={platform.name} loading="lazy" />
+                                        {:else}
+                                            <div class="social-icon-placeholder">
+                                                {platform.name?.[0] || "?"}
+                                            </div>
+                                        {/if}
                                     </div>
+
+                                    <div class="social-preview">
+                                        <span class="social-base">
+                                            {before.replace(/^https?:\/\//, "")}
+                                        </span>
+
+                                        <input
+                                            class="social-username-input"
+                                            type="text"
+                                            placeholder="username"
+                                            value={social.handle || ""}
+                                            maxlength="50"
+                                            on:input={(e) =>
+                                                onSocialHandleChange &&
+                                                onSocialHandleChange(i, e.target.value)
+                                            }
+                                        />
+
+                                        <span class="social-base">{after}</span>
+                                    </div>
+
+                                    <div class="social-remove">
+                                        <button
+                                            type="button"
+                                            class="btn btn--icon btn--ghost social-remove-btn"
+                                            aria-label="Remove platform"
+                                            on:click={() => onSocialRemove && onSocialRemove(i)}
+                                        >
+                                            −
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {#if errorMap[`socials.${i}`]}
+                                    <p class="field__error">{errorMap[`socials.${i}`].message}</p>
                                 {/if}
-                            </div>
+                            {/if}
+                        {/each}
+                    </div>
+                {/if}
 
-                            <div class="social-preview">
-                                <span class="social-base">
-                                    {before.replace(/^https?:\/\//, "")}
-                                </span>
-                                <input
-                                    class="social-handle-input"
-                                    type="text"
-                                    placeholder="handle"
-                                    value={social.handle || ""}
-                                    maxlength="50"
-                                    on:input={(e) =>
-                                        onSocialHandleChange &&
-                                        onSocialHandleChange(i, e.target.value)
-                                    }
-                                />
-                                <span class="social-base">{after}</span>
-                            </div>
+                <select
+                    id="socials"
+                    on:change={(e) => {
+                        const platformId = e.target.value;
+                        if (platformId && onSocialAdd) {
+                            onSocialAdd(platformId);
+                        }
+                        e.target.value = "";
+                    }}
+                >
+                    <option value="">+ Add platform</option>
+                    {#each allPlatforms as platform}
+                        <option value={platform.id}>{platform.name}</option>
+                    {/each}
+                </select>
+            </div>
 
-                            <div class="social-remove">
-                                <button
-                                    type="button"
-                                    on:click={() => onSocialRemove && onSocialRemove(i)}
-                                >
-                                    −
-                                </button>
-                            </div>
-                        </div>
+        {:else if field.key === "star_sign"}
+            <div class="field">
+                <label class="field__label" for="star_sign">{labelFor(field)}</label>
+                <select
+                    id="star_sign"
+                    value={values.star_sign ?? ""}
+                    on:change={(e) => setters.star_sign && setters.star_sign(e.target.value)}
+                >
+                    <option value="" disabled>Select Star Sign</option>
+                    {#each STAR_SIGNS as sign}
+                        <option value={sign}>
+                            {sign.charAt(0).toUpperCase() + sign.slice(1)}
+                        </option>
+                    {/each}
+                </select>
+                {#if errorMap.star_sign}
+                    <p class="field__error">{errorMap.star_sign.message}</p>
+                {/if}
+            </div>
 
-                        {#if errorMap[`socials.${i}`]}
-                            <p class="red">
-                                {errorMap[`socials.${i}`].message}
-                            </p>
-                        {/if}
-                    {/if}
-                {/each}
+        {:else if field.key === "mbti"}
+            <div class="field">
+                <label class="field__label" for="mbti">{labelFor(field)}</label>
+                <select
+                    id="mbti"
+                    value={values.mbti ?? ""}
+                    on:change={(e) => setters.mbti && setters.mbti(e.target.value)}
+                >
+                    <option value="" disabled>Select MBTI Type</option>
+                    {#each MBTI_TYPES as type}
+                        <option value={type}>{type}</option>
+                    {/each}
+                </select>
+                {#if errorMap.mbti}
+                    <p class="field__error">{errorMap.mbti.message}</p>
+                {/if}
+            </div>
+
+        {:else if field.key === "loop_bio"}
+            <div class="field">
+                <label class="field__label" for="loop_bio">{labelFor(field)}</label>
+                <textarea
+                    id="loop_bio"
+                    on:input={(e) => setters.loop_bio && setters.loop_bio(e.target.value)}
+                >{values.loop_bio ?? ""}</textarea>
+                {#if errorMap.loop_bio}
+                    <p class="field__error">{errorMap.loop_bio.message}</p>
+                {/if}
+            </div>
+
+        {:else if field.key === "looking_for"}
+            <div class="field">
+                <label class="field__label" for="looking_for">{labelFor(field)}</label>
+                <textarea
+                    id="looking_for"
+                    on:input={(e) => setters.looking_for && setters.looking_for(e.target.value)}
+                >{values.looking_for ?? ""}</textarea>
+                {#if errorMap.looking_for}
+                    <p class="field__error">{errorMap.looking_for.message}</p>
+                {/if}
+            </div>
+
+        {:else if field.key === "audio"}
+            <div class="field">
+                <label class="field__label" for="audio">{labelFor(field)}</label>
+
+                <AudioPicker
+                    audio={values.audioUrl ?? null}
+                    maxDuration={field.maxDuration ?? 30}
+                    recordable={field.recordable ?? false}
+                    disabled={field.disabled ?? false}
+                    resetToken={audioResetToken}
+                    on:recorded={(e) => {
+                        setters.audio && setters.audio(e.detail);
+                    }}
+                />
+
+                {#if values.audioUrl}
+                    <div class="field__actions">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => {
+                                setters.audio && setters.audio({ delete: true });
+                                audioResetToken += 1;
+                            }}
+                        >
+                            {field.clearLabel ?? "Remove Voice Intro"}
+                        </button>
+                    </div>
+                {/if}
+
+                {#if errorMap.audio}
+                    <p class="field__error">{errorMap.audio.message}</p>
+                {/if}
             </div>
         {/if}
-
-        <select
-            on:change={(e) => {
-                const platformId = e.target.value;
-                if (platformId && onSocialAdd) {
-                    onSocialAdd(platformId);
-                }
-                e.target.value = "";
-            }}
-        >
-            <option value="">+ Add platform</option>
-            {#each allPlatforms as platform}
-                <option value={platform.id}>{platform.name}</option>
-            {/each}
-        </select>
-
-    {:else if field.key === "star_sign"}
-        <label for="star_sign">{labelFor(field)}</label>
-        <select
-            id="star_sign"
-            value={values.star_sign ?? ""}
-            on:change={(e) => setters.star_sign && setters.star_sign(e.target.value)}
-        >
-            <option value="" disabled>Select Star Sign</option>
-            {#each STAR_SIGNS as sign}
-                <option value={sign}>
-                    {sign.charAt(0).toUpperCase() + sign.slice(1)}
-                </option>
-            {/each}
-        </select>
-        {#if errorMap.star_sign}
-            <p class="red">{errorMap.star_sign.message}</p>
-        {/if}
-
-    {:else if field.key === "mbti"}
-        <label for="mbti">{labelFor(field)}</label>
-        <select
-            id="mbti"
-            value={values.mbti ?? ""}
-            on:change={(e) => setters.mbti && setters.mbti(e.target.value)}
-        >
-            <option value="" disabled>Select MBTI Type</option>
-            {#each MBTI_TYPES as type}
-                <option value={type}>{type}</option>
-            {/each}
-        </select>
-        {#if errorMap.mbti}
-            <p class="red">{errorMap.mbti.message}</p>
-        {/if}
-
-    {:else if field.key === "loop_bio"}
-        <label for="loop_bio">{labelFor(field)}</label>
-        <textarea
-            id="loop_bio"
-            on:input={(e) => setters.loop_bio && setters.loop_bio(e.target.value)}
-        >{values.loop_bio ?? ""}</textarea>
-        {#if errorMap.loop_bio}
-            <p class="red">{errorMap.loop_bio.message}</p>
-        {/if}
-
-    {:else if field.key === "looking_for"}
-        <label for="looking_for">{labelFor(field)}</label>
-        <textarea
-            id="looking_for"
-            on:input={(e) => setters.looking_for && setters.looking_for(e.target.value)}
-        >{values.looking_for ?? ""}</textarea>
-        {#if errorMap.looking_for}
-            <p class="red">{errorMap.looking_for.message}</p>
-        {/if}
-
-    {:else if field.key === "audio"}
-        <label for="audio">{labelFor(field)}</label>
-        <AudioPicker
-            audio={values.audioUrl ?? null}
-            maxDuration={field.maxDuration ?? 30}
-            recordable={field.recordable ?? false}
-            disabled={field.disabled ?? false}
-            resetToken={audioResetToken}
-            on:recorded={(e) => {
-                // e.detail = { blob, url, duration, mimeType }
-                setters.audio && setters.audio(e.detail);
-            }}
-        />
-
-        {#if values.audioUrl}
-            <button
-                type="button"
-                on:click={() => {
-                    // mark existing audio for deletion on save
-                    setters.audio && setters.audio({ delete: true });
-                    audioResetToken += 1;
-                }}
-            >
-                {field.clearLabel ?? "Remove Voice Intro"}
-            </button>
-        {/if}
-
-        {#if errorMap.audio}
-            <p class="red">{errorMap.audio.message}</p>
-        {/if}
-    {/if}
-{/each}
+    {/each}
+</div>
 
 <style>
     .socials-list {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: var(--space-2);
     }
 
     .social-row {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        background: var(--bg-1);
-        border: 1px solid var(--border-2);
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
+        gap: var(--space-2);
+
+        background: var(--bg-hover);
+        border: var(--border-width) solid var(--border-color);
+        border-radius: var(--radius-md);
+
+        padding: var(--space-2);
     }
 
     .social-icon {
@@ -641,7 +692,7 @@
     .social-icon img {
         width: 24px;
         height: 24px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
     }
 
     .social-icon-placeholder {
@@ -650,52 +701,58 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--border-3);
-        color: var(--text-2);
+
+        background: var(--border-color);
+        color: var(--text-secondary);
         font-size: 0.8rem;
-        border-radius: 4px;
+
+        border-radius: var(--radius-sm);
     }
 
     .social-preview {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        flex-grow: 1;
+
+        flex: 1 1 auto;
+        min-width: 0;
+
         font-size: 0.9rem;
-        color: var(--text-2);
-        word-break: break-all;
+        color: var(--text-secondary);
+        overflow-wrap: anywhere;
     }
 
     .social-base {
         color: var(--text-muted);
         user-select: none;
+        white-space: nowrap;
     }
 
-    .social-handle-input {
-        border: none;
-        border-bottom: 1px solid var(--border-3);
+    .social-username-input {
+        width: 10rem;
+        max-width: 100%;
+        min-width: 5rem;
+
+        padding: 0.2rem 0.35rem;
+
+        border: 0;
+        border-bottom: var(--border-width) solid var(--border-color);
+        border-radius: 0;
+
         background: transparent;
-        color: var(--text-2);
-        font-size: 0.9rem;
-        padding: 0.2rem 0.25rem;
-        width: 150px;
-        transition: border-color 0.2s ease;
+        color: var(--text-secondary);
     }
 
-    .social-handle-input:focus {
+    .social-username-input:focus {
         outline: none;
-        border-color: var(--accent-blue);
+        border-bottom-color: var(--accent);
     }
 
-    .social-remove button {
-        border: none;
-        background: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: var(--red);
+    .social-remove-btn {
+        color: var(--danger);
     }
 
-    .social-remove button:hover {
-        color: #900;
+    .social-remove-btn:hover {
+        background: color-mix(in oklab, var(--danger) 12%, transparent);
     }
 </style>
