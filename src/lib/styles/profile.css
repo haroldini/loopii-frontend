@@ -301,6 +301,9 @@
     cursor: pointer;
     text-align: left;
     transition: background 0.15s ease;
+
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .profile-preview:hover {
@@ -312,6 +315,8 @@
     aspect-ratio: 1 / 1;
     background-size: cover;
     background-position: center;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
 }
 
 .profile-preview__badge {
@@ -599,6 +604,33 @@
     line-height: 1.45;
     text-align: left;
     width: 100%;
+}
+
+/* Expanded: increase spacing between text blocks (Bio / Looking for / Interests) */
+.profile-section h4 {
+    margin-top: 0.9rem;
+    margin-bottom: 0.45rem;
+}
+
+.profile-section h4:first-child {
+    margin-top: 0;
+}
+
+.profile-section .bio {
+    margin: 0;
+    padding-bottom: 0.35rem;
+}
+
+.profile-section .bio + .bio {
+    margin-top: 0.65rem;
+}
+
+.profile-section .tags {
+    margin-top: 0.25rem;
+}
+
+.profile-section > * + h4 {
+    margin-top: 1rem;
 }
 
 /* Socials */

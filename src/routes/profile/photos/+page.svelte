@@ -221,7 +221,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>Edit Photos</h3>
+                <h3>Manage Photos</h3>
             </div>
 
             <div class="bar__actions">
@@ -237,11 +237,9 @@
         </div>
     </header>
 
-    <div class="content stack">
-        <section class="card">
-            <div class="section stack">
-                <h3>{ $newImageUrl ? "Confirm New Photo" : "Upload New Photo" }</h3>
-
+    <div class="content stack photos">
+        <section class="photos__upload stack">
+            <div class="photos__picker">
                 <ImagePicker
                     bind:this={imagePicker}
                     initialOriginalUrl={$newImageOriginalUrl}
@@ -257,16 +255,23 @@
                         photosState.set("idle");
                     }}
                 />
+            </div>
 
-                {#if $newImageUrl}
-                    <div class="row">
-                        <input
-                            type="checkbox"
-                            id="newImageAsAvatar"
-                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                        />
-                        <label for="newImageAsAvatar">Set as Avatar</label>
-                    </div>
+            {#if $newImageUrl}
+                <div class="photos__confirm stack">
+                    <label class="switch">
+                        <span class="switch__text">Set as profile picture</span>
+                        <span class="switch__control">
+                            <input
+                                class="switch__input"
+                                type="checkbox"
+                                id="newImageAsAvatar"
+                                disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                            />
+                            <span class="switch__track"></span>
+                            <span class="switch__thumb"></span>
+                        </span>
+                    </label>
 
                     <div class="actions actions--end">
                         <button
@@ -278,7 +283,7 @@
                             {#if $photosState === "uploading"}
                                 Uploading…
                             {:else if $photosState === "settingAvatar"}
-                                Setting avatar…
+                                Setting profile picture…
                             {:else}
                                 Upload Photo
                             {/if}
@@ -293,73 +298,147 @@
                             Cancel
                         </button>
                     </div>
-                {:else}
-                    <div class="actions actions--end">
-                        <button
-                            type="button"
-                            class="btn btn--primary"
-                            on:click={() => imagePicker.open()}
-                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                        >
-                            Upload New Photo
-                        </button>
-                    </div>
-                {/if}
-            </div>
+                </div>
+            {:else}
+                <div class="photos__add">
+                    <button
+                        type="button"
+                        class="add-photo-btn"
+                        on:click={() => imagePicker.open()}
+                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                    >
+                        <span class="add-photo-btn__icon" aria-hidden="true">＋</span>
+                        <span class="add-photo-btn__text">Add photo</span>
+                    </button>
+                </div>
+            {/if}
         </section>
 
-        {#if $profile.images.length > 0}
-            {#each $profile.images as img (img.id)}
-                <section class="card">
-                    <div class="section stack">
-                        <img src={img.urls.medium} class="photo" alt="" />
-
-                        <div class="toolbar">
-                            <div class="toolbar__group">
-                                {#if !img.is_avatar}
-                                    <button
-                                        type="button"
-                                        class="btn btn--ghost"
-                                        on:click={() => handleSetAvatar(img.id)}
-                                        disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
-                                    >
-                                        {$photosState === "settingAvatar" ? "Setting avatar…" : "Set as Avatar"}
-                                    </button>
-                                {:else}
-                                    <span class="pill pill--success">Current Avatar</span>
-                                {/if}
-
-                                <button
-                                    type="button"
-                                    class="btn btn--danger"
-                                    on:click={() => handleDelete(img.id)}
-                                    disabled={img.is_avatar || $photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
-                                >
-                                    {img.is_avatar ? "Cannot Delete Avatar" : ($photosState === "deleting" ? "Deleting…" : "Delete")}
-                                </button>
+        {#if !$newImageUrl}
+            {#if $profile.images.length > 0}
+                {#each $profile.images as img (img.id)}
+                    <section class="card">
+                        <div class="section stack">
+                            <div class="photo-wrap">
+                                <img src={img.urls.medium} class="photo" alt="" />
                             </div>
 
-                            <p class="hint">{timeAgo(img.created_at)}</p>
+                            <div class="toolbar">
+                                <div class="toolbar__group">
+                                    {#if !img.is_avatar}
+                                        <button
+                                            type="button"
+                                            class="btn btn--ghost"
+                                            on:click={() => handleSetAvatar(img.id)}
+                                            disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
+                                        >
+                                            {$photosState === "settingAvatar" ? "Setting profile picture…" : "Set as profile picture"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--danger"
+                                            on:click={() => handleDelete(img.id)}
+                                            disabled={$photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
+                                        >
+                                            {$photosState === "deleting" ? "Deleting…" : "Delete"}
+                                        </button>
+                                    {:else}
+                                        <span class="pill pill--success photos-pill">Profile picture</span>
+                                    {/if}
+                                </div>
+
+                                <p class="hint">{timeAgo(img.created_at)}</p>
+                            </div>
                         </div>
-                    </div>
-                </section>
-            {/each}
-        {:else}
-            <p class="no-photos">No photos uploaded yet.</p>
+                    </section>
+                {/each}
+            {:else}
+                <p class="no-photos">No photos uploaded yet.</p>
+            {/if}
         {/if}
     </div>
 </div>
 
 <style>
+    .photos__upload {
+        gap: var(--space-3);
+    }
+
+    .photos__add {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .add-photo-btn {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+
+        padding: 0.9rem 1rem;
+        border-radius: var(--radius-lg);
+        border: 1px dashed color-mix(in oklab, var(--border-color) 70%, var(--text-muted));
+        background: color-mix(in oklab, var(--bg-surface) 92%, var(--border-color));
+        color: var(--text-primary);
+
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .add-photo-btn:hover {
+        background: var(--bg-hover);
+        border-color: color-mix(in oklab, var(--border-color) 85%, var(--text-muted));
+        transform: translateY(-1px);
+    }
+
+    .add-photo-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .add-photo-btn__icon {
+        font-size: 1.25rem;
+        line-height: 1;
+        font-weight: 800;
+    }
+
+    .add-photo-btn__text {
+        font-weight: 650;
+        letter-spacing: 0.2px;
+    }
+
+    .photos__confirm {
+        gap: var(--space-3);
+    }
+
+    .photo-wrap {
+        width: 100%;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: color-mix(in oklab, var(--bg-surface) 88%, var(--border-color));
+    }
+
     .photo {
         width: 100%;
+        aspect-ratio: 1 / 1;
         height: auto;
-        border-radius: var(--radius-lg);
+        object-fit: cover;
+
         pointer-events: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        display: block;
+    }
+
+    .photos-pill {
+        font-weight: 650;
     }
 
     .no-photos {
         text-align: center;
-        color: var(--text-2);
+        color: var(--text-muted);
     }
 </style>
