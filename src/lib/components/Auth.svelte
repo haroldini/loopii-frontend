@@ -94,160 +94,183 @@
         reset: "Reset Password"
     };
 </script>
-    
+
 <h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
 
-<!-- Form for login / signup / reset / requestReset fields -->
 {#if $showForm}
-    <form on:submit|preventDefault={handleSubmit} style="gap: 1rem; display: flex; flex-direction: column; width: 100%;">
-        
-        <!-- Always show email, except reset -->
-        {#if $subPage != "reset"}
-            <input placeholder="Email" value={$email} on:input={e => { email.set(e.target.value); emailTouched.set(true); }} />
+    <form class="form" on:submit|preventDefault={handleSubmit}>
+        {#if $subPage !== "reset"}
+            <div class="field">
+                <label class="field__label" for="auth-email">Email</label>
+                <input
+                    id="auth-email"
+                    type="email"
+                    inputmode="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    value={$email}
+                    on:input={(e) => {
+                        email.set(e.target.value);
+                        emailTouched.set(true);
+                    }}
+                />
+            </div>
         {/if}
-        
-        <!-- Only show confirm email on signup -->
+
         {#if $subPage === "signup"}
-            <input placeholder="Confirm Email" value={$confirmEmail} on:input={e => { confirmEmail.set(e.target.value); emailTouched.set(true); }} />
+            <div class="field">
+                <label class="field__label" for="auth-confirm-email">Confirm email</label>
+                <input
+                    id="auth-confirm-email"
+                    type="email"
+                    inputmode="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    value={$confirmEmail}
+                    on:input={(e) => {
+                        confirmEmail.set(e.target.value);
+                        emailTouched.set(true);
+                    }}
+                />
+            </div>
         {/if}
 
-        <!-- Email validation errors -->
-        {#if $validationErrors.find(e => e.field === "email" && e.display)}
-            <p class="red">
-                {$validationErrors.find(e => e.field === "email" && e.display).message}
+        {#if $validationErrors.find((e) => e.field === "email" && e.display)}
+            <p class="field__error">
+                {$validationErrors.find((e) => e.field === "email" && e.display).message}
             </p>
         {/if}
-            
-        <!-- Always show password, except requestReset -->
-        {#if $subPage != "requestReset"}
-            <input type="password" placeholder="Password" value={$password} on:input={e => { password.set(e.target.value); passwordTouched.set(true); }} />
+
+        {#if $subPage !== "requestReset"}
+            <div class="field">
+                <label class="field__label" for="auth-password">Password</label>
+                <input
+                    id="auth-password"
+                    type="password"
+                    autocomplete={$subPage === "signup" ? "new-password" : "current-password"}
+                    placeholder="Password"
+                    value={$password}
+                    on:input={(e) => {
+                        password.set(e.target.value);
+                        passwordTouched.set(true);
+                    }}
+                />
+            </div>
         {/if}
-            
-        <!-- Only show confirm password on signup or reset -->
+
         {#if $subPage === "signup" || $subPage === "reset"}
-            <input type="password" placeholder="Confirm Password" value={$confirmPassword} on:input={e => { confirmPassword.set(e.target.value); passwordTouched.set(true); }} />
+            <div class="field">
+                <label class="field__label" for="auth-confirm-password">Confirm password</label>
+                <input
+                    id="auth-confirm-password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Confirm password"
+                    value={$confirmPassword}
+                    on:input={(e) => {
+                        confirmPassword.set(e.target.value);
+                        passwordTouched.set(true);
+                    }}
+                />
+            </div>
         {/if}
 
-        
-        <!-- Password validation errors -->
-        {#if $validationErrors.find(e => e.field === "password" && e.display)}
-            <p class="red shrink">
-                {$validationErrors.find(e => e.field === "password" && e.display).message}
+        {#if $validationErrors.find((e) => e.field === "password" && e.display)}
+            <p class="field__error">
+                {$validationErrors.find((e) => e.field === "password" && e.display).message}
             </p>
         {/if}
 
-        <!-- Display the correct buttons -->
-        <nav>
+        <div class="form__actions">
             {#if $subPage === "signup"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
-                    {#if $isSubmitting}
-                        Creating account...
-                    {:else}
-                        Create Account
-                    {/if}
+                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                    {$isSubmitting ? "Creating account…" : "Create account"}
                 </button>
-                <button type="button" on:click={() => toggleMode("login")}>Login instead</button>
+
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
+                    Login instead
+                </button>
+
             {:else if $subPage === "login"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
-                    {#if $isSubmitting}
-                        Logging in...
-                    {:else}
-                        Login
-                    {/if}
+                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                    {$isSubmitting ? "Logging in…" : "Login"}
                 </button>
-                <button type="button" on:click={() => toggleMode("signup")}>Sign up instead</button>
-                <button type="button" on:click={() => toggleMode("requestReset")}>Forgot password?</button>
+
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("signup")}>
+                    Sign up instead
+                </button>
+
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("requestReset")}>
+                    Forgot password?
+                </button>
+
             {:else if $subPage === "requestReset"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
-                    {#if $isSubmitting}
-                        Sending reset email...
-                    {:else}
-                        Send reset email
-                    {/if}
+                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                    {$isSubmitting ? "Sending reset email…" : "Send reset email"}
                 </button>
-                <button type="button" on:click={() => toggleMode("login")}>Back to Login</button>
+
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
+                    Back to login
+                </button>
+
             {:else if $subPage === "reset"}
-                <button type="submit" disabled={!$readyToSubmit || $isSubmitting}>
-                    {#if $isSubmitting}
-                        Setting new password...
-                    {:else}
-                        Set New Password
-                    {/if}
+                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                    {$isSubmitting ? "Setting new password…" : "Set new password"}
                 </button>
             {/if}
-        </nav>
+        </div>
     </form>
 {/if}
 
-
-<!-- Status / Feedback Box -->
 {#if $error || $authFormStatus === "signedUp" || $authFormStatus === "resetEmailSent"}
-    <div class="container fill">
-
-        <!-- Signup instructions -->
-        {#if $authFormStatus === "signedUp"}
-            <p class="green">
-                Confirmation email sent! Check your inbox ({$email}) to verify your account.
-            </p>
-            {#if !$showForm}
-                <p>
-                    Click
-                    <span
-                        role="button"
-                        tabindex="0"
-                        on:click={() => toggleForm(true)}
-                        on:keydown={(e) => e.key === "Enter" && toggleForm(true)}
-                        class="button blue"
-                    >
-                        here
-                    </span>
-                    if you need to resend the email.
+    <section class="card">
+        <div class="section stack">
+            {#if $authFormStatus === "signedUp"}
+                <p class="green">
+                    Confirmation email sent. Check your inbox ({$email}) to verify your account.
                 </p>
-            {/if}
-            <p>
-                If you don't receive it, your email may already be in use — Try
-                <span
-                    role="button"
-                    tabindex="0"
-                    on:click={() => toggleMode("login")}
-                    on:keydown={(e) => e.key === "Enter" && toggleMode("login")}
-                    class="button blue"
-                >
-                    logging in
-                </span>
-                instead.
-            </p>
 
-        <!-- Password reset email instructions -->
-        {:else if $authFormStatus === "resetEmailSent"}
-            <p class="green">
-                Password reset email sent! Check your inbox ({$email}) to set a new password.
-            </p>
-            {#if !$showForm}
+                {#if !$showForm}
+                    <p>
+                        Need to resend?
+                        <button type="button" class="link" on:click={() => toggleForm(true)}>
+                            Click here
+                        </button>.
+                    </p>
+                {/if}
+
                 <p>
-                    Click
-                    <span
-                        role="button"
-                        tabindex="0"
-                        on:click={() => toggleForm(true)}
-                        on:keydown={(e) => e.key === "Enter" && toggleForm(true)}
-                        class="button blue"
-                    >
-                        here
-                    </span>
-                    to resend the email.
+                    If you don’t receive it, your email may already be in use — try
+                    <button type="button" class="link" on:click={() => toggleMode("login")}>
+                        logging in
+                    </button>
+                    instead.
                 </p>
+
+            {:else if $authFormStatus === "resetEmailSent"}
+                <p class="green">
+                    Password reset email sent. Check your inbox ({$email}) to set a new password.
+                </p>
+
+                {#if !$showForm}
+                    <p>
+                        Want to resend?
+                        <button type="button" class="link" on:click={() => toggleForm(true)}>
+                            Click here
+                        </button>.
+                    </p>
+                {/if}
             {/if}
-        {/if}
 
-        <!-- API / backend error -->
-        {#if $error}
-            <p class="red">{$error}</p>
-        {/if}
-
-    </div>
+            {#if $error}
+                <p class="red">{$error}</p>
+            {/if}
+        </div>
+    </section>
 {/if}
 
 {#if $authFormStatus === "passwordReset"}
-    <button type="button" on:click={() => window.location.replace("/")}>Continue to loopii</button>
+    <button type="button" class="btn btn--primary btn--block" on:click={() => window.location.replace("/")}>
+        Continue to loopii
+    </button>
 {/if}

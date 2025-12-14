@@ -2,21 +2,6 @@
 
 /* ===== Layout primitives ===== */
 
-.fill {
-    width: 100%;
-}
-
-.fillvh {
-    min-height: 100vh;
-    padding-block: calc(var(--space-3) * 2);
-}
-
-.center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .stack {
     display: flex;
     flex-direction: column;
@@ -65,6 +50,29 @@
     min-height: 100%;
 }
 
+/* ===== Gate screens (auth / create profile / loading) ===== */
+
+.gate {
+    min-height: 100svh;
+    display: flex;
+
+    padding:
+        calc(var(--space-5) + var(--safe-top))
+        var(--gutter)
+        calc(var(--space-5) + var(--safe-bottom));
+
+    overflow: auto;
+}
+
+.gate__inner {
+    width: 100%;
+    margin: auto; /* centers when short; collapses when tall (scrollable) */
+}
+
+.gate__brand {
+    text-align: center;
+}
+
 /* ===== Page layout ===== */
 
 .page {
@@ -78,13 +86,16 @@
     padding-inline: var(--gutter);
 }
 
+.content--narrow {
+    max-width: 500px;
+}
+
 /* Space between sticky header bar and the page content (all pages) */
 .page > .bar--header + .content {
     margin-top: var(--space-4);
 }
 
-/* Reserve space for the FIXED actionbar so content doesn't sit underneath it.
-   Must be on the content region (not the page), because the fixed bar is a sibling. */
+/* Reserve space for the FIXED actionbar so content doesn't sit underneath it. */
 .page--has-actionbar > .content {
     padding-bottom: calc(var(--actionbar-height) + var(--space-4));
 }
@@ -98,19 +109,8 @@
     overflow: hidden;
 }
 
-/* Content becomes the flexible region inside a viewport-clamped page */
 .page--viewport > .content {
     flex: 1 1 auto;
     min-height: 0;
-
-    /* critical: prevent the page content region from scrolling;
-       later, ProfileCardExpanded will implement its own scroll container */
     overflow: hidden;
-}
-
-/* ===== Legacy classes (temporary bridge; remove after template pass) ===== */
-
-.container {
-    width: 100%;
-    padding: var(--space-3);
 }

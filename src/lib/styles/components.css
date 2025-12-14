@@ -9,23 +9,28 @@
     box-shadow: none;
 }
 
-/* Optional elevation when you explicitly want it */
 .card--raised {
     box-shadow: var(--shadow-1);
 }
 
-/* Internal section within a larger surface (no outer border by default) */
 .section {
     padding: var(--space-3);
 }
 
-/* Legacy alias (temporary): lots of templates still use .bordered */
-.bordered {
-    background: var(--bg-surface);
-    border: var(--border-width) solid var(--border-color);
+/* ===== Form patterns ===== */
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
 }
 
-/* ===== Form patterns ===== */
+.form__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
 
 .field {
     display: flex;
@@ -36,17 +41,6 @@
 .field__label {
     font-weight: 600;
     color: var(--text-primary);
-}
-
-.field__control {
-    width: 100%;
-}
-
-.field__actions {
-    display: flex;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-    justify-content: flex-end;
 }
 
 .field__error {
@@ -121,87 +115,6 @@
     outline-offset: var(--focus-ring-offset);
 }
 
-/* Dual range slider (two inputs, one visual track) */
-.range-dual {
-    position: relative;
-    height: 32px;
-    width: 100%;
-    min-width: 0;
-}
-
-.range-dual__track,
-.range-dual__fill {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 6px;
-    border-radius: var(--radius-full);
-}
-
-.range-dual__track {
-    background: var(--border-color);
-}
-
-.range-dual__fill {
-    background: var(--accent);
-
-    /* min/max in [18,150] => span is 132 */
-    left: calc((var(--min) - 18) * 100% / 132);
-    right: calc(100% - (var(--max) - 18) * 100% / 132);
-}
-
-.range-dual__input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    margin: 0;
-
-    background: transparent;
-    pointer-events: none;
-    appearance: none;
-}
-
-.range-dual__input--max {
-    z-index: 2;
-}
-
-/* WebKit thumbs */
-.range-dual__input::-webkit-slider-runnable-track {
-    background: transparent;
-    height: 6px;
-}
-
-.range-dual__input::-webkit-slider-thumb {
-    appearance: none;
-    pointer-events: auto;
-
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-full);
-
-    background: var(--bg-app);
-    border: var(--border-width) solid var(--border-color);
-}
-
-/* Firefox */
-.range-dual__input::-moz-range-track {
-    background: transparent;
-    height: 6px;
-}
-
-.range-dual__input::-moz-range-thumb {
-    pointer-events: auto;
-
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-full);
-
-    background: var(--bg-app);
-    border: var(--border-width) solid var(--border-color);
-}
-
 /* ===== Badges / pills ===== */
 
 .badge {
@@ -256,7 +169,6 @@
     flex-wrap: wrap;
 }
 
-/* Legacy replacement for global nav styling */
 .actions {
     display: flex;
     gap: var(--space-2);
@@ -271,7 +183,7 @@
     justify-content: flex-end;
 }
 
-/* ===== Segmented control (Account / window tabs) ===== */
+/* ===== Segmented control (window tabs) ===== */
 
 .segmented {
     display: grid;
@@ -280,8 +192,6 @@
 
     background: var(--bg-surface);
     border: var(--border-width) solid var(--border-color);
-
-    /* top-only rounding (tab strip) */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 
     overflow: hidden;
@@ -308,42 +218,6 @@
 
 .segmented > button[aria-current="page"],
 .segmented > a[aria-current="page"] {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-}
-
-/* Legacy alias */
-.tab-selector {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-
-    background: var(--bg-surface);
-    border: var(--border-width) solid var(--border-color);
-
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-
-    overflow: hidden;
-}
-
-.tab-selector > button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: var(--space-2) var(--space-2);
-    cursor: pointer;
-
-    color: var(--text-muted);
-    background: transparent;
-}
-
-.tab-selector > button:hover {
-    background: var(--bg-hover);
-    color: var(--text-secondary);
-}
-
-.tab-selector > button[aria-current="page"] {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
@@ -435,7 +309,7 @@
     overflow: auto;
 }
 
-/* ===== Sticky bars (keep shell stable) ===== */
+/* ===== Sticky bars ===== */
 
 .bar {
     width: 100%;
@@ -500,7 +374,7 @@
     flex: 1 1 0;
 }
 
-/* ===== App navbar (keep your patched version) ===== */
+/* ===== App navbar ===== */
 
 .app-nav {
     position: fixed;

@@ -112,208 +112,211 @@
 </script>
 
 {#if $profileFormState === "submitting"}
-	<p>{$submissionProgress}...</p>
+    <p class="hint">{$submissionProgress}…</p>
 
 {:else if ["success", "partial", "exists"].includes($profileFormState)}
-    <p>Profile created. Loading app...</p>
+    <p>Profile created. Loading app…</p>
+
     {#if showFallback}
-		<p>Not loading? Click
-			<span
-				role="button"
-				tabindex="0"
-				on:click={() => window.location.replace("/")}
-				on:keydown={(e) => e.key === "Enter" && window.location.replace("/")}
-				class="button blue"
-			>
-				here
-			</span> to refresh.
-		</p>
+        <p class="hint">
+            Not loading?
+            <button
+                type="button"
+                class="link"
+                on:click={() => window.location.replace("/")}
+            >
+                Refresh
+            </button>.
+        </p>
     {/if}
 
 {:else if $profileFormState === "error"}
-	<p class="red">{$error}</p>
-	<button on:click={resetState}>Try again</button>
+    <p class="red">{$error}</p>
+    <button type="button" class="btn btn--primary" on:click={resetState}>Try again</button>
 
 {:else}
+    <form class="form" on:submit|preventDefault={submitProfile}>
+        {#if $currentPage === 0}
+            <h3>Create your profile</h3>
 
+            <ProfileFields
+                fields={["username"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+            />
 
-<form on:submit|preventDefault={submitProfile} style="width: 100%; display: flex; flex-direction: column; gap: 1rem;">
+            {#if $usernameAvailability.state === "taken" || $usernameAvailability.state === "error"}
+                <p class="red">{$usernameAvailability.message}</p>
+            {/if}
 
-	{#if $currentPage === 0}
-		<h3>Create Your Profile</h3>
+            <ProfileFields
+                fields={["name"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+            />
 
-		<!-- Username  -->
-		<ProfileFields
-			fields={["username"]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-		/>
+            <div class="field">
+                <div class="field__label">Profile picture *</div>
 
-		<!-- Username availability -->
-		{#if $usernameAvailability.state === "taken" || $usernameAvailability.state === "error"}
-			<p class="red">{$usernameAvailability.message}</p>
-		{/if}
+                <div class="stack">
+                    <ImagePicker
+                        bind:this={avatarPicker}
+                        initialOriginalUrl={$avatarOriginalUrl}
+                        initialEditedUrl={$avatarUrl}
+                        initialCropState={$avatarCropState}
+                        on:confirm={(e) => {
+                            avatarFile.set(e.detail.editedFile);
+                            avatarOriginalUrl.set(e.detail.originalUrl);
+                            avatarCropState.set(e.detail.cropState);
+                        }}
+                        on:back={() => {}}
+                    />
 
-		<!-- Display name  -->
-		<ProfileFields
-			fields={["name"]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-		/>
+                    {#if $avatarUrl}
+                        <div class="field__actions">
+                            <button
+                                type="button"
+                                class="btn btn--ghost"
+                                on:click={() => {
+                                    if (typeof $avatarFile === "string" && $avatarFile.startsWith("blob:")) {
+                                        try { URL.revokeObjectURL($avatarFile); } catch {}
+                                    }
+                                    avatarFile.set(null);
+                                    avatarOriginalUrl.set(null);
+                                    avatarCropState.set(null);
+                                    avatarPicker.reset();
+                                }}
+                            >
+                                Clear image
+                            </button>
+                        </div>
+                    {:else}
+                        <button
+                            type="button"
+                            class="btn btn--primary btn--block"
+                            on:click={() => avatarPicker.open()}
+                        >
+                            Select image
+                        </button>
+                    {/if}
 
-		<!-- Avatar Picker // Always mounted so external controls work -->
-		<label for="avatar">Profile Picture *</label>
-		<ImagePicker
-			bind:this={avatarPicker}
-			initialOriginalUrl={$avatarOriginalUrl}
-			initialEditedUrl={$avatarUrl}
-			initialCropState={$avatarCropState}
-			on:confirm={(e) => {
-				avatarFile.set(e.detail.editedFile);
-				avatarOriginalUrl.set(e.detail.originalUrl);
-				avatarCropState.set(e.detail.cropState);
-			}}
-			on:back={() => {
-				// User hit back without confirming – do nothing
-			}}
-		/>
+                    {#if $validationErrors.find((e) => e.field === "avatar" && e.display)}
+                        <p class="red">
+                            {$validationErrors.find((e) => e.field === "avatar" && e.display).message}
+                        </p>
+                    {/if}
+                </div>
+            </div>
 
-		{#if $avatarUrl}
-			<button
-				type="button"
-				on:click={() => {
-					if (typeof $avatarFile === "string" && $avatarFile.startsWith("blob:")) {
-						try { URL.revokeObjectURL($avatarFile); } catch {}
-					}
-					avatarFile.set(null);
-					avatarOriginalUrl.set(null);
-					avatarCropState.set(null);
-					avatarPicker.reset();
-				}}
-			>
-				Clear Image
-			</button>
-		{:else}
-			<button type="button" on:click={() => avatarPicker.open()}>
-				Upload Image
-			</button>
-		{/if}
-		{#if $validationErrors.find((e) => e.field === "avatar" && e.display)}
-			<p class="red">
-				{$validationErrors.find((e) => e.field === "avatar" && e.display).message}
-			</p>
-		{/if}
+            <ProfileFields
+                fields={["dob", "gender", "country"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+                allCountries={$allCountries}
+            />
 
-		<!-- DOB / Gender / Country -->
-		<ProfileFields
-			fields={["dob", "gender", "country"]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-			allCountries={$allCountries}
-		/>
+            <div class="form__actions">
+                <button
+                    type="button"
+                    class="btn btn--primary btn--block"
+                    on:click={handlePage0Continue}
+                    disabled={!$readyToSubmit || $usernameAvailability.state === "checking"}
+                >
+                    {$usernameAvailability.state === "checking" ? "Checking username…" : "Continue"}
+                </button>
+            </div>
+        {/if}
 
-		<nav>
-			<button
-				type="button"
-				on:click={handlePage0Continue}
-				disabled={!$readyToSubmit || $usernameAvailability.state === "checking"}
-			>
-				{#if $usernameAvailability.state === "checking"}
-					Checking Username...
-				{:else}
-					Continue →
-				{/if}
-			</button>
-		</nav>
-	{/if}
+        {#if $currentPage === 1}
+            <h3>Help others discover you</h3>
 
-	{#if $currentPage === 1}
-		<h3>Help Others Discover You</h3>
+            <ProfileFields
+                fields={[
+                    {
+                        key: "map",
+                        hint: "Select your approximate location to appear in location searches.",
+                    }
+                ]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+            />
 
-		<!-- Map (lat/lng picker) -->
-		<ProfileFields
-			fields={[
-				{
-					key: "map",
-					hint: "Select your approximate location to appear in location searches.",
-					// optional overrides if needed later:
-					// clearLabel: "Clear Location",
-					// pickLabel: "Pick Location",
-					// defaultLat: 51.505,
-					// defaultLng: -0.09,
-				}
-			]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-		/>
+            <ProfileFields
+                fields={["bio", "looking_for", "interests"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+                allInterests={$allInterests}
+            />
 
-		<!-- City / Bio / Interests -->
-		<ProfileFields
-			fields={["bio", "looking_for", "interests"]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-			allInterests={$allInterests}
-		/>
+            <div class="row row--between">
+                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 0)}>
+                    Back
+                </button>
 
-		<nav>
-			<button type="button" on:click={() => $currentPage = 0}>← Back</button>
-			<button type="button" on:click={() => $currentPage = 2} disabled={!$readyToSubmit}>Continue →</button>
-		</nav>
-	{/if}
+                <button type="button" class="btn btn--primary" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
+                    Continue
+                </button>
+            </div>
+        {/if}
 
-	{#if $currentPage === 2}
-		<h3>What Your Loops See</h3>
+        {#if $currentPage === 2}
+            <h3>What your loops see</h3>
 
-		<ProfileFields
-			fields={[{ key: "socials", label: "Social Media Links" }, "loop_bio"]}
-			values={fieldValues}
-			setters={fieldSetters}
-			errors={$validationErrors}
-			socials={$socials}
-			allPlatforms={$allPlatforms}
-			onSocialRemove={removeSocial}
-			onSocialHandleChange={updateHandle}
-			onSocialAdd={handleSocialAdd}
-		/>
+            <ProfileFields
+                fields={[{ key: "socials", label: "Social media links" }, "loop_bio"]}
+                values={fieldValues}
+                setters={fieldSetters}
+                errors={$validationErrors}
+                socials={$socials}
+                allPlatforms={$allPlatforms}
+                onSocialRemove={removeSocial}
+                onSocialHandleChange={updateHandle}
+                onSocialAdd={handleSocialAdd}
+            />
 
-		<nav>
-			<button type="button" on:click={() => $currentPage = 1}>← Back</button>
-			<button
-				type="button"
-				on:click={() => $currentPage = 3}
-				disabled={!$readyToSubmit}
-			>
-				Continue →
-			</button>
-		</nav>
-	{/if}
+            <div class="row row--between">
+                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 1)}>
+                    Back
+                </button>
 
-	{#if $currentPage === 3}
-		<h3>Your Preferences</h3>
-		<p class="hint">Choose who you see in your feed. We'll also only show your profile to genders you select.</p>
+                <button type="button" class="btn btn--primary" on:click={() => ($currentPage = 3)} disabled={!$readyToSubmit}>
+                    Continue
+                </button>
+            </div>
+        {/if}
 
-		<PrefsForm
-			mode="search"
-			on:change={handlePrefsChange}
-			bind:valid={prefsValid}
-			defaultLat={$latitude}
-			defaultLng={$longitude}
-		/>
+        {#if $currentPage === 3}
+            <h3>Your preferences</h3>
+            <p class="hint">
+                Choose who you see in your feed. We’ll also only show your profile to genders you select.
+            </p>
 
-		<nav>
-			<button type="button" on:click={() => $currentPage = 2}>← Back</button>
-			<button
-				type="submit"
-				disabled={$profileFormState === "submitting" || !$readyToSubmit || !prefsValid}
-			>
-				{$profileFormState === "submitting" ? "Creating…" : "Create Profile"}
-			</button>
-		</nav>
-	{/if}
-</form>
+            <PrefsForm
+                mode="search"
+                on:change={handlePrefsChange}
+                bind:valid={prefsValid}
+                defaultLat={$latitude}
+                defaultLng={$longitude}
+            />
+
+            <div class="row row--between">
+                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 2)}>
+                    Back
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn--primary"
+                    disabled={$profileFormState === "submitting" || !$readyToSubmit || !prefsValid}
+                >
+                    {$profileFormState === "submitting" ? "Creating…" : "Create profile"}
+                </button>
+            </div>
+        {/if}
+    </form>
 {/if}

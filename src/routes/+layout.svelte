@@ -93,74 +93,96 @@
 <!-- Global popups overlay -->
 <Popups />
 
-<!-- Timeout -->
 {#if $authState === "timeout" || $profileState === "timeout"}
-    <div class="fill fillvh center">
-        <div class="container">
-            <h1>loopii</h1>
-            <p>Loading is taking longer than expected.</p>
-            <p>Please try refreshing the page, or log out and log back in.</p>
-            <button onclick={confirmLocalSignOut}>Log Out</button>
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <p>Loading is taking longer than expected.</p>
+                    <p class="hint">Try refreshing, or log out and log back in.</p>
+                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                        Log out
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
 
-<!-- Authenticating user or loading profile -->
 {:else if $authState === "loading" || $profileState === "loading"}
-    <div class="fill fillvh center">
-        <div class="container">
-            <h1>loopii</h1>
-            <p>Loading...</p>
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <p class="hint">Loading…</p>
+                </div>
+            </section>
         </div>
     </div>
 
-<!-- Recovery / account creation flow -->
 {:else if $authState === "unauthenticated" || $authState === "recovery"}
-    <div class="center fill fillvh">
-        <h1>loopii</h1>
-        <div
-            class="container bordered"
-            style="width: 100%; max-width: min(calc(100% - 2rem), 500px);"
-        >
-            <Auth />
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <Auth />
+                </div>
+            </section>
         </div>
     </div>
 
-<!-- Logged in, but no profile -->
 {:else if $authState === "authenticated" && $profileState === "missing"}
-    <div class="center fill fillvh">
-        <h1>loopii</h1>
-        <div
-            class="container bordered"
-            style="width: 100%; max-width: min(calc(100% - 2rem), 500px);"
-        >
-            <CreateProfile />
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <CreateProfile />
+                </div>
+            </section>
+
+            {#if ["idle", "error"].includes($profileFormState)}
+                <section class="card">
+                    <div class="section stack">
+                        <p class="hint">Logged in as {$user.email}</p>
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            Log out
+                        </button>
+                    </div>
+                </section>
+            {/if}
         </div>
-        {#if ["idle", "error"].includes($profileFormState)}
-            <div class="container">
-                <p>Logged in as {$user.email}</p>
-                <nav>
-                    <button onclick={confirmLocalSignOut}>Log Out</button>
-                </nav>
-            </div>
-        {/if}
     </div>
 
-<!-- Fully authenticated + profile loaded -->
 {:else if $authState === "authenticated" && $profileState === "loaded"}
-	<div class="app">
-		<Navbar />
-		<div class="app-body">
-			{@render children?.()}
-		</div>
-	</div>
+    <div class="app">
+        <Navbar />
+        <div class="app-body">
+            {@render children?.()}
+        </div>
+    </div>
 
-<!-- Fallback -->
 {:else}
-    <div class="center fill fillvh">
-        <div class="container bordered">
-            <h1>loopii</h1>
-            <p>Stale session. Try refreshing the page, or log out and log back in.</p>
-            <button onclick={confirmLocalSignOut}>Log Out</button>
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <p>Stale session.</p>
+                    <p class="hint">Try refreshing, or log out and log back in.</p>
+                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                        Log out
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
 {/if}
+

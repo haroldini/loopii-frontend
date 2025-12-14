@@ -393,65 +393,58 @@
             </div>
 
         {:else if field.key === "map"}
-            <div class="field">
-                {#if field.label}
-                    <label class="field__label" for="map">{field.label}</label>
-                {:else}
-                    <label class="field__label" for="map">Location</label>
-                {/if}
+            {#if field.label}
+                <label for="map">{field.label}</label>
+            {/if}
+            {#if field.hint}
+                <p class="hint">{field.hint}</p>
+            {/if}
 
-                {#if field.hint}
-                    <p class="hint">{field.hint}</p>
-                {/if}
+            {#if values.latitude != null && values.longitude != null}
+                <MapPicker
+                    lat={values.latitude}
+                    lng={values.longitude}
+                    radius={1000}
+                    mode="preview"
+                    defaultZoom={11}
+                    on:confirm={(e) => {
+                        setters.latitude && setters.latitude(e.detail.lat);
+                        setters.longitude && setters.longitude(e.detail.lng);
+                    }}
+                />
 
-                {#if values.latitude != null && values.longitude != null}
-                    <div class="field__control">
-                        <MapPicker
-                            lat={values.latitude}
-                            lng={values.longitude}
-                            radius={1000}
-                            mode="preview"
-                            defaultZoom={11}
-                            on:confirm={(e) => {
-                                setters.latitude && setters.latitude(e.detail.lat);
-                                setters.longitude && setters.longitude(e.detail.lng);
-                            }}
-                        />
-                    </div>
-
-                    <div class="field__actions">
-                        <button
-                            type="button"
-                            class="btn btn--ghost"
-                            on:click={() => {
-                                setters.latitude && setters.latitude(null);
-                                setters.longitude && setters.longitude(null);
-                            }}
-                        >
-                            {field.clearLabel ?? "Clear Location"}
-                        </button>
-                    </div>
-                {:else}
+                <div class="field__actions">
                     <button
                         type="button"
-                        class="btn btn--primary"
+                        class="btn btn--ghost"
                         on:click={() => {
-                            const lat = field.defaultLat ?? 51.505;
-                            const lng = field.defaultLng ?? -0.09;
-                            setters.latitude && setters.latitude(lat);
-                            setters.longitude && setters.longitude(lng);
+                            setters.latitude && setters.latitude(null);
+                            setters.longitude && setters.longitude(null);
                         }}
                     >
-                        {field.pickLabel ?? "Pick Location"}
+                        {field.clearLabel ?? "Clear location"}
                     </button>
-                {/if}
+                </div>
+            {:else}
+                <button
+                    type="button"
+                    class="btn btn--primary btn--block"
+                    on:click={() => {
+                        const lat = field.defaultLat ?? 51.505;
+                        const lng = field.defaultLng ?? -0.09;
+                        setters.latitude && setters.latitude(lat);
+                        setters.longitude && setters.longitude(lng);
+                    }}
+                >
+                    {field.pickLabel ?? "Pick location"}
+                </button>
+            {/if}
 
-                {#if errorMap.latitude || errorMap.longitude}
-                    <p class="field__error">
-                        {(errorMap.latitude || errorMap.longitude).message}
-                    </p>
-                {/if}
-            </div>
+            {#if errorMap.latitude || errorMap.longitude}
+                <p class="red">
+                    {(errorMap.latitude || errorMap.longitude).message}
+                </p>
+            {/if}
 
         {:else if field.key === "interests"}
             <div class="field">

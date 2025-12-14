@@ -58,15 +58,11 @@ select:not([multiple]) {
     background-repeat: no-repeat;
 }
 
-/* Multi-select: leave native behavior (temporary until MultiPicker) */
+/* Multi-select: keep native (temporary until MultiPicker) */
 select[multiple] {
     appearance: auto;
     background-image: none;
     padding: var(--space-2);
-}
-
-.multiselect {
-    width: 100%;
 }
 
 input[type="range"] {
