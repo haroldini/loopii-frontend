@@ -238,8 +238,8 @@
     </header>
 
     <div class="content stack photos">
-        <section class="photos__upload stack">
-            <div class="photos__picker">
+        <section class={"photos__upload stack " + ($newImageUrl ? "is-confirm" : "is-empty")}>
+            <div class={"photos__picker" + ($newImageUrl ? "" : " is-hidden")}>
                 <ImagePicker
                     bind:this={imagePicker}
                     initialOriginalUrl={$newImageOriginalUrl}
@@ -362,6 +362,31 @@
 
 <style>
     .photos__upload {
+        position: relative;
+    }
+
+    /* When empty, remove the stack gap so the add button sits flush */
+    .photos__upload.is-empty {
+        gap: 0;
+    }
+
+    /* Keep ImagePicker mounted but layoutless when empty */
+    .photos__picker.is-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .photos__upload.is-confirm {
         gap: var(--space-3);
     }
 
@@ -390,7 +415,6 @@
     .add-photo-btn:hover {
         background: var(--bg-hover);
         border-color: color-mix(in oklab, var(--border-color) 85%, var(--text-muted));
-        transform: translateY(-1px);
     }
 
     .add-photo-btn:disabled {

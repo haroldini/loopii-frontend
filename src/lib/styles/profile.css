@@ -658,7 +658,6 @@
 
 .social-item:hover {
     background: var(--bg-hover);
-    transform: translateY(-1px);
 }
 
 .social-icon {
@@ -694,10 +693,6 @@
     color: var(--accent);
     font-weight: 550;
     word-break: break-all;
-}
-
-.social-username:hover {
-    text-decoration: underline;
 }
 
 .copy-buttons {

@@ -3,7 +3,7 @@
     import { onDestroy, createEventDispatcher } from "svelte";
 
     // Props
-    // - audio: existing URL (string|null), e.g. from profile.audio.url
+    // - audio: existing audio (string URL OR object { url, duration_seconds, waveform, ... })
     // - maxDuration: seconds; caps recording and playback
     // - recordable: if true, show record/replace controls
     // - disabled: global disable
@@ -40,6 +40,7 @@
     let mediaRecorder = null;
     let recordStream = null;
     let chunks = [];
+    let recorderMimeType = null;
 
     // Errors
     let errorMessage = null;
@@ -48,6 +49,45 @@
     let playbackRaf = null;
     let recordRaf = null;
     let recordStartMs = 0;
+
+    // ----------------------------
+    // Audio input normalization
+    // ----------------------------
+
+    $: audioUrl =
+        typeof audio === "string"
+            ? audio
+            : audio && typeof audio === "object"
+              ? audio.url || null
+              : null;
+
+    $: backendDuration =
+        audio && typeof audio === "object"
+            ? (Number.isFinite(audio.duration_seconds) ? audio.duration_seconds : null)
+            : null;
+
+    $: backendWaveform =
+        audio && typeof audio === "object" && Array.isArray(audio.waveform)
+            ? audio.waveform
+            : null;
+
+    $: waveformBins = (() => {
+        if (!backendWaveform) return null;
+        const out = [];
+        for (const v of backendWaveform) {
+            if (!Number.isFinite(v)) continue;
+            const n = Math.max(0, Math.min(255, Math.round(v)));
+            out.push(n);
+        }
+        return out.length ? out : null;
+    })();
+
+    $: showWaveform = !!(!localUrl && waveformBins && waveformBins.length);
+
+    // If we have a backend duration for a remote clip, prefer it.
+    $: if (!localUrl && backendDuration && backendDuration > 0) {
+        duration = backendDuration;
+    }
 
     function resetPlaybackState() {
         stopPlaybackRaf();
@@ -63,7 +103,8 @@
 
         isPlaying = false;
         currentTime = 0;
-        duration = 0;
+        // NOTE: do not blindly zero `duration` here; backendDuration may be providing it
+        if (localUrl) duration = 0;
     }
 
     // Track external audio changes. If parent changes `audio` while we don't
@@ -78,14 +119,20 @@
     }
 
     // Effective URL: prefer local recording if present
-    $: effectiveUrl = localUrl || audio || null;
+    $: effectiveUrl = localUrl || audioUrl || null;
 
-    // Effective duration for UI / seeking: clamp to maxDuration if provided,
-    // and fall back to maxDuration if metadata never loads.
-    // NOTE: Duration accuracy for remote files is handled separately later.
+    // Effective duration for UI / seeking: prefer backendDuration for remote clips,
+    // fall back to media metadata, otherwise fall back to maxDuration.
     $: effectiveDuration = (() => {
-        if (duration && Number.isFinite(duration)) {
-            return maxDuration ? Math.min(duration, maxDuration) : duration;
+        const base =
+            (!localUrl && backendDuration && Number.isFinite(backendDuration) && backendDuration > 0)
+                ? backendDuration
+                : (duration && Number.isFinite(duration) && duration > 0)
+                  ? duration
+                  : 0;
+
+        if (base > 0) {
+            return maxDuration ? Math.min(base, maxDuration) : base;
         }
         if (maxDuration) return maxDuration;
         return 0;
@@ -222,6 +269,9 @@
     function onLoadedMetadata() {
         if (!audioEl) return;
 
+        // If backend gave us duration for remote, keep that as the UI source of truth.
+        if (!localUrl && backendDuration && backendDuration > 0) return;
+
         const d = audioEl.duration;
         if (Number.isFinite(d) && d > 0) {
             duration = d;
@@ -235,7 +285,7 @@
         currentTime = audioEl.currentTime || 0;
 
         // Capture duration lazily if it becomes available later
-        if (!duration || !Number.isFinite(duration) || duration === Infinity) {
+        if (!backendDuration && (!duration || !Number.isFinite(duration) || duration === Infinity)) {
             const d = audioEl.duration;
             if (Number.isFinite(d) && d > 0) {
                 duration = d;
@@ -253,6 +303,12 @@
         isPlaying = false;
         stopPlaybackRaf();
         currentTime = effectiveDuration || 0;
+    }
+
+    function onAudioError() {
+        // Covers 404 / decode errors etc.
+        errorMessage = "Audio unavailable.";
+        resetPlaybackState();
     }
 
     function seek(event) {
@@ -285,7 +341,45 @@
         return `${m}:${r.toString().padStart(2, "0")}`;
     }
 
+    function ampPct(v) {
+        // keep a tiny minimum so it doesn't look “empty”
+        const p = Math.max(6, Math.min(100, (v / 255) * 100));
+        return `${p}%`;
+    }
+
     // ------------- Recording -------------
+
+    function pickRecorderMimeType() {
+        if (typeof MediaRecorder === "undefined" || !MediaRecorder.isTypeSupported) return null;
+
+        const candidates = [
+            "audio/webm;codecs=opus",
+            "audio/webm",
+            "audio/mp4;codecs=mp4a.40.2",
+            "audio/mp4",
+            "audio/ogg;codecs=opus",
+            "audio/ogg",
+        ];
+
+        for (const t of candidates) {
+            try {
+                if (MediaRecorder.isTypeSupported(t)) return t;
+            } catch {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    function mimeToExt(mime) {
+        const mt = (mime || "").split(";")[0].trim().toLowerCase();
+        if (mt === "audio/webm") return "webm";
+        if (mt === "audio/ogg") return "ogg";
+        if (mt === "audio/mp4") return "mp4";
+        if (mt === "audio/mpeg") return "mp3";
+        if (mt === "audio/wav" || mt === "audio/x-wav") return "wav";
+        return "bin";
+    }
 
     function startRecording() {
         if (disabled || isRecording) return;
@@ -306,10 +400,13 @@
             .then((stream) => {
                 recordStream = stream;
 
+                recorderMimeType = pickRecorderMimeType();
+
                 try {
-                    mediaRecorder = new MediaRecorder(stream, {
-                        mimeType: "audio/webm",
-                    });
+                    // If we can pick a supported type, use it. Otherwise let the browser choose.
+                    mediaRecorder = recorderMimeType
+                        ? new MediaRecorder(stream, { mimeType: recorderMimeType })
+                        : new MediaRecorder(stream);
                 } catch (err) {
                     console.error("MediaRecorder init failed:", err);
                     errorMessage = "Unable to start recording.";
@@ -367,7 +464,14 @@
 
         if (!chunks.length) return;
 
-        const blob = new Blob(chunks, { type: "audio/webm" });
+        // Prefer the recorder's actual mimeType
+        const finalType =
+            (mediaRecorder && mediaRecorder.mimeType) ||
+            recorderMimeType ||
+            (chunks[0] && chunks[0].type) ||
+            "";
+
+        const blob = new Blob(chunks, { type: finalType });
         chunks = [];
 
         // Revoke any previous local URL
@@ -382,14 +486,18 @@
         localUrl = URL.createObjectURL(blob);
         currentTime = 0;
 
-        // Approximate duration from timer
+        // Approximate duration from timer (good enough pre-upload)
         duration = recordSeconds || duration;
+
+        const ext = mimeToExt(blob.type);
+        const filename = `voice.${ext}`;
 
         dispatch("recorded", {
             blob,
             url: localUrl,
             duration: recordSeconds,
-            mimeType: "audio/webm",
+            mimeType: blob.type || finalType || null,
+            filename,
         });
     }
 
@@ -403,6 +511,7 @@
         }
         recordStream = null;
         mediaRecorder = null;
+        recorderMimeType = null;
     }
 
     function handleReplace() {
@@ -541,10 +650,27 @@
                     aria-label="Audio playback timeline"
                 >
                     <div class="audio-picker__bar" aria-hidden="true">
-                        <div
-                            class="audio-picker__bar-fill"
-                            style={`width: ${progress * 100}%;`}
-                        ></div>
+                        {#if showWaveform}
+                            <div class="audio-picker__waveform audio-picker__waveform--base">
+                                {#each waveformBins as amp (amp)}
+                                    <span class="audio-picker__wave-bar" style={`height:${ampPct(amp)};`}></span>
+                                {/each}
+                            </div>
+
+                            <div
+                                class="audio-picker__waveform audio-picker__waveform--fill"
+                                style={`width:${progress * 100}%;`}
+                            >
+                                {#each waveformBins as amp (amp)}
+                                    <span class="audio-picker__wave-bar" style={`height:${ampPct(amp)};`}></span>
+                                {/each}
+                            </div>
+                        {:else}
+                            <div
+                                class="audio-picker__bar-fill"
+                                style={`width: ${progress * 100}%;`}
+                            ></div>
+                        {/if}
                     </div>
 
                     <div class="audio-picker__time">
@@ -634,11 +760,13 @@
         <audio
             bind:this={audioEl}
             src={effectiveUrl}
+            preload="metadata"
             on:play={onAudioPlay}
             on:pause={onAudioPause}
             on:loadedmetadata={onLoadedMetadata}
             on:timeupdate={onTimeUpdate}
             on:ended={onEnded}
+            on:error={onAudioError}
         ></audio>
     {/if}
 </div>
@@ -655,7 +783,6 @@
         font-size: 0.9rem;
     }
 
-    /* Input-like container */
     .audio-picker__shell {
         display: flex;
         align-items: center;
@@ -673,7 +800,6 @@
         border-color: var(--danger);
     }
 
-    /* Reuse global button styling; size icon variant for this component */
     .audio-picker__icon.btn--icon {
         width: 32px;
         height: 32px;
@@ -701,7 +827,7 @@
     .audio-picker__bar {
         position: relative;
         width: 100%;
-        height: 6px;
+        height: 10px;
         border-radius: var(--radius-full);
         background: var(--border-color);
         overflow: hidden;
@@ -716,6 +842,40 @@
         border-radius: var(--radius-full);
         background: var(--accent);
         transition: width 0.05s linear;
+    }
+
+    /* Waveform layers */
+    .audio-picker__waveform {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 0 6px;
+        overflow: hidden;
+    }
+
+    .audio-picker__waveform--base {
+        opacity: 0.55;
+    }
+
+    .audio-picker__waveform--fill {
+        overflow: hidden;
+        border-radius: var(--radius-full);
+    }
+
+    .audio-picker__wave-bar {
+        flex: 1 1 0;
+        min-width: 1px;
+        border-radius: 999px;
+        background: var(--bg-surface);
+        opacity: 0.9;
+    }
+
+    /* In the fill layer, paint bars with accent so progress is obvious */
+    .audio-picker__waveform--fill .audio-picker__wave-bar {
+        background: var(--accent);
+        opacity: 1;
     }
 
     .audio-picker__time {
@@ -773,7 +933,6 @@
         color: var(--text-secondary);
     }
 
-    /* Record CTA pill */
     .audio-picker__record-cta {
         display: inline-flex;
         align-items: center;
@@ -803,7 +962,6 @@
         flex-shrink: 0;
     }
 
-    /* Playback-only pill */
     .audio-picker__preview {
         display: inline-flex;
         align-items: center;
@@ -862,7 +1020,7 @@
         display: inline-flex;
         align-items: center;
 
-        height: 3px;
+        height: 4px;
         min-width: 60px;
     }
 
@@ -872,12 +1030,14 @@
         display: flex;
         align-items: center;
         background: var(--border-color);
+        border-radius: var(--radius-full);
     }
 
     .audio-picker__preview-bar-fill {
         height: 100%;
         width: 0%;
         background: var(--accent);
+        border-radius: var(--radius-full);
         transition: width 0.05s linear;
     }
 
