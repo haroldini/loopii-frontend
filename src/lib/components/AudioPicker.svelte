@@ -37,7 +37,6 @@
     // Recording state
     let isRecording = false;
     let recordSeconds = 0;
-    let recordTimer = null;
     let mediaRecorder = null;
     let recordStream = null;
     let chunks = [];
@@ -45,7 +44,14 @@
     // Errors
     let errorMessage = null;
 
+    // RAF loops for smooth UI updates
+    let playbackRaf = null;
+    let recordRaf = null;
+    let recordStartMs = 0;
+
     function resetPlaybackState() {
+        stopPlaybackRaf();
+
         if (audioEl) {
             try {
                 audioEl.pause();
@@ -54,6 +60,7 @@
                 // ignore
             }
         }
+
         isPlaying = false;
         currentTime = 0;
         duration = 0;
@@ -75,6 +82,7 @@
 
     // Effective duration for UI / seeking: clamp to maxDuration if provided,
     // and fall back to maxDuration if metadata never loads.
+    // NOTE: Duration accuracy for remote files is handled separately later.
     $: effectiveDuration = (() => {
         if (duration && Number.isFinite(duration)) {
             return maxDuration ? Math.min(duration, maxDuration) : duration;
@@ -93,17 +101,74 @@
         return Math.ceil(remaining);
     })();
 
+    // ------------- Smooth UI loops -------------
+
+    function startPlaybackRaf() {
+        stopPlaybackRaf();
+
+        const tick = () => {
+            if (!audioEl || audioEl.paused) {
+                playbackRaf = null;
+                return;
+            }
+
+            currentTime = audioEl.currentTime || 0;
+            playbackRaf = requestAnimationFrame(tick);
+        };
+
+        playbackRaf = requestAnimationFrame(tick);
+    }
+
+    function stopPlaybackRaf() {
+        if (playbackRaf) {
+            cancelAnimationFrame(playbackRaf);
+            playbackRaf = null;
+        }
+    }
+
+    function startRecordRaf() {
+        if (recordRaf) cancelAnimationFrame(recordRaf);
+
+        recordStartMs = performance.now();
+        const tick = (now) => {
+            if (!isRecording) {
+                recordRaf = null;
+                return;
+            }
+
+            recordSeconds = (now - recordStartMs) / 1000;
+
+            if (maxDuration && recordSeconds >= maxDuration) {
+                recordSeconds = maxDuration;
+                stopRecording();
+                return;
+            }
+
+            recordRaf = requestAnimationFrame(tick);
+        };
+
+        recordRaf = requestAnimationFrame(tick);
+    }
+
+    function stopRecordRaf() {
+        if (recordRaf) {
+            cancelAnimationFrame(recordRaf);
+            recordRaf = null;
+        }
+    }
+
     // ------------- Playback -------------
 
     function forceReset() {
         if (!audioEl) return;
-        audioEl.pause();
 
-        // brute-force reset sequence
+        stopPlaybackRaf();
+
+        audioEl.pause();
         audioEl.currentTime = 0;
 
         // force browser to acknowledge the seek
-        audioEl.src = audioEl.src; // reassign same URL
+        audioEl.src = audioEl.src;
         audioEl.load();
 
         currentTime = 0;
@@ -115,7 +180,6 @@
 
         // PREVIEW MODE (recordable = false)
         if (!recordable) {
-
             // STOP → reset fully
             if (isPlaying) {
                 forceReset();
@@ -125,7 +189,7 @@
             // PLAY → always start from zero
             forceReset();
 
-            audioEl.play().catch(err => {
+            audioEl.play().catch((err) => {
                 console.error("Audio play failed:", err);
                 errorMessage = "Unable to play audio on this device.";
             });
@@ -147,29 +211,30 @@
     function onAudioPlay() {
         isPlaying = true;
         errorMessage = null;
+        startPlaybackRaf();
     }
 
     function onAudioPause() {
         isPlaying = false;
+        stopPlaybackRaf();
     }
 
     function onLoadedMetadata() {
         if (!audioEl) return;
+
         const d = audioEl.duration;
         if (Number.isFinite(d) && d > 0) {
             duration = d;
-        } else if (!duration && maxDuration) {
-            // Browser reported 0/Infinity: fall back so UI is still usable
-            duration = maxDuration;
         }
     }
 
     function onTimeUpdate() {
         if (!audioEl) return;
-        const t = audioEl.currentTime || 0;
-        currentTime = t;
 
-        // Try to capture duration lazily if it becomes available later
+        // Keep as a fallback; RAF provides smooth updates.
+        currentTime = audioEl.currentTime || 0;
+
+        // Capture duration lazily if it becomes available later
         if (!duration || !Number.isFinite(duration) || duration === Infinity) {
             const d = audioEl.duration;
             if (Number.isFinite(d) && d > 0) {
@@ -177,8 +242,7 @@
             }
         }
 
-        if (maxDuration && t >= maxDuration) {
-            // Hard-stop playback after maxDuration
+        if (maxDuration && currentTime >= maxDuration) {
             audioEl.currentTime = maxDuration;
             audioEl.pause();
             currentTime = maxDuration;
@@ -187,12 +251,12 @@
 
     function onEnded() {
         isPlaying = false;
-        // Clamp to effective duration
+        stopPlaybackRaf();
         currentTime = effectiveDuration || 0;
     }
 
     function seek(event) {
-        if (!audioEl || !effectiveUrl || !effectiveDuration) return;
+        if (!audioEl || !effectiveUrl || !effectiveDuration || disabled) return;
 
         const rect = event.currentTarget.getBoundingClientRect();
         const ratio = (event.clientX - rect.left) / rect.width;
@@ -200,6 +264,7 @@
             0,
             Math.min(effectiveDuration, ratio * effectiveDuration),
         );
+
         audioEl.currentTime = target;
         currentTime = target;
     }
@@ -240,6 +305,7 @@
             .getUserMedia({ audio: true })
             .then((stream) => {
                 recordStream = stream;
+
                 try {
                     mediaRecorder = new MediaRecorder(stream, {
                         mimeType: "audio/webm",
@@ -267,14 +333,7 @@
                 }
 
                 mediaRecorder.start(250); // collect chunks
-
-                // Timer to track duration + enforce max
-                recordTimer = setInterval(() => {
-                    recordSeconds += 0.25;
-                    if (maxDuration && recordSeconds >= maxDuration) {
-                        stopRecording();
-                    }
-                }, 250);
+                startRecordRaf();
             })
             .catch((err) => {
                 console.error("getUserMedia failed:", err);
@@ -286,10 +345,7 @@
     function stopRecording() {
         if (!isRecording) return;
 
-        if (recordTimer) {
-            clearInterval(recordTimer);
-            recordTimer = null;
-        }
+        stopRecordRaf();
 
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
             try {
@@ -299,24 +355,17 @@
                 handleRecordStop();
             }
         } else {
-            // Nothing to stop, but ensure cleanup
             handleRecordStop();
         }
     }
 
     function handleRecordStop() {
-        if (recordTimer) {
-            clearInterval(recordTimer);
-            recordTimer = null;
-        }
+        stopRecordRaf();
 
         isRecording = false;
-
         stopStream();
 
-        if (!chunks.length) {
-            return;
-        }
+        if (!chunks.length) return;
 
         const blob = new Blob(chunks, { type: "audio/webm" });
         chunks = [];
@@ -332,10 +381,10 @@
 
         localUrl = URL.createObjectURL(blob);
         currentTime = 0;
+
         // Approximate duration from timer
         duration = recordSeconds || duration;
 
-        // Notify parent so it can upload/save the blob
         dispatch("recorded", {
             blob,
             url: localUrl,
@@ -358,14 +407,14 @@
 
     function handleReplace() {
         if (isRecording || disabled) return;
-        // Start a brand new recording, previous one is conceptually discarded.
+
         startRecording();
-        // Let parent know user is replacing; useful if you want to mark old
-        // audio as dirty and delete it after successful upload of new.
         dispatch("replacing");
     }
 
     function clearLocalRecording() {
+        stopRecordRaf();
+
         if (localUrl) {
             try {
                 URL.revokeObjectURL(localUrl);
@@ -373,6 +422,7 @@
                 // ignore
             }
         }
+
         localUrl = null;
         resetPlaybackState();
         errorMessage = null;
@@ -380,6 +430,9 @@
     }
 
     onDestroy(() => {
+        stopPlaybackRaf();
+        stopRecordRaf();
+
         if (localUrl) {
             try {
                 URL.revokeObjectURL(localUrl);
@@ -387,9 +440,7 @@
                 // ignore
             }
         }
-        if (recordTimer) {
-            clearInterval(recordTimer);
-        }
+
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
             try {
                 mediaRecorder.stop();
@@ -397,26 +448,26 @@
                 // ignore
             }
         }
+
         resetPlaybackState();
         stopStream();
     });
 </script>
 
-<div class="voice-note">
+<div class="audio-picker">
     {#if errorMessage}
-        <p class="error">{errorMessage}</p>
+        <p class="red audio-picker__error">{errorMessage}</p>
     {/if}
 
     {#if recordable}
         {#if !effectiveUrl && !isRecording}
-            <!-- No audio yet: simple "tap to record" state -->
             <button
                 type="button"
-                class="record-cta"
+                class="audio-picker__record-cta pressable"
                 on:click={startRecording}
                 disabled={disabled}
             >
-                <span class="dot"></span>
+                <span class="audio-picker__dot" aria-hidden="true"></span>
                 <span>
                     {#if maxDuration}
                         Record (max {maxDuration}s)
@@ -428,53 +479,51 @@
         {/if}
 
         {#if isRecording}
-            <!-- Recording state -->
-            <div class="shell recording">
+            <div class="audio-picker__shell audio-picker__shell--recording">
                 <button
                     type="button"
-                    class="icon-button stop"
+                    class="btn btn--icon btn--danger audio-picker__icon"
                     on:click={stopRecording}
                     disabled={disabled}
+                    aria-label="Stop recording"
                 >
                     ■
                 </button>
 
-                <div class="track">
-                    <div class="bar">
+                <div class="audio-picker__track">
+                    <div class="audio-picker__bar" aria-hidden="true">
                         <div
-                            class="bar-fill"
+                            class="audio-picker__bar-fill"
                             style={`width: ${
                                 maxDuration
-                                    ? Math.min(
-                                          100,
-                                          (recordSeconds / maxDuration) * 100,
-                                      )
+                                    ? Math.min(100, (recordSeconds / maxDuration) * 100)
                                     : 0
                             }%;`}
                         ></div>
                     </div>
-                    <div class="time">
+
+                    <div class="audio-picker__time">
                         <span>{formatTime(recordSeconds)}</span>
                         {#if maxDuration}
-                            <span class="time-total">
+                            <span class="audio-picker__time-total">
                                 / {formatTime(maxDuration)}
                             </span>
                         {/if}
                     </div>
                 </div>
 
-                <div class="actions">
-                    <span class="recording-label">Recording…</span>
+                <div class="audio-picker__actions">
+                    <span class="audio-picker__recording-label">Recording…</span>
                 </div>
             </div>
         {:else if effectiveUrl}
-            <!-- Playback + replace -->
-            <div class="shell">
+            <div class="audio-picker__shell">
                 <button
                     type="button"
-                    class="icon-button"
+                    class="btn btn--icon btn--primary audio-picker__icon"
                     on:click={togglePlay}
                     disabled={disabled}
+                    aria-label={isPlaying ? "Pause" : "Play"}
                 >
                     {#if isPlaying}
                         ❚❚
@@ -485,89 +534,90 @@
 
                 <button
                     type="button"
-                    class="track track-button"
+                    class="audio-picker__track audio-picker__track-button pressable"
                     on:click={seek}
                     on:keydown={handleTrackKeydown}
+                    disabled={disabled}
                     aria-label="Audio playback timeline"
                 >
-                    <div class="bar">
+                    <div class="audio-picker__bar" aria-hidden="true">
                         <div
-                            class="bar-fill"
+                            class="audio-picker__bar-fill"
                             style={`width: ${progress * 100}%;`}
                         ></div>
                     </div>
-                    <div class="time">
+
+                    <div class="audio-picker__time">
                         <span>{formatTime(currentTime)}</span>
                         {#if effectiveDuration}
-                            <span class="time-total">
+                            <span class="audio-picker__time-total">
                                 / {formatTime(effectiveDuration)}
                             </span>
                         {/if}
                     </div>
                 </button>
 
-                <div class="actions">
-                    {#if recordable}
+                <div class="audio-picker__actions">
+                    <button
+                        type="button"
+                        class="audio-picker__text-action"
+                        on:click={handleReplace}
+                        disabled={disabled}
+                    >
+                        Replace
+                    </button>
+
+                    {#if localUrl}
                         <button
                             type="button"
-                            class="text-button"
-                            on:click={handleReplace}
+                            class="audio-picker__text-action audio-picker__text-action--muted"
+                            on:click={clearLocalRecording}
                             disabled={disabled}
                         >
-                            Replace
+                            Discard Changes
                         </button>
-                        {#if localUrl}
-                            <button
-                                type="button"
-                                class="text-button secondary"
-                                on:click={clearLocalRecording}
-                                disabled={disabled}
-                            >
-                                Discard Changes
-                            </button>
-                        {/if}
                     {/if}
                 </div>
             </div>
         {/if}
     {:else}
-        <!-- Playback-only mode -->
         {#if effectiveUrl}
             <button
                 type="button"
-                class="shell preview"
+                class="audio-picker__preview pressable"
                 on:click={togglePlay}
                 disabled={disabled}
                 aria-label="Play voice note"
             >
-                <div class="preview-icon">
-                    <span class="preview-icon-symbol">
+                <div class="audio-picker__preview-icon" aria-hidden="true">
+                    <span class="audio-picker__preview-symbol">
                         {#if isPlaying}
                             ■
                         {:else}
                             ▶
                         {/if}
                     </span>
+
                     {#if isPlaying && remainingSeconds > 0}
-                        <span class="preview-remaining">
+                        <span class="audio-picker__preview-remaining">
                             {remainingSeconds}
                         </span>
                     {/if}
                 </div>
 
                 {#if previewLabel}
-                    <div class="preview-body">
+                    <div class="audio-picker__preview-body">
                         <span
-                            class="preview-text"
+                            class="audio-picker__preview-text"
                             style={`visibility: ${isPlaying ? "hidden" : "visible"};`}
                         >
                             {previewLabel}
                         </span>
 
                         {#if isPlaying}
-                            <div class="preview-bar">
+                            <div class="audio-picker__preview-bar" aria-hidden="true">
                                 <div
-                                    class="preview-bar-fill"
+                                    class="audio-picker__preview-bar-fill"
                                     style={`width: ${progress * 100}%;`}
                                 ></div>
                             </div>
@@ -576,11 +626,10 @@
                 {/if}
             </button>
         {:else}
-            <p class="placeholder">No voice intro yet.</p>
+            <p class="hint">No voice intro yet.</p>
         {/if}
     {/if}
 
-    <!-- Hidden audio element -->
     {#if effectiveUrl}
         <audio
             bind:this={audioEl}
@@ -595,243 +644,246 @@
 </div>
 
 <style>
-    .voice-note {
+    .audio-picker {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: var(--space-2);
         width: 100%;
-        align-items: center; /* center component within the form column */
     }
 
-    .shell {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.5rem 0.75rem;
-        width: 100%; /* full width like inputs */
-        border-radius: 6px; /* match input border radius */
-        background: var(--bg-2); /* same background as inputs */
-        border: 1px solid var(--border-3); /* same border as inputs */
-    }
-
-    .shell.recording {
-        border-color: var(--red);
-    }
-
-    .icon-button {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--accent-blue);
-        color: #fff;
-        cursor: pointer;
-        flex-shrink: 0;
+    .audio-picker__error {
         font-size: 0.9rem;
     }
 
-    .icon-button.stop {
-        background: var(--red);
+    /* Input-like container */
+    .audio-picker__shell {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+
+        width: 100%;
+        padding: var(--space-2) var(--space-3);
+
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+        border: var(--border-width) solid var(--border-color);
     }
 
-    .icon-button:disabled {
-        opacity: 0.5;
-        cursor: default;
+    .audio-picker__shell--recording {
+        border-color: var(--danger);
     }
 
-    .track {
-        flex: 1;
+    /* Reuse global button styling; size icon variant for this component */
+    .audio-picker__icon.btn--icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .audio-picker__track {
+        flex: 1 1 auto;
+        min-width: 0;
+
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
-        cursor: pointer;
+        gap: var(--space-1);
     }
 
-    /* Reset default button styles for track buttons */
-    .track-button {
-        border: none;
-        background: transparent;
-        padding: 0;
+    .audio-picker__track-button {
         text-align: left;
     }
 
-    .bar {
+    .audio-picker__track-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .audio-picker__bar {
         position: relative;
         width: 100%;
         height: 6px;
-        border-radius: 999px;
-        background: var(--border-3);
+        border-radius: var(--radius-full);
+        background: var(--border-color);
         overflow: hidden;
     }
 
-    .bar-fill {
+    .audio-picker__bar-fill {
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
         width: 0%;
-        border-radius: 999px;
-        background: var(--accent-blue);
+        border-radius: var(--radius-full);
+        background: var(--accent);
         transition: width 0.05s linear;
     }
 
-    .time {
+    .audio-picker__time {
         display: flex;
         align-items: baseline;
-        gap: 0.25rem;
+        gap: var(--space-1);
         font-size: 0.75rem;
-        color: var(--text-3);
+        color: var(--text-muted);
     }
 
-    .time-total {
-        opacity: 0.8;
+    .audio-picker__time-total {
+        opacity: 0.85;
     }
 
-    .actions {
+    .audio-picker__actions {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: var(--space-1);
         align-items: flex-end;
         font-size: 0.75rem;
         color: var(--text-muted);
+        flex-shrink: 0;
     }
 
-    .recording-label {
-        color: var(--red);
+    .audio-picker__recording-label {
+        color: var(--danger);
     }
 
-    .text-button {
-        border: none;
+    .audio-picker__text-action {
+        border: 0;
         background: none;
-        color: var(--accent-blue);
-        cursor: pointer;
-        font-size: 0.75rem;
         padding: 0;
+
+        color: var(--accent);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.75rem;
+        text-align: right;
     }
 
-    .text-button.secondary {
-        color: var(--text-3);
+    .audio-picker__text-action:hover {
+        color: var(--text-primary);
     }
 
-    .text-button:disabled {
-        opacity: 0.5;
-        cursor: default;
+    .audio-picker__text-action:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
-    .record-cta {
+    .audio-picker__text-action--muted {
+        color: var(--text-muted);
+    }
+
+    .audio-picker__text-action--muted:hover {
+        color: var(--text-secondary);
+    }
+
+    /* Record CTA pill */
+    .audio-picker__record-cta {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        border-radius: 999px;
-        border: 1px dashed var(--border-2);
-        background: var(--bg-2);
-        padding: 0.4rem 0.75rem;
-        cursor: pointer;
-        font-size: 0.85rem;
+        gap: var(--space-2);
+
+        width: fit-content;
+        padding: var(--space-2) var(--space-3);
+
+        border-radius: var(--radius-full);
+        border: var(--border-width) dashed var(--border-color);
+        background: var(--bg-surface);
+
+        font-size: 0.9rem;
         color: var(--text-muted);
-        align-self: center; /* center the "Tap to record" pill */
     }
 
-    .record-cta .dot {
+    .audio-picker__record-cta:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .audio-picker__dot {
         width: 10px;
         height: 10px;
-        border-radius: 999px;
-        background: var(--red);
+        border-radius: var(--radius-full);
+        background: var(--danger);
+        flex-shrink: 0;
     }
 
-    .record-cta:disabled {
-        opacity: 0.5;
-        cursor: default;
-    }
-
-    .placeholder {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
-
-    .error {
-        font-size: 0.8rem;
-        color: var(--red);
-    }
-
-    .shell.preview {
+    /* Playback-only pill */
+    .audio-picker__preview {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        width: auto;
-        max-width: none;
-        padding: 0.35rem 0.6rem;
-        border-radius: 999px;
-        border: 1px solid var(--border-3);
-        background: var(--bg-2);
-        cursor: pointer;
+        gap: var(--space-2);
+
+        width: fit-content;
+        padding: var(--space-2) var(--space-3);
+
+        border-radius: var(--radius-full);
+        border: var(--border-width) solid var(--border-color);
+        background: var(--bg-surface);
+
         overflow: hidden;
     }
 
-    .shell.preview:disabled {
+    .audio-picker__preview:disabled {
         opacity: 0.6;
-        cursor: default;
+        cursor: not-allowed;
     }
 
-    .preview-icon {
+    .audio-picker__preview-icon {
         width: 28px;
         height: 28px;
-        border-radius: 999px;
-        background: var(--accent-blue);
-        color: #fff;
+        border-radius: var(--radius-full);
+        background: var(--accent);
+        color: var(--bg-app);
+
         display: flex;
         align-items: center;
         justify-content: center;
+
         position: relative;
         flex-shrink: 0;
         font-size: 0.8rem;
     }
 
-    .preview-icon-symbol {
+    .audio-picker__preview-symbol {
         line-height: 1;
     }
 
-    .preview-remaining {
+    .audio-picker__preview-remaining {
         position: absolute;
         bottom: -0.35rem;
         right: -0.35rem;
+
         font-size: 0.55rem;
         padding: 0.05rem 0.25rem;
-        border-radius: 999px;
-        background: var(--bg-2);
-        color: var(--text-3);
+
+        border-radius: var(--radius-full);
+        background: var(--bg-surface);
+        color: var(--text-muted);
     }
 
-    .preview-body {
+    .audio-picker__preview-body {
         position: relative;
         display: inline-flex;
         align-items: center;
+
         height: 3px;
         min-width: 60px;
     }
 
-    .preview-bar {
+    .audio-picker__preview-bar {
         position: absolute;
         inset: 0;
         display: flex;
         align-items: center;
-        background: var(--border-3);
+        background: var(--border-color);
     }
 
-    .preview-bar-fill {
+    .audio-picker__preview-bar-fill {
         height: 100%;
         width: 0%;
-        background: var(--accent-blue);
+        background: var(--accent);
         transition: width 0.05s linear;
     }
 
-    .preview-text {
+    .audio-picker__preview-text {
         font-size: 0.75rem;
-        color: var(--text-3);
+        color: var(--text-muted);
         white-space: nowrap;
     }
-
 </style>
