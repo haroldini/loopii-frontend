@@ -3,6 +3,7 @@
     import { profile } from "$lib/stores/profile.js";
     import { allCountries } from "$lib/stores/app.js";
     import MapPicker from "$lib/components/MapPicker.svelte";
+    import RangeSlider from "$lib/components/RangeSlider.svelte";
 
     // "search" | "visibility" (for default initial source)
     export let mode = "search";
@@ -287,33 +288,17 @@
         </fieldset>
 
         <div class="field">
-            <div class="field__label">Age range</div>
-
-            <div class="age-range">
-                <input
-                    type="number"
-                    min="18"
-                    max="150"
-                    placeholder="Min"
-                    value={ageMin}
-                    on:input={handleAgeMinChange}
-                    aria-label="Minimum age"
-                />
-
-                <input
-                    type="number"
-                    min="18"
-                    max="150"
-                    placeholder="Max"
-                    value={ageMax}
-                    on:input={handleAgeMaxChange}
-                    aria-label="Maximum age"
-                />
-            </div>
-
-            {#if ageError}
-                <p class="field__error">{ageError}</p>
-            {/if}
+            <RangeSlider
+                min={18}
+                max={80}
+                step={1}
+                gap={1}
+                openMin={true}
+                openMax={true}
+                maxLabelSuffix="+"
+                bind:valueMin={ageMin}
+                bind:valueMax={ageMax}
+            />
         </div>
 
         <div class="field">
@@ -400,13 +385,6 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: var(--space-2);
-    }
-
-    .age-range {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-2);
-        align-items: center;
     }
 
     .location-row {
