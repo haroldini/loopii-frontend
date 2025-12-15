@@ -1,9 +1,11 @@
+
 <script>
     import { createEventDispatcher } from "svelte";
     import { profile } from "$lib/stores/profile.js";
     import { allCountries } from "$lib/stores/app.js";
     import MapPicker from "$lib/components/MapPicker.svelte";
     import RangeSlider from "$lib/components/RangeSlider.svelte";
+    import MultiSelect from "$lib/components/MultiSelect.svelte";
 
     // "search" | "visibility" (for default initial source)
     export let mode = "search";
@@ -288,6 +290,7 @@
         </fieldset>
 
         <div class="field">
+            <div class="field__label">Age</div>
             <RangeSlider
                 min={18}
                 max={80}
@@ -302,18 +305,17 @@
         </div>
 
         <div class="field">
-            <label class="field__label" for="countries">Countries</label>
-            <select
-                id="countries"
-                class="multiselect"
-                multiple
-                size="8"
-                bind:value={countryIds}
-            >
-                {#each $allCountries as country}
-                    <option value={country.id}>{country.name}</option>
-                {/each}
-            </select>
+            <div class="field__label">Countries</div>
+                <MultiSelect
+                    title="Select Countries"
+                    placeholder="Any"
+                    searchPlaceholder="Search countries..."
+                    items={$allCountries}
+                    valueKey="id"
+                    labelKey="name"
+                    groupKey="sub_region"
+                    bind:value={countryIds}
+                />
         </div>
 
         <div class="field">
