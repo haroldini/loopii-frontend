@@ -2,6 +2,7 @@
 <script>
     import MapPicker from "$lib/components/MapPicker.svelte";
     import AudioPicker from "$lib/components/AudioPicker.svelte";
+    import MultiSelect from "$lib/components/MultiSelect.svelte";
 
     /**
      * fields: array of either:
@@ -70,14 +71,8 @@
     // e.g. { username, dob, gender, country }
     export let cooldowns = null;
 
-    // --- internal state for multi-selects ---
-    let localInterests = [];
-
     // --- AudioPicker reset token ---
     let audioResetToken = 0;
-
-    // keep localInterests in sync with incoming values
-    $: localInterests = values.interests ?? [];
 
     const defaultLabels = {
         username: "Username",
@@ -449,20 +444,20 @@
         {:else if field.key === "interests"}
             <div class="field">
                 <label class="field__label" for="interests">{labelFor(field)}</label>
-                <select
-                    id="interests"
-                    class="multiselect"
-                    multiple
-                    size="10"
-                    bind:value={localInterests}
-                    on:change={() => {
-                        setters.interests && setters.interests([...localInterests]);
-                    }}
-                >
-                    {#each allInterests as interest}
-                        <option value={interest.id}>{interest.name}</option>
-                    {/each}
-                </select>
+                <MultiSelect
+                    title="Your Interests"
+                    placeholder="Any"
+                    searchPlaceholder="Search interests..."
+                    items={allInterests}
+                    valueKey="id"
+                    labelKey="name"
+                    groupKey="category"
+                    max={20}
+                    showSearch={false}
+                    showBulkActions={false}
+                    value={values.interests ?? []}
+                    on:change={(e) => setters.interests && setters.interests(e.detail.value)}
+                />
                 {#if errorMap.interests}
                     <p class="field__error">{errorMap.interests.message}</p>
                 {/if}

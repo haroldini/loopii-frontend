@@ -206,6 +206,7 @@
             <section class="card">
                 <div class="section stack">
                     <h3>Your Interests</h3>
+                    <p class="hint">You can select up to 20 interests.</p>
 
                     <ProfileFields
                         fields={["interests"]}
