@@ -239,7 +239,7 @@
 
     <div class="content stack photos">
         <section class={"photos__upload stack " + ($newImageUrl ? "is-confirm" : "is-empty")}>
-            <div class={"photos__picker" + ($newImageUrl ? "" : " is-hidden")}>
+            <div class={"photos__picker"}>
                 <ImagePicker
                     bind:this={imagePicker}
                     initialOriginalUrl={$newImageOriginalUrl}
@@ -368,22 +368,6 @@
     /* When empty, remove the stack gap so the add button sits flush */
     .photos__upload.is-empty {
         gap: 0;
-    }
-
-    /* Keep ImagePicker mounted but layoutless when empty */
-    .photos__picker.is-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
-        border: 0;
-        opacity: 0;
-        pointer-events: none;
     }
 
     .photos__upload.is-confirm {
