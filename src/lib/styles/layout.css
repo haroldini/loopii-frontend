@@ -121,7 +121,6 @@
     width: 100%;
     max-width: none;
     margin-inline: 0;
-    padding-inline: var(--gutter);
 
     padding-top: var(--space-3);
     padding-bottom: var(--space-4);
@@ -145,6 +144,22 @@
 .content--full > * {
     max-width: none;
     margin-inline: 0;
+}
+
+.gutter {
+    width: 100%;
+    padding-inline: var(--gutter);
+}
+
+.gutter > * {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-inline: auto;
+}
+
+.gutter-vertical {
+    padding-top: var(--gutter);
+    padding-bottom: var(--gutter);
 }
 
 /* ===== Viewport pages =====

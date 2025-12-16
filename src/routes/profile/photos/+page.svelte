@@ -237,7 +237,7 @@
         </div>
     </header>
 
-    <div class="content stack photos">
+    <div class="content stack gutter photos">
         <section class={"photos__upload stack " + ($newImageUrl ? "is-confirm" : "is-empty")}>
             <div class={"photos__picker"}>
                 <ImagePicker

@@ -200,7 +200,7 @@
         </div>
     </header>
 
-    <div class="content stack">
+    <div class="content stack gutter">
         <div class="card card--panel" role="region" aria-label="Account settings">
             <div class="segmented" role="tablist" aria-label="Account settings sections">
                 <button

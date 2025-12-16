@@ -154,7 +154,7 @@
         </div>
     </header>
 
-    <div class="content stack">
+    <div class="content stack gutter">
         {#if $profileEditState === "error"}
             <p class="text-danger">{$error}</p>
         {/if}

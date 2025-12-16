@@ -134,6 +134,22 @@
     background: color-mix(in oklab, var(--bg-surface) 88%, var(--border-color));
 }
 
+.profile-card--constrained .profile-media {
+    width: var(--profile-media-size);
+    height: var(--profile-media-size);
+    aspect-ratio: auto;
+    margin-inline: auto;
+}
+
+.profile-expanded--constrained .profile-media {
+    width: var(--profile-media-size);
+    height: var(--profile-media-size);
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: auto;
+    margin-inline: auto;
+}
+
 .profile-media__track {
     position: absolute;
     inset: 0;
@@ -511,8 +527,14 @@
     overflow: visible;
 }
 
-/* separators between sections */
+/* Separator after images */
 .profile-expanded > * + * {
+    border-top: var(--border-width) solid var(--border-color);
+    margin-top: var(--space-3);
+}
+
+/* separators between sections */
+.profile-expanded .gutter > .profile-block + .profile-block {
     border-top: var(--border-width) solid var(--border-color);
 }
 

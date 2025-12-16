@@ -22,5 +22,5 @@
         </div>
     </header>
 
-    <div class="content stack"></div>
+    <div class="content stack gutter">Under construction...</div>
 </div>

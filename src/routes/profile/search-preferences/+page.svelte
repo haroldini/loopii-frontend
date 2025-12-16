@@ -147,7 +147,7 @@
         </div>
     </header>
 
-    <div class="content stack">
+    <div class="content stack gutter">
         {#if status === "error"}
             <p class="text-danger">{error}</p>
         {/if}

@@ -57,28 +57,37 @@
 
     <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
-            <p class="text-hint">Loading next profile…</p>
+            <div class="gutter gutter-vertical">
+                <p class="text-hint">Loading next profile…</p>
+            </div>
         {:else if $peerStatus === "error"}
-            <div class="card">
-                <div class="section stack">
-                    <p>An error occurred while loading the feed.</p>
-                    <p class="text-hint">Try refreshing.</p>
+            <div class="gutter gutter-vertical">
+                <div class="card">
+                    <div class="section stack">
+                        <p>An error occurred while loading the feed.</p>
+                        <p class="text-hint">Try refreshing.</p>
+                    </div>
                 </div>
             </div>
         {:else if $peerStatus === "hidden"}
-            <div class="card">
-                <div class="section stack">
-                    <p>Your profile is hidden.</p>
-                    <p class="text-hint">Update your visibility settings to see other profiles.</p>
+            <div class="gutter gutter-vertical">
+                <div class="card">
+                    <div class="section stack">
+                        <p>Your profile is hidden.</p>
+                        <p class="text-hint">Update your visibility settings to see other profiles.</p>
+                    </div>
                 </div>
             </div>
         {:else if $peerStatus === "empty"}
-            <div class="card">
-                <div class="section stack">
-                    <p>We couldn't find any matching profiles.</p>
-                    <p class="text-hint">Try refreshing or expanding your search preferences.</p>
+            <div class="gutter gutter-vertical">
+                <div class="card">
+                    <div class="section stack">
+                        <p>We couldn't find any matching profiles.</p>
+                        <p class="text-hint">Try refreshing or expanding your search preferences.</p>
+                    </div>
                 </div>
             </div>
+
         {:else if expanded}
             <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
         {:else}

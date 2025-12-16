@@ -1,6 +1,6 @@
 
 <script>
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
     import { interestMap, countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { profile as profileStore } from "$lib/stores/profile.js";
     import { getAvatarUrl } from "$lib/utils/profile.js";
@@ -25,6 +25,55 @@
             open();
         }
     }
+
+    // Dynamic height adjustment for constrained cards
+    let cardEl;
+    let bodyEl;
+    let isConstrained = false;
+    const MEDIA_MIN_REM = 10;
+
+    function updateMediaConstraint() {
+        if (!cardEl || !bodyEl) return;
+
+        const cardRect = cardEl.getBoundingClientRect();
+        const bodyRect = bodyEl.getBoundingClientRect();
+
+        const availableHeight = cardRect.height - bodyRect.height;
+        const availableWidth = cardRect.width;
+
+        const shouldConstrain = availableHeight > 0 && availableHeight < availableWidth;
+
+        if (shouldConstrain) {
+            const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const minSize = MEDIA_MIN_REM * rootFontSize;
+
+            const maxThatFits = Math.max(0, Math.min(availableWidth, availableHeight));
+            const finalSize = Math.floor(Math.max(minSize, maxThatFits));
+
+            cardEl.style.setProperty("--profile-media-size", `${finalSize}px`);
+            isConstrained = true;
+        } else {
+            cardEl.style.removeProperty("--profile-media-size");
+            isConstrained = false;
+        }
+    }
+
+    onMount(() => {
+        updateMediaConstraint();
+
+        if (typeof ResizeObserver === "undefined") return;
+
+        const ro = new ResizeObserver(() => {
+            updateMediaConstraint();
+        });
+
+        ro.observe(cardEl);
+        ro.observe(bodyEl);
+
+        return () => {
+            ro.disconnect();
+        };
+    });    
 
     $: genderMeta =
         GENDER_ICONS[profile?.gender?.toLowerCase?.()] || GENDER_ICONS.other;
@@ -68,6 +117,8 @@
 
 <div
     class="profile-card ui-pressable"
+    class:profile-card--constrained={isConstrained}
+    bind:this={cardEl}
     role="button"
     tabindex="0"
     aria-label="Open profile"
@@ -80,73 +131,75 @@
         alt={`Photos of ${displayName}`}
     />
 
-    <div class="profile-card__body">
-        <div class="profile-card__top">
-            <div class="profile-card__left">
-                <h2 class="profile-card__name">{displayName}</h2>
+    <div class="gutter">
+        <div class="profile-card__body" bind:this={bodyEl}>
+            <div class="profile-card__top">
+                <div class="profile-card__left">
+                    <h2 class="profile-card__name">{displayName}</h2>
 
-                {#if profile.last_seen_at}
-                    <div class={"pill " + (isOnline ? "pill--online" : "")}>
-                        <span class="status-dot"></span>
-                        {#if isOnline}
-                            <span>Online</span>
-                        {:else}
-                            <span>{formatLastSeenShort(lastSeenDate)}</span>
-                        {/if}
-                    </div>
-                {/if}
-            </div>
-
-            <div class="profile-card__right">
-                <div class="profile-card__right-main">
-                    <span class="profile-card__age">{profile.age}</span>
-
-                    <span
-                        class="gender-icon"
-                        style={`--icon-url: url('${genderMeta.icon}'); --icon-color: ${genderMeta.color};`}
-                    ></span>
-
-                    {#if $countryMap[profile.country_id]?.flag_url}
-                        <img
-                            src={$countryMap[profile.country_id].flag_url}
-                            alt="Country flag"
-                            class="profile-flag"
-                        />
+                    {#if profile.last_seen_at}
+                        <div class={"pill " + (isOnline ? "pill--online" : "")}>
+                            <span class="status-dot"></span>
+                            {#if isOnline}
+                                <span>Online</span>
+                            {:else}
+                                <span>{formatLastSeenShort(lastSeenDate)}</span>
+                            {/if}
+                        </div>
                     {/if}
                 </div>
 
-                {#if profile.location}
-                    <p class="profile-card__location">{profile.location}</p>
-                {/if}
-            </div>
-        </div>
+                <div class="profile-card__right">
+                    <div class="profile-card__right-main">
+                        <span class="profile-card__age">{profile.age}</span>
 
-        {#if hasSeparateUsername}
-            <p class="profile-card__username">@{profile.username}</p>
-        {/if}
+                        <span
+                            class="gender-icon"
+                            style={`--icon-url: url('${genderMeta.icon}'); --icon-color: ${genderMeta.color};`}
+                        ></span>
 
-        {#if visibleInterests.length}
-            <div class="tags">
-                {#each visibleInterests as interestId}
-                    <span class="tag">
-                        {$interestMap[interestId] || interestId}
-                    </span>
-                {/each}
-                {#if extraInterestCount > 0}
-                    <span class="tag more">+{extraInterestCount} more</span>
-                {/if}
-            </div>
-        {/if}
+                        {#if $countryMap[profile.country_id]?.flag_url}
+                            <img
+                                src={$countryMap[profile.country_id].flag_url}
+                                alt="Country flag"
+                                class="profile-flag"
+                            />
+                        {/if}
+                    </div>
 
-        {#if metaItems.length}
-            <div class="meta-row">
-                {#each metaItems as item, i}
-                    {#if i > 0}
-                        <span class="meta-separator">•</span>
+                    {#if profile.location}
+                        <p class="profile-card__location">{profile.location}</p>
                     {/if}
-                    <span class="meta-item">{item}</span>
-                {/each}
+                </div>
             </div>
-        {/if}
+
+            {#if hasSeparateUsername}
+                <p class="profile-card__username">@{profile.username}</p>
+            {/if}
+
+            {#if visibleInterests.length}
+                <div class="tags">
+                    {#each visibleInterests as interestId}
+                        <span class="tag">
+                            {$interestMap[interestId] || interestId}
+                        </span>
+                    {/each}
+                    {#if extraInterestCount > 0}
+                        <span class="tag more">+{extraInterestCount} more</span>
+                    {/if}
+                </div>
+            {/if}
+
+            {#if metaItems.length}
+                <div class="meta-row">
+                    {#each metaItems as item, i}
+                        {#if i > 0}
+                            <span class="meta-separator">•</span>
+                        {/if}
+                        <span class="meta-item">{item}</span>
+                    {/each}
+                </div>
+            {/if}
+        </div>
     </div>
 </div>
