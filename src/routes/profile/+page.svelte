@@ -49,7 +49,7 @@
                 <button
                     type="button"
                     class="btn btn--ghost"
-                    on:click={() => goto("/account")}
+                    on:click={() => goto("/settings")}
                 >
                     Settings
                 </button>

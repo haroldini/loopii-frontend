@@ -527,12 +527,6 @@
     overflow: visible;
 }
 
-/* Separator after images */
-.profile-expanded > * + * {
-    border-top: var(--border-width) solid var(--border-color);
-    margin-top: var(--space-3);
-}
-
 /* separators between sections */
 .profile-expanded .gutter > .profile-block + .profile-block {
     border-top: var(--border-width) solid var(--border-color);

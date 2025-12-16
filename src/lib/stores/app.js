@@ -10,6 +10,78 @@ import { getProfileFromLoop } from "$lib/api/loop.js";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 
+// ---------------- Theme ---------------- //
+
+const THEME_STORAGE_KEY = "theme";
+
+function normalizeTheme(value) {
+    const allowed = new Set(themeOptions.map((t) => t.value));
+    const fallback = themeOptions[0]?.value || "dark";
+
+    if (typeof value !== "string") return fallback;
+
+    const cleaned = value.trim();
+    return allowed.has(cleaned) ? cleaned : fallback;
+}
+
+export const theme = writable("dark");
+
+export const themeOptions = [
+    { value: "dark", label: "Dark (Default)" },
+    { value: "light", label: "Light" },
+];
+
+function applyThemeToDom(value) {
+    if (!browser) return;
+
+    if (value === "light") {
+        document.documentElement.dataset.theme = "light";
+    } else {
+        delete document.documentElement.dataset.theme;
+    }
+}
+
+export function initTheme() {
+    if (!browser) return;
+
+    let initial = "dark";
+
+    try {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        if (saved === "light" || saved === "dark") {
+            initial = saved;
+        } else if (document.documentElement.dataset.theme === "light") {
+            initial = "light";
+        }
+    } catch (e) {
+        if (document.documentElement.dataset.theme === "light") {
+            initial = "light";
+        }
+    }
+
+    initial = normalizeTheme(initial);
+
+    theme.set(initial);
+    applyThemeToDom(initial);
+}
+
+export function setTheme(value) {
+    const next = normalizeTheme(value);
+
+    theme.set(next);
+    applyThemeToDom(next);
+
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch (e) {
+    }
+}
+
+if (browser) {
+    initTheme();
+}
+
+
 // ---------------- Icons ---------------- //
 
 const PLATFORM_ICONS = {
