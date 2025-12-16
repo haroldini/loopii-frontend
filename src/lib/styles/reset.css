@@ -6,6 +6,10 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: var(--font-size-root);
+}
+
 html,
 body {
     font-family: var(--font-ui);
@@ -16,7 +20,7 @@ body {
 }
 
 /* Make interactive elements inherit typography by default.
-   Visual styling is class-driven (e.g. .btn, .pressable). */
+   Visual styling is class-driven (e.g. .btn, .ui-pressable). */
 button,
 input,
 textarea,

@@ -133,13 +133,13 @@
                 <h3>Requests</h3>
 
                 {#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
-                    <p class="hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
+                    <p class="text-hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
                 {:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0 && !$selectedRequest}
-                    <p class="hint">You don't have any requests at the moment.</p>
+                    <p class="text-hint">You don't have any requests at the moment.</p>
                 {:else if $loopRequestsStatus === "loading"}
-                    <p class="hint">Loading…</p>
+                    <p class="text-hint">Loading...</p>
                 {:else if $loopRequestsStatus === "error"}
-                    <p class="hint">Error loading requests</p>
+                    <p class="text-hint text-danger">We couldn't load your requests.</p>
                 {/if}
             </div>
 
@@ -170,12 +170,14 @@
             />
         {:else}
             {#if $loopRequestsStatus === "loading"}
-                <p class="hint">Loading…</p>
+                <p class="text-hint">Loading...</p>
+            {:else if $loopRequestsStatus === "error"}
+                <p class="text-hint text-danger">We couldn't load your requests. Please refresh or try again later.</p>
             {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
                 <div class="grid grid-2">
                     {#each $loopRequests as entry}
                         {#if entry?.profile}
-                            <div class="stack" style="aspect-ratio: 1 / 1;">
+                            <div class="stack u-aspect-square">
                                 <ProfileCardPreview
                                     profile={entry.profile}
                                     on:expand={() => expandRequest(entry)}

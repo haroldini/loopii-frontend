@@ -29,8 +29,12 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>@{$profile?.username}</h3>
-                <p class="hint">Manage your profile settings and preferences.</p>
+                {#if $profile?.name}
+                    <h3>{$profile.name}</h3>
+                    <p class="text-hint">@{$profile.username}</p>
+                {:else if $profile?.username}
+                    <h3>@{$profile.username}</h3>
+                {/if}
             </div>
 
             <div class="bar__actions">

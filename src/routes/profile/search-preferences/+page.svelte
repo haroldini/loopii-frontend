@@ -136,7 +136,7 @@
         <div class="bar__inner">
             <div class="bar__title">
                 <h3>Search Preferences</h3>
-                <p class="hint">Control who you see in your feed.</p>
+                <p class="text-hint">Control who you see in your feed.</p>
             </div>
 
             <div class="bar__actions">
@@ -149,7 +149,7 @@
 
     <div class="content stack">
         {#if status === "error"}
-            <p class="red">{error}</p>
+            <p class="text-danger">{error}</p>
         {/if}
 
         <section class="card">

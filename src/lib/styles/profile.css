@@ -5,8 +5,8 @@
 .profile-flag {
     width: 1.2rem;
     height: auto;
-    border-radius: 2px;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    border-radius: calc(var(--radius-sm) / 2);
+    box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.4);
     object-fit: contain;
 }
 
@@ -35,13 +35,13 @@
 }
 
 .pill.pill--online {
-    background: rgba(76, 175, 80, 0.15);
+    background: color-mix(in oklab, var(--success) 18%, var(--bg-surface));
     color: var(--success);
 }
 
 .pill.pill--online .status-dot {
     background: var(--success);
-    box-shadow: 0 0 4px rgba(76, 175, 80, 0.8);
+    box-shadow: 0 0 0.25rem color-mix(in oklab, var(--success) 75%, transparent);
 }
 
 /* Tags */
@@ -93,7 +93,7 @@
     color: var(--border-color);
 }
 
-/* Line clamp helpers (includes standard property for your linter) */
+/* Line clamp helpers */
 .clamp {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -115,9 +115,18 @@
     -webkit-line-clamp: 6;
 }
 
-/* ===== Profile media carousel (Instagram-style) ===== */
+/* ===== Profile media carousel ===== */
 
 .profile-media {
+    /* file-local tokens for media overlays */
+    --media-scrim: rgba(0, 0, 0, 0.35);
+    --media-edge: rgba(0, 0, 0, 0.22);
+    --media-on: rgba(255, 255, 255, 0.92);
+    --media-on-strong: rgba(255, 255, 255, 0.95);
+    --media-on-muted: rgba(255, 255, 255, 0.35);
+    --media-on-active: rgba(255, 255, 255, 0.85);
+    --media-text-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.55);
+
     position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -173,8 +182,8 @@
 
     padding: 0.2rem 0.5rem;
     border-radius: var(--radius-full);
-    background: rgba(0, 0, 0, 0.35);
-    color: rgba(255, 255, 255, 0.92);
+    background: var(--media-scrim);
+    color: var(--media-on);
 
     font-size: 0.85rem;
     line-height: 1;
@@ -206,18 +215,18 @@
 
 .profile-media__dot {
     pointer-events: auto;
-    width: 7px;
-    height: 7px;
+    width: 0.4375rem;
+    height: 0.4375rem;
     border-radius: var(--radius-full);
     border: 0;
-    background: rgba(255, 255, 255, 0.35);
+    background: var(--media-on-muted);
 }
 
 .profile-media__dot.is-active {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--media-on-active);
 }
 
-/* Full-side nav zones. No circles. Big arrows. */
+/* Full-side nav zones */
 .profile-media__nav {
     position: absolute;
     top: 0;
@@ -244,11 +253,11 @@
 }
 
 .profile-media__nav--prev:hover {
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+    background: linear-gradient(to right, var(--media-edge), transparent);
 }
 
 .profile-media__nav--next:hover {
-    background: linear-gradient(to left, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+    background: linear-gradient(to left, var(--media-edge), transparent);
 }
 
 .profile-media__nav:focus-visible {
@@ -260,11 +269,11 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--media-on-strong);
     font-size: 2.6rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-semibold);
     line-height: 1;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+    text-shadow: var(--media-text-shadow);
 }
 
 .profile-media__nav--prev .profile-media__navIcon {
@@ -307,7 +316,7 @@
 }
 
 .profile-preview:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: color-mix(in oklab, var(--bg-hover) 40%, transparent);
 }
 
 .profile-preview__media {
@@ -323,13 +332,15 @@
     position: absolute;
     left: 0.5rem;
     bottom: 0.5rem;
+
     background: var(--accent);
     color: var(--bg-app);
+
     font-size: 0.75rem;
-    font-weight: 650;
+    font-weight: var(--font-weight-semibold);
     padding: 0.2rem 0.55rem;
     border-radius: var(--radius-full);
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--shadow-ui-2);
 }
 
 .profile-preview__info {
@@ -348,7 +359,7 @@
     gap: 0.5rem;
     color: var(--text-primary);
     font-size: 0.95rem;
-    font-weight: 550;
+    font-weight: var(--font-weight-semibold);
 }
 
 .profile-preview__bottom {
@@ -372,8 +383,8 @@
 }
 
 .icon-btn {
-    width: 34px;
-    height: 34px;
+    width: 2.125rem;
+    height: 2.125rem;
     border-radius: var(--radius-full);
     border: var(--border-width) solid var(--border-color);
     background: transparent;
@@ -386,7 +397,7 @@
 }
 
 .icon-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: color-mix(in oklab, var(--bg-hover) 45%, transparent);
     transform: scale(1.04);
     opacity: 1;
 }
@@ -422,7 +433,6 @@
 }
 
 .profile-card__body {
-    /* content container already has gutter; don’t double-pad */
     padding: 0.9rem 0 1rem;
     display: flex;
     flex-direction: column;
@@ -473,7 +483,7 @@
 }
 
 .profile-card__age {
-    font-weight: 650;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     font-size: 1rem;
 }
@@ -488,6 +498,12 @@
 /* ===== Expanded profile layout ===== */
 
 .profile-expanded {
+    /* file-local tokens for controls over media */
+    --control-bg: rgba(0, 0, 0, 0.35);
+    --control-bg-hover: rgba(0, 0, 0, 0.5);
+    --control-border: rgba(255, 255, 255, 0.25);
+    --control-on: rgba(255, 255, 255, 0.95);
+
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -520,12 +536,12 @@
     left: 0.5rem;
     z-index: 4;
 
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: var(--radius-full);
-    border: var(--border-width) solid rgba(255, 255, 255, 0.25);
-    background: rgba(0, 0, 0, 0.35);
-    color: #fff;
+    border: var(--border-width) solid var(--control-border);
+    background: var(--control-bg);
+    color: var(--control-on);
 
     cursor: pointer;
     display: inline-flex;
@@ -536,7 +552,7 @@
 }
 
 .profile-expanded__close:hover {
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--control-bg-hover);
 }
 
 /* section padding: content already provides gutter */
@@ -611,7 +627,7 @@
     width: 100%;
 }
 
-/* Expanded: increase spacing between text blocks (Bio / Looking for / Interests) */
+/* Expanded: increase spacing between text blocks */
 .profile-section h4 {
     margin-top: 0.9rem;
     margin-bottom: 0.45rem;
@@ -638,98 +654,181 @@
     margin-top: 1rem;
 }
 
-/* Socials */
-.social-list {
+/* ===== Socials (shared) ===== */
+
+.socials-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-    width: 100%;
-    align-items: stretch;
+    gap: var(--space-2);
+    align-items: center;
 }
 
-.social-item {
-    width: 100%;
+.social-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 0.75rem;
-    background: var(--bg-surface);
+    gap: var(--space-2);
+
+    background: var(--bg-secondary);
     border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-md);
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-    cursor: pointer;
+    border-radius: var(--radius-full);
+
+    width: 40rem;
+    max-width: 100%;
+    padding: var(--space-2);
+
+    transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.social-item:hover {
+.social-row:is(:hover, :focus, :focus-within) {
+    border-color: var(--accent);
     background: var(--bg-hover);
 }
 
 .social-icon {
-    width: 32px;
-    height: 32px;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 0.75rem;
     flex-shrink: 0;
+
+    color: var(--text-secondary);
+
+    margin-left: var(--space-3);
+    margin-right: var(--space-3);
 }
 
 .social-icon img {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-sm);
 }
 
 .social-icon-placeholder {
-    width: 24px;
-    height: 24px;
+    width: 1.25rem;
+    height: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in oklab, var(--bg-surface) 70%, var(--border-color));
+
+    background: var(--border-color);
     color: var(--text-secondary);
     font-size: 0.8rem;
-    border-radius: 4px;
+
+    border-radius: var(--radius-sm);
 }
 
-.social-username {
-    flex-grow: 1;
-    color: var(--accent);
-    font-weight: 550;
-    word-break: break-all;
-}
-
-.copy-buttons {
+.social-preview {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    margin-left: 0.75rem;
+    gap: 0.25rem;
+
+    flex: 1 1 auto;
+    min-width: 0;
+
+    font-size: 1rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.social-base {
+    color: var(--text-muted);
+    user-select: none;
+    white-space: nowrap;
+}
+
+.social-username-input {
+    width: 10rem;
+    max-width: 100%;
+    min-width: 5rem;
+
+    padding: 0.2rem 0.35rem;
+
+    border: 0;
+    border-bottom: var(--border-width) solid var(--border-color);
+    border-radius: 0;
+
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.social-username-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+}
+
+.social-remove-btn {
+    color: var(--danger);
+}
+
+.social-remove-btn:hover {
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+/* ===== Socials (expanded profile tweaks) ===== */
+
+.profile-expanded .socials-list {
+    align-items: stretch;
+}
+
+.profile-expanded .social-row {
+    width: 100%;
+    cursor: pointer;
+}
+
+.profile-expanded .social-icon {
+    width: 2rem;
+    height: 2rem;
+
+    margin-left: var(--space-2);
+    margin-right: var(--space-3);
+}
+
+.profile-expanded .social-icon img {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.profile-expanded .social-icon-placeholder {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.profile-expanded .social-handle {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+.profile-expanded .copy-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+    margin-right: var(--space-2);
     flex-shrink: 0;
 }
 
-.copy-btn {
+.profile-expanded .copy-btn {
     border: 0;
     background: transparent;
     cursor: pointer;
-    font-size: 1rem;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: background 0.15s ease, color 0.15s ease;
+
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+
     color: var(--text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
-.copy-btn:hover {
-    background: color-mix(in oklab, var(--bg-surface) 78%, var(--border-color));
+.profile-expanded .copy-btn:hover {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
     color: var(--text-secondary);
 }
 
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 320px) {
     .profile-card__right {
         align-items: flex-start;
     }

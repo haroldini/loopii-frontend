@@ -144,13 +144,13 @@
                 <h3>Loops</h3>
 
                 {#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
-                    <p class="hint">Showing {$loops.length} of {$loopsTotal}</p>
+                    <p class="text-hint">Showing {$loops.length} of {$loopsTotal}</p>
                 {:else if $loopsStatus === "loaded" && $loops.length === 0 && !$selectedLoop}
-                    <p class="hint">You don't have any loops yet.</p>
+                    <p class="text-hint">You don't have any loops yet.</p>
                 {:else if $loopsStatus === "loading"}
-                    <p class="hint">Loading…</p>
+                    <p class="text-hint">Loading...</p>
                 {:else if $loopsStatus === "error"}
-                    <p class="hint">Error loading loops</p>
+                    <p class="text-hint text-danger">We couldn't load your loops.</p>
                 {/if}
             </div>
 
@@ -184,11 +184,11 @@
             />
         {:else}
             {#if $loopsStatus === "loading"}
-                <p class="hint">Loading…</p>
+                <p class="text-hint">Loading...</p>
             {:else if $loopsStatus === "error"}
-                <p class="red">Error loading loops</p>
+                <p class="text-hint text-danger">We couldn't load your loops. Please refresh or try again later.</p>
             {:else if $loopsStatus === "loaded" && $loops.length > 0}
-                <div class="grid grid-2">
+                <div class="grid grid-3">
                     {#each $loops as { loop, profile }}
                         <ProfileCardPreview
                             profile={profile}
@@ -207,7 +207,7 @@
                         on:click={loadMoreLoops}
                         disabled={$loopsState.loading}
                     >
-                        {$loopsState.loading ? "Loading…" : "Load More"}
+                        {$loopsState.loading ? "Loading..." : "Load More"}
                     </button>
                 {/if}
             {/if}

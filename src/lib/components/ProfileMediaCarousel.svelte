@@ -144,6 +144,7 @@
     });
 </script>
 
+
 <div class="profile-media" aria-roledescription="carousel" aria-label={alt}>
     <div class="profile-media__track" bind:this={track} on:scroll={onScroll}>
         {#if urls.length}
@@ -167,7 +168,11 @@
     </div>
 
     {#if urls.length > 1}
-        <div class={"profile-media__count" + (showHud ? " is-visible" : "")}>
+        <div
+            class={"profile-media__count" + (showHud ? " is-visible" : "")}
+            aria-live="polite"
+            aria-atomic="true"
+        >
             {activeIndex + 1}/{urls.length}
         </div>
 
@@ -178,7 +183,7 @@
             disabled={!canPrev}
             on:click|stopPropagation={prev}
         >
-            <span class="profile-media__navIcon">‹</span>
+            <span class="profile-media__navIcon" aria-hidden="true">‹</span>
         </button>
 
         <button
@@ -188,7 +193,7 @@
             disabled={!canNext}
             on:click|stopPropagation={next}
         >
-            <span class="profile-media__navIcon">›</span>
+            <span class="profile-media__navIcon" aria-hidden="true">›</span>
         </button>
 
         <div class="profile-media__dots" aria-label="Photo progress">

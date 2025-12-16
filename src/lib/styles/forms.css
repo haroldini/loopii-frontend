@@ -54,18 +54,6 @@ select:not([multiple]) {
     background-position:
         calc(100% - 1.15rem) 50%,
         calc(100% - 0.85rem) 50%;
-    background-size: 6px 6px, 6px 6px;
+    background-size: 0.375rem 0.375rem, 0.375rem 0.375rem;
     background-repeat: no-repeat;
-}
-
-/* Multi-select: keep native (temporary until MultiPicker) */
-select[multiple] {
-    appearance: auto;
-    background-image: none;
-    padding: var(--space-2);
-}
-
-input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent);
 }

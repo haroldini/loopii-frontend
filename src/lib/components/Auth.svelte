@@ -95,7 +95,9 @@
     };
 </script>
 
+
 <h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
+
 
 {#if $showForm}
     <form class="form" on:submit|preventDefault={handleSubmit}>
@@ -226,36 +228,36 @@
     <section class="card">
         <div class="section stack">
             {#if $authFormStatus === "signedUp"}
-                <p class="green">
+                <p class="text-success">
                     Confirmation email sent. Check your inbox ({$email}) to verify your account.
                 </p>
 
                 {#if !$showForm}
                     <p>
                         Need to resend?
-                        <button type="button" class="link" on:click={() => toggleForm(true)}>
+                        <button type="button" class="text-link" on:click={() => toggleForm(true)}>
                             Click here
                         </button>.
                     </p>
                 {/if}
 
                 <p>
-                    If you don’t receive it, your email may already be in use — try
-                    <button type="button" class="link" on:click={() => toggleMode("login")}>
+                    If you don't receive it, your email may already be in use — try
+                    <button type="button" class="text-link" on:click={() => toggleMode("login")}>
                         logging in
                     </button>
                     instead.
                 </p>
 
             {:else if $authFormStatus === "resetEmailSent"}
-                <p class="green">
+                <p class="text-success">
                     Password reset email sent. Check your inbox ({$email}) to set a new password.
                 </p>
 
                 {#if !$showForm}
                     <p>
                         Want to resend?
-                        <button type="button" class="link" on:click={() => toggleForm(true)}>
+                        <button type="button" class="text-link" on:click={() => toggleForm(true)}>
                             Click here
                         </button>.
                     </p>
@@ -263,7 +265,7 @@
             {/if}
 
             {#if $error}
-                <p class="red">{$error}</p>
+                <p class="text-danger">{$error}</p>
             {/if}
         </div>
     </section>

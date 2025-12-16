@@ -258,8 +258,6 @@
 </script>
 
 
-<!-- TEMPLATE -->
-
 <div class="profile-fields stack">
     {#each normalizedFields as field}
         {#if field.key === "username"}
@@ -277,7 +275,7 @@
                     <p class="field__error">{errorMap.username.message}</p>
                 {/if}
                 {#if cd.managed}
-                    <p class="hint">{cd.message}</p>
+                    <p class="text-hint">{cd.message}</p>
                 {/if}
             </div>
 
@@ -310,7 +308,7 @@
                     <p class="field__error">{errorMap.dob.message}</p>
                 {/if}
                 {#if cd.managed}
-                    <p class="hint">{cd.message}</p>
+                    <p class="text-hint">{cd.message}</p>
                 {/if}
             </div>
 
@@ -334,7 +332,7 @@
                     <p class="field__error">{errorMap.gender.message}</p>
                 {/if}
                 {#if cd.managed}
-                    <p class="hint">{cd.message}</p>
+                    <p class="text-hint">{cd.message}</p>
                 {/if}
             </div>
 
@@ -358,7 +356,7 @@
                     <p class="field__error">{errorMap.country.message}</p>
                 {/if}
                 {#if cd.managed}
-                    <p class="hint">{cd.message}</p>
+                    <p class="text-hint">{cd.message}</p>
                 {/if}
             </div>
 
@@ -388,58 +386,59 @@
             </div>
 
         {:else if field.key === "map"}
-            {#if field.label}
-                <label for="map">{field.label}</label>
-            {/if}
-            {#if field.hint}
-                <p class="hint">{field.hint}</p>
-            {/if}
+            <div class="field">
+                <div class="field__label">{field.label ?? labelFor(field)}</div>
 
-            {#if values.latitude != null && values.longitude != null}
-                <MapPicker
-                    lat={values.latitude}
-                    lng={values.longitude}
-                    radius={1000}
-                    mode="preview"
-                    defaultZoom={11}
-                    on:confirm={(e) => {
-                        setters.latitude && setters.latitude(e.detail.lat);
-                        setters.longitude && setters.longitude(e.detail.lng);
-                    }}
-                />
+                {#if field.hint}
+                    <p class="text-hint">{field.hint}</p>
+                {/if}
 
-                <div class="field__actions">
+                {#if values.latitude != null && values.longitude != null}
+                    <MapPicker
+                        lat={values.latitude}
+                        lng={values.longitude}
+                        radius={1000}
+                        mode="preview"
+                        defaultZoom={11}
+                        on:confirm={(e) => {
+                            setters.latitude && setters.latitude(e.detail.lat);
+                            setters.longitude && setters.longitude(e.detail.lng);
+                        }}
+                    />
+
+                    <div class="actions actions--end">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => {
+                                setters.latitude && setters.latitude(null);
+                                setters.longitude && setters.longitude(null);
+                            }}
+                        >
+                            {field.clearLabel ?? "Clear location"}
+                        </button>
+                    </div>
+                {:else}
                     <button
                         type="button"
-                        class="btn btn--ghost"
+                        class="btn btn--primary btn--block"
                         on:click={() => {
-                            setters.latitude && setters.latitude(null);
-                            setters.longitude && setters.longitude(null);
+                            const lat = field.defaultLat ?? 51.505;
+                            const lng = field.defaultLng ?? -0.09;
+                            setters.latitude && setters.latitude(lat);
+                            setters.longitude && setters.longitude(lng);
                         }}
                     >
-                        {field.clearLabel ?? "Clear location"}
+                        {field.pickLabel ?? "Pick location"}
                     </button>
-                </div>
-            {:else}
-                <button
-                    type="button"
-                    class="btn btn--primary btn--block"
-                    on:click={() => {
-                        const lat = field.defaultLat ?? 51.505;
-                        const lng = field.defaultLng ?? -0.09;
-                        setters.latitude && setters.latitude(lat);
-                        setters.longitude && setters.longitude(lng);
-                    }}
-                >
-                    {field.pickLabel ?? "Pick location"}
-                </button>
-            {/if}
+                {/if}
 
-            {#if errorMap.latitude || errorMap.longitude}
-                <p class="red">
-                    {(errorMap.latitude || errorMap.longitude).message}
-                </p>
-            {/if}
+                {#if errorMap.latitude || errorMap.longitude}
+                    <p class="text-danger">
+                        {(errorMap.latitude || errorMap.longitude).message}
+                    </p>
+                {/if}
+            </div>
 
         {:else if field.key === "interests"}
             <div class="field">
@@ -627,7 +626,7 @@
                 />
 
                 {#if values.audioUrl}
-                    <div class="field__actions">
+                    <div class="actions actions--end">
                         <button
                             type="button"
                             class="btn btn--ghost"
@@ -648,99 +647,3 @@
         {/if}
     {/each}
 </div>
-
-<style>
-    .socials-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-    }
-
-    .social-row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-
-        background: var(--bg-hover);
-        border: var(--border-width) solid var(--border-color);
-        border-radius: var(--radius-md);
-
-        padding: var(--space-2);
-    }
-
-    .social-icon {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .social-icon img {
-        width: 24px;
-        height: 24px;
-        border-radius: var(--radius-sm);
-    }
-
-    .social-icon-placeholder {
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        background: var(--border-color);
-        color: var(--text-secondary);
-        font-size: 0.8rem;
-
-        border-radius: var(--radius-sm);
-    }
-
-    .social-preview {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-
-        flex: 1 1 auto;
-        min-width: 0;
-
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        overflow-wrap: anywhere;
-    }
-
-    .social-base {
-        color: var(--text-muted);
-        user-select: none;
-        white-space: nowrap;
-    }
-
-    .social-username-input {
-        width: 10rem;
-        max-width: 100%;
-        min-width: 5rem;
-
-        padding: 0.2rem 0.35rem;
-
-        border: 0;
-        border-bottom: var(--border-width) solid var(--border-color);
-        border-radius: 0;
-
-        background: transparent;
-        color: var(--text-secondary);
-    }
-
-    .social-username-input:focus {
-        outline: none;
-        border-bottom-color: var(--accent);
-    }
-
-    .social-remove-btn {
-        color: var(--danger);
-    }
-
-    .social-remove-btn:hover {
-        background: color-mix(in oklab, var(--danger) 12%, transparent);
-    }
-</style>

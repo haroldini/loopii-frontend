@@ -1,5 +1,4 @@
 
-<!-- src/lib/components/MultiSelect.svelte -->
 <script>
     import { createEventDispatcher, onDestroy, tick } from "svelte";
 
@@ -316,17 +315,18 @@
     }
 </script>
 
+
 <div class="multi-select">
     <button
         type="button"
-        class="multi-select__control pressable"
+        class="multi-select__control ui-pressable"
         on:click={openOverlay}
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
     >
         <span class="multi-select__value">{controlText}</span>
-        <span class="multi-select__meta muted">
+        <span class="multi-select__meta text-muted">
             {#if valueArr.length}
                 {#if effectiveMax != null}
                     {valueArr.length}/{effectiveMax}
@@ -356,7 +356,7 @@
 
                     <div class="overlay__actions">
                         <span
-                            class={"multi-select__headerCount muted " + (atMax ? "is-at-max" : "")}
+                            class={"multi-select__headerCount text-muted " + (atMax ? "is-at-max" : "")}
                             aria-live="polite"
                         >
                             {headerCountText}
@@ -411,7 +411,7 @@
 
                     <div class="multi-select__list">
                         {#if visibleGroups.length === 0}
-                            <div class="multi-select__empty muted">No results.</div>
+                            <div class="multi-select__empty text-muted">No results.</div>
                         {:else}
                             {#each visibleGroups as g (g.key)}
                                 {#if groupKey}
@@ -435,7 +435,7 @@
                                             }
                                         />
                                         <span class="multi-select__label">{g.label}</span>
-                                        <span class="multi-select__count muted">{st?.total || 0}</span>
+                                        <span class="multi-select__count text-muted">{st?.total || 0}</span>
                                     </label>
                                 {/if}
 
@@ -463,6 +463,7 @@
     {/if}
 </div>
 
+
 <style>
     .multi-select__control {
         width: 100%;
@@ -477,7 +478,6 @@
         background: var(--bg-surface);
         color: var(--text-secondary);
         text-align: left;
-        cursor: pointer;
     }
 
     .multi-select__control:hover {
@@ -508,7 +508,7 @@
 
     .multi-select__headerCount.is-at-max {
         color: var(--danger);
-        font-weight: 600;
+        font-weight: var(--font-weight-semibold);
     }
 
     .multi-select__tools {
@@ -535,7 +535,7 @@
         padding: var(--space-2) var(--gutter) var(--space-4);
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 0.175rem;
     }
 
     .multi-select__empty {
@@ -544,7 +544,7 @@
 
     .multi-select__row {
         display: grid;
-        grid-template-columns: 18px 1fr auto;
+        grid-template-columns: 1.5rem 1fr auto;
         gap: var(--space-2);
         align-items: center;
 
@@ -593,8 +593,8 @@
     }
 
     .multi-select__row input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
+        width: 1.5rem;
+        height: 1.5rem;
         margin: 0;
         accent-color: var(--accent);
         cursor: pointer;

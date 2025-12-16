@@ -57,26 +57,26 @@
 
     <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
-            <p class="hint">Loading next profile…</p>
+            <p class="text-hint">Loading next profile…</p>
         {:else if $peerStatus === "error"}
             <div class="card">
                 <div class="section stack">
                     <p>An error occurred while loading the feed.</p>
-                    <p class="hint">Try refreshing.</p>
+                    <p class="text-hint">Try refreshing.</p>
                 </div>
             </div>
         {:else if $peerStatus === "hidden"}
             <div class="card">
                 <div class="section stack">
                     <p>Your profile is hidden.</p>
-                    <p class="hint">Update your visibility settings to see other profiles.</p>
+                    <p class="text-hint">Update your visibility settings to see other profiles.</p>
                 </div>
             </div>
         {:else if $peerStatus === "empty"}
             <div class="card">
                 <div class="section stack">
                     <p>We couldn't find any matching profiles.</p>
-                    <p class="hint">Try refreshing or expanding your search preferences.</p>
+                    <p class="text-hint">Try refreshing or expanding your search preferences.</p>
                 </div>
             </div>
         {:else if expanded}

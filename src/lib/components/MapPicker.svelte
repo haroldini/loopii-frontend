@@ -3,6 +3,8 @@
     import { onMount, tick } from "svelte";
     import { createEventDispatcher } from "svelte";
 
+    const ACCENT = "var(--color-black)";
+
     // ─── Props passed into the component ─────────────────────────────────────────
     export let mode = "preview";   // "preview" (small static view) or "fullscreen"
     export let lat = 51.505;       // initial latitude (default: London)
@@ -124,6 +126,20 @@
         if (circle) circle.setLatLng([pinLat, pinLng]);
     }
 
+    function makeAccentPinIcon() {
+        return L.divIcon({
+            className: "leaflet-accent-pin",
+            html: `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor"
+                d="M12 2c-3.3 0-6 2.7-6 6 0 4.5 6 14 6 14s6-9.5 6-14c0-3.3-2.7-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
+            </svg>
+            `,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
+        });
+    }
+
     // Initialise leaflet map
     async function initMap() {
         if (typeof window === "undefined") return;
@@ -144,12 +160,21 @@
         }).addTo(map);
 
         // Add marker
-        marker = L.marker([pinLat, pinLng], { draggable: true }).addTo(map);
+        marker = L.marker([pinLat, pinLng], {
+            draggable: true,
+            icon: makeAccentPinIcon()
+        }).addTo(map);
         marker.on("drag", handleMarkerDrag);
 
         // Initial circle if radius provided
         if (typeof radius === "number" && radius > 0) {
-            circle = L.circle([pinLat, pinLng], { radius, color: "blue" }).addTo(map);
+            circle = L.circle([pinLat, pinLng], {
+                radius,
+                color: ACCENT,
+                fillColor: ACCENT,
+                fillOpacity: 0.15,
+                weight: 2
+            }).addTo(map);
             // Fit zoom to include the whole circle
             map.fitBounds(circle.getBounds(), { padding: [20, 20] });
         }
@@ -163,7 +188,13 @@
 
         if (r > 0) {
             if (!circle) {
-                circle = L.circle([pinLat, pinLng], { radius: r, color: "blue" }).addTo(map);
+                circle = L.circle([pinLat, pinLng], {
+                    radius: r,
+                    color: "var(--accent)",
+                    fillColor: "var(--accent)",
+                    fillOpacity: 0.15,
+                    weight: 2
+                }).addTo(map);
             } else {
                 circle.setRadius(r);
                 circle.setLatLng([pinLat, pinLng]);
@@ -184,6 +215,7 @@
         initMap();
     });
 </script>
+
 
 <div class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}>
     {#if mode === "fullscreen"}
@@ -216,11 +248,10 @@
         {/if}
 
         <div class={mode === "fullscreen" ? "overlay__body mappicker__body" : "mappicker__body"}>
-            <!-- IMPORTANT: same element exists in both modes (no {#if} around it) -->
             <button
                 type="button"
                 bind:this={mapContainer}
-                class="mappicker__map pressable"
+                class="mappicker__map ui-pressable"
                 on:click={mode === "preview" ? enterFullscreen : null}
                 aria-label="Open map in fullscreen"
             ></button>
@@ -247,7 +278,6 @@
         min-height: 0;
     }
 
-    /* Works for both preview and fullscreen (in fullscreen it sits inside overlay__body) */
     .mappicker__body {
         flex: 1 1 auto;
         min-height: 0;

@@ -111,18 +111,19 @@
 
 </script>
 
+
 {#if $profileFormState === "submitting"}
-    <p class="hint">{$submissionProgress}…</p>
+    <p class="text-hint">{$submissionProgress}...</p>
 
 {:else if ["success", "partial", "exists"].includes($profileFormState)}
-    <p>Profile created. Loading app…</p>
+    <p>Profile created. Loading app...</p>
 
     {#if showFallback}
-        <p class="hint">
+        <p class="text-hint">
             Not loading?
             <button
                 type="button"
-                class="link"
+                class="text-link"
                 on:click={() => window.location.replace("/")}
             >
                 Refresh
@@ -131,7 +132,7 @@
     {/if}
 
 {:else if $profileFormState === "error"}
-    <p class="red">{$error}</p>
+    <p class="text-danger">{$error}</p>
     <button type="button" class="btn btn--primary" on:click={resetState}>Try again</button>
 
 {:else}
@@ -147,7 +148,7 @@
             />
 
             {#if $usernameAvailability.state === "taken" || $usernameAvailability.state === "error"}
-                <p class="red">{$usernameAvailability.message}</p>
+                <p class="text-danger">{$usernameAvailability.message}</p>
             {/if}
 
             <ProfileFields
@@ -175,7 +176,7 @@
                     />
 
                     {#if $avatarUrl}
-                        <div class="field__actions">
+                        <div class="actions actions--end">
                             <button
                                 type="button"
                                 class="btn btn--ghost"
@@ -203,7 +204,7 @@
                     {/if}
 
                     {#if $validationErrors.find((e) => e.field === "avatar" && e.display)}
-                        <p class="red">
+                        <p class="text-danger">
                             {$validationErrors.find((e) => e.field === "avatar" && e.display).message}
                         </p>
                     {/if}
@@ -292,8 +293,8 @@
 
         {#if $currentPage === 3}
             <h3>Your preferences</h3>
-            <p class="hint">
-                Choose who you see in your feed. We’ll also only show your profile to genders you select.
+            <p class="text-hint">
+                Choose who you see in your feed. We'll also only show your profile to genders you select.
             </p>
 
             <PrefsForm

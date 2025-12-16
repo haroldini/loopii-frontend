@@ -67,7 +67,7 @@
 
 
 <div
-    class="profile-card pressable"
+    class="profile-card ui-pressable"
     role="button"
     tabindex="0"
     aria-label="Open profile"
@@ -150,5 +150,3 @@
         {/if}
     </div>
 </div>
-
-

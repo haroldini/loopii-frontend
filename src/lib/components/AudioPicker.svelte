@@ -563,16 +563,17 @@
     });
 </script>
 
+
 <div class="audio-picker">
     {#if errorMessage}
-        <p class="red audio-picker__error">{errorMessage}</p>
+        <p class="text-danger audio-picker__error">{errorMessage}</p>
     {/if}
 
     {#if recordable}
         {#if !effectiveUrl && !isRecording}
             <button
                 type="button"
-                class="audio-picker__record-cta pressable"
+                class="audio-picker__record-cta ui-pressable"
                 on:click={startRecording}
                 disabled={disabled}
             >
@@ -643,7 +644,7 @@
 
                 <button
                     type="button"
-                    class="audio-picker__track audio-picker__track-button pressable"
+                    class="audio-picker__track audio-picker__track-button ui-pressable"
                     on:click={seek}
                     on:keydown={handleTrackKeydown}
                     disabled={disabled}
@@ -710,7 +711,7 @@
         {#if effectiveUrl}
             <button
                 type="button"
-                class="audio-picker__preview pressable"
+                class="audio-picker__preview ui-pressable"
                 on:click={togglePlay}
                 disabled={disabled}
                 aria-label="Play voice note"
@@ -752,7 +753,7 @@
                 {/if}
             </button>
         {:else}
-            <p class="hint">No voice intro yet.</p>
+            <p class="text-hint">No voice intro yet.</p>
         {/if}
     {/if}
 
@@ -771,12 +772,15 @@
     {/if}
 </div>
 
+
 <style>
     .audio-picker {
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
         width: 100%;
+        justify-content: center;
+        align-items: center;
     }
 
     .audio-picker__error {
@@ -801,9 +805,8 @@
     }
 
     .audio-picker__icon.btn--icon {
-        width: 32px;
-        height: 32px;
         font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
     .audio-picker__track {
@@ -827,7 +830,7 @@
     .audio-picker__bar {
         position: relative;
         width: 100%;
-        height: 10px;
+        height: 0.75rem;
         border-radius: var(--radius-full);
         background: var(--border-color);
         overflow: hidden;
@@ -844,14 +847,13 @@
         transition: width 0.05s linear;
     }
 
-    /* Waveform layers */
     .audio-picker__waveform {
         position: absolute;
         inset: 0;
         display: flex;
         align-items: center;
         gap: 1px;
-        padding: 0 6px;
+        padding: 0 0.5rem;
         overflow: hidden;
     }
 
@@ -867,12 +869,11 @@
     .audio-picker__wave-bar {
         flex: 1 1 0;
         min-width: 1px;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         background: var(--bg-surface);
         opacity: 0.9;
     }
 
-    /* In the fill layer, paint bars with accent so progress is obvious */
     .audio-picker__waveform--fill .audio-picker__wave-bar {
         background: var(--accent);
         opacity: 1;
@@ -882,7 +883,7 @@
         display: flex;
         align-items: baseline;
         gap: var(--space-1);
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         color: var(--text-muted);
     }
 
@@ -895,7 +896,7 @@
         flex-direction: column;
         gap: var(--space-1);
         align-items: flex-end;
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         color: var(--text-muted);
         flex-shrink: 0;
     }
@@ -912,7 +913,7 @@
         color: var(--accent);
         cursor: pointer;
         font: inherit;
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         text-align: right;
     }
 
@@ -945,8 +946,8 @@
         border: var(--border-width) dashed var(--border-color);
         background: var(--bg-surface);
 
-        font-size: 0.9rem;
-        color: var(--text-muted);
+        font-size: 1rem;
+        color: var(--text-primary);
     }
 
     .audio-picker__record-cta:disabled {
@@ -955,8 +956,8 @@
     }
 
     .audio-picker__dot {
-        width: 10px;
-        height: 10px;
+        width: 0.75rem;
+        height: 0.75rem;
         border-radius: var(--radius-full);
         background: var(--danger);
         flex-shrink: 0;
@@ -983,8 +984,8 @@
     }
 
     .audio-picker__preview-icon {
-        width: 28px;
-        height: 28px;
+        width: 2rem;
+        height: 2rem;
         border-radius: var(--radius-full);
         background: var(--accent);
         color: var(--bg-app);
@@ -1007,7 +1008,7 @@
         bottom: -0.35rem;
         right: -0.35rem;
 
-        font-size: 0.55rem;
+        font-size: 0.7rem;
         padding: 0.05rem 0.25rem;
 
         border-radius: var(--radius-full);
@@ -1019,9 +1020,8 @@
         position: relative;
         display: inline-flex;
         align-items: center;
-
-        height: 4px;
-        min-width: 60px;
+        height: 0.5rem;
+        min-width: 5rem;
     }
 
     .audio-picker__preview-bar {
@@ -1042,7 +1042,7 @@
     }
 
     .audio-picker__preview-text {
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         color: var(--text-muted);
         white-space: nowrap;
     }

@@ -86,12 +86,14 @@
     }
 </script>
 
+
 <svelte:head>
     <link rel="icon" href={favicon} />
 </svelte:head>
 
-<!-- Global popups overlay -->
+
 <Popups />
+
 
 {#if $authState === "timeout" || $profileState === "timeout"}
     <div class="gate">
@@ -101,7 +103,7 @@
             <section class="card">
                 <div class="section stack">
                     <p>Loading is taking longer than expected.</p>
-                    <p class="hint">Try refreshing, or log out and log back in.</p>
+                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
                     <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                         Log out
                     </button>
@@ -114,10 +116,9 @@
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             <h1 class="gate__brand">loopii</h1>
-
             <section class="card">
                 <div class="section stack">
-                    <p class="hint">Loading…</p>
+                    <p class="text-hint">Loading…</p>
                 </div>
             </section>
         </div>
@@ -150,7 +151,7 @@
             {#if ["idle", "error"].includes($profileFormState)}
                 <section class="card">
                     <div class="section stack">
-                        <p class="hint">Logged in as {$user.email}</p>
+                        <p class="text-hint">Logged in as {$user.email}</p>
                         <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                             Log out
                         </button>
@@ -176,7 +177,7 @@
             <section class="card">
                 <div class="section stack">
                     <p>Stale session.</p>
-                    <p class="hint">Try refreshing, or log out and log back in.</p>
+                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
                     <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                         Log out
                     </button>
@@ -185,4 +186,3 @@
         </div>
     </div>
 {/if}
-

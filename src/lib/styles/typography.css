@@ -1,12 +1,16 @@
 /* styles/typography.css */
 
+/* ===== Headings ===== */
+
 h1,
 h2,
 h3,
 h4 {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
 }
+
+/* ===== Body text ===== */
 
 p {
     color: var(--text-secondary);
@@ -14,31 +18,51 @@ p {
     overflow-wrap: anywhere;
 }
 
-/* semantic status colors */
-.green {
-    color: var(--success);
+strong,
+b {
+    font-weight: var(--font-weight-semibold);
 }
 
-.red {
-    color: var(--danger);
-}
+/* ===== Semantic text colors ===== */
 
-/* informational accent */
-.blue {
+.text-accent {
     color: var(--accent);
 }
 
-.hint {
+.text-success {
+    color: var(--success);
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+/* ===== Helper text ===== */
+
+.text-hint {
     font-size: 0.9rem;
     color: var(--text-muted);
     margin: 0;
 }
 
-/* small helper */
-.muted {
-    color: var(--text-muted);
+/* ===== Utility helpers ===== */
+
+.text-fw-regular {
+    font-weight: var(--font-weight-regular);
 }
 
-.no-select {
+.text-fw-semibold {
+    font-weight: var(--font-weight-semibold);
+}
+
+.text-fw-bold {
+    font-weight: var(--font-weight-bold);
+}
+
+.text-no-select {
     user-select: none;
 }

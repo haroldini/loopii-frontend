@@ -187,6 +187,7 @@
     });
 </script>
 
+
 <div class="range-slider">
     <div class="range-slider__inner">
         <input
@@ -227,10 +228,9 @@
 
 
 <style>
-    /* tweak these */
     .range-slider {
-        --rs-thumb: 20px;
-        --rs-bar: 12px;
+        --rs-thumb: 1.5rem;
+        --rs-bar: 0.6rem;
 
         width: 100%;
         padding: var(--space-2) var(--space-3);
@@ -252,7 +252,7 @@
     }
 
     .range-slider__box {
-        width: 34px;
+        width: 3rem;
         border: 0;
         background: transparent;
         padding: 0;
@@ -276,10 +276,9 @@
 
     .range-slider__noui {
         width: 100%;
-        padding: 0 6px;
+        padding: 0 0.5rem;
     }
 
-    /* IMPORTANT: .noUi-target is on the SAME element as .range-slider__noui */
     .range-slider__noui:global(.noUi-target) {
         background: transparent !important;
         border: 0 !important;
@@ -287,7 +286,6 @@
         border-radius: 0 !important;
     }
 
-    /* The overall slider "row" height should match the THUMB so it can sit nicely */
     .range-slider__noui:global(.noUi-target.noUi-horizontal) {
         height: var(--rs-thumb) !important;
     }
@@ -296,7 +294,6 @@
         height: var(--rs-thumb) !important;
     }
 
-    /* Track container: center a 12px bar within the 16px row */
     .range-slider__noui :global(.noUi-connects) {
         height: var(--rs-bar) !important;
         top: 50% !important;
@@ -313,7 +310,6 @@
         transition: none !important;
     }
 
-    /* Handles: 16px, aligned with the 16px row (NOT the 12px bar) */
     .range-slider__noui :global(.noUi-handle) {
         width: var(--rs-thumb) !important;
         height: var(--rs-thumb) !important;
@@ -321,7 +317,6 @@
         top: 0 !important;
         transform: none !important;
 
-        /* keep the correct noUi offset behaviour */
         right: calc(-0.5 * var(--rs-thumb)) !important;
 
         border-radius: var(--radius-full) !important;

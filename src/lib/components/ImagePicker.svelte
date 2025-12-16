@@ -78,10 +78,11 @@
     // --- Core Logic ---
     async function enterFullscreen() {
         internalMode = "fullscreen";
-        await tick();
         if (!originalUrl && !workingUrl) {
+            if (fileInput) fileInput.value = "";
             fileInput?.click();
         }
+        await tick();
     }
 
     async function exitToPreview(confirm = false) {
@@ -142,7 +143,9 @@
         workingUrl = URL.createObjectURL(f);
     }
 
-    function replaceImage() {
+    export function replaceImage() {
+        internalMode = "fullscreen";
+        if (fileInput) fileInput.value = "";
         fileInput?.click();
     }
 
@@ -220,6 +223,7 @@
     });
 </script>
 
+
 {#if internalMode === "fullscreen"}
     <div class="overlay" role="dialog" aria-modal="true" aria-label="Upload image">
         <div class="overlay__scrim"></div>
@@ -281,18 +285,15 @@
                             on:click={replaceImage}
                             on:keydown={(e) => e.key === "Enter" && replaceImage()}
                         >
-                            No image selected — click to choose
+                            <h3>
+                                No image selected.
+                            </h3>
+                            <p class="text-fw-semibold text-hint">
+                                +  Click to choose an image.
+                            </p>
                         </div>
                     </div>
                 {/if}
-
-                <input
-                    type="file"
-                    accept="image/*"
-                    bind:this={fileInput}
-                    on:change={handleFileSelect}
-                    style="display:none"
-                />
             </main>
         </div>
     </div>
@@ -300,7 +301,7 @@
     {#if editedUrl}
         <button
             type="button"
-            class="imagepicker__preview pressable"
+            class="imagepicker__preview ui-pressable"
             on:click={enterFullscreen}
             aria-label="Open image picker"
         >
@@ -308,6 +309,15 @@
         </button>
     {/if}
 {/if}
+
+<!-- Always rendered file input -->
+<input
+    type="file"
+    accept="image/*"
+    bind:this={fileInput}
+    on:change={handleFileSelect}
+    class="u-hidden"
+/>
 
 <style>
     .imagepicker__preview {
@@ -324,11 +334,10 @@
         border: var(--border-width) solid var(--border-color);
         background: var(--bg-surface);
 
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        transition: box-shadow 0.15s ease, background 0.15s ease;
     }
 
     .imagepicker__preview:hover {
-        transform: scale(1.01);
         box-shadow: var(--shadow-1);
         background: var(--bg-hover);
     }
@@ -340,7 +349,6 @@
         pointer-events: none;
     }
 
-    /* Fullscreen body: never scroll. Force stage to fit available height. */
     .imagepicker__body {
         overflow: hidden;
         padding: var(--space-3);
@@ -349,7 +357,6 @@
         min-height: 0;
     }
 
-    /* Centers content and constrains it to available body height */
     .imagepicker__stage {
         flex: 1 1 auto;
         min-height: 0;
@@ -359,10 +366,8 @@
         justify-content: center;
     }
 
-    /* The preview box must fit within body height and width.
-       Keeping aspect ratio, but clamping by max-height prevents scrolling. */
     .imagepicker__image-wrapper {
-        width: min(100%, 900px);
+        width: min(100%, 75rem);
         aspect-ratio: 1 / 1;
 
         max-height: 100%;
@@ -386,25 +391,25 @@
     }
 
     .imagepicker__no-image {
-        width: min(100%, 900px);
+        width: min(100%, 75rem);
         height: 100%;
 
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
 
         color: var(--text-muted);
         cursor: pointer;
         border-radius: var(--radius-lg);
-        border: 1px dashed var(--border-color);
+        border: var(--border-width) dashed var(--border-color);
         background: var(--bg-surface);
         text-align: center;
         padding: var(--space-4);
     }
 
-    /* Cropper overrides */
     :global(.cropper-view-box) {
-        outline: 2px solid rgba(76, 175, 80, 0.85);
+        outline: 1px solid color-mix(in oklab, var(--accent) 85%, transparent);
     }
 
     :global(.cropper-dashed) {
@@ -412,10 +417,9 @@
     }
 
     :global(.cropper-point) {
-        width: 10px;
-        height: 10px;
-        background-color: var(--green);
+        width: 0.75rem;
+        height: 0.75rem;
+        background-color: var(--accent);
         border-radius: 50%;
     }
 </style>
-

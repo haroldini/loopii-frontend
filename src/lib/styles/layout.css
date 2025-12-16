@@ -180,3 +180,20 @@
 .page--viewport > .bar--actionbar {
     grid-row: 3;
 }
+
+/* ===== Responsive grids ===== */
+
+/* Very small devices */
+@media (max-width: 220px) {
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Small devices */
+@media (min-width: 221px) and (max-width: 480px) {
+    .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

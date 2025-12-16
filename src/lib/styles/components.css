@@ -39,7 +39,7 @@
 }
 
 .field__label {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
 }
 
@@ -70,8 +70,8 @@
 
 .switch__control {
     position: relative;
-    width: 44px;
-    height: 24px;
+    width: 2.75rem;
+    height: 1.5rem;
     flex-shrink: 0;
 }
 
@@ -92,14 +92,16 @@
 
 .switch__thumb {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1.125rem;
+    height: 1.125rem;
     border-radius: var(--radius-full);
-    background: var(--bg-app);
+
+    background: color-mix(in oklab, var(--bg-surface) 70%, var(--text-primary));
+    box-shadow: var(--shadow-ui-1);
+
     transition: transform 0.15s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .switch__input:checked ~ .switch__track {
@@ -107,7 +109,7 @@
 }
 
 .switch__input:checked ~ .switch__thumb {
-    transform: translateX(20px);
+    transform: translateX(1.25rem);
 }
 
 .switch:focus-within {
@@ -122,16 +124,16 @@
     align-items: center;
     justify-content: center;
 
-    min-width: 18px;
-    height: 18px;
-    padding: 0 6px;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 0.375rem;
 
     border-radius: var(--radius-full);
     background: var(--danger);
     color: var(--bg-app);
 
-    font-size: 12px;
-    line-height: 18px;
+    font-size: 0.75rem;
+    line-height: 1.125rem;
     text-align: center;
 }
 
@@ -143,11 +145,10 @@
     padding: 0.15rem 0.5rem;
     border-radius: var(--radius-full);
 
-    background: rgba(255, 255, 255, 0.05);
+    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
     color: var(--text-muted);
     font-size: 0.8rem;
 
-    /* critical: prevent flex-column parents from stretching it */
     align-self: flex-start;
     width: fit-content;
     max-width: 100%;
@@ -157,7 +158,7 @@
 }
 
 .pill--success {
-    background: rgba(76, 175, 80, 0.15);
+    background: color-mix(in oklab, var(--success) 18%, var(--bg-surface));
     color: var(--success);
 }
 
@@ -247,7 +248,7 @@
 .overlay__scrim {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--scrim-1);
 }
 
 .overlay__panel {
@@ -296,7 +297,7 @@
 
 .overlay__title {
     min-width: 0;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -335,7 +336,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    min-height: 44px;
+    min-height: 2.75rem;
 }
 
 .bar__title {
@@ -363,9 +364,6 @@
     border-bottom-width: var(--border-width);
 }
 
-/* IMPORTANT CHANGE:
-   Actionbar is NOT fixed anymore.
-   Viewport pages place it in the 3rd grid row, so it can't overlap content. */
 .bar--actionbar {
     position: relative;
     z-index: var(--z-actionbar);
@@ -459,28 +457,28 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 6px;
-    width: 18px;
-    height: 2px;
+    bottom: 0.375rem;
+    width: 1.125rem;
+    height: 0.125rem;
     border-radius: var(--radius-full);
     background: var(--accent);
 }
 
 .app-nav__badge {
     position: absolute;
-    top: 8px;
-    right: 14px;
+    top: 0.5rem;
+    right: 0.875rem;
 
-    min-width: 18px;
-    height: 18px;
-    padding: 0 6px;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 0.375rem;
 
     border-radius: var(--radius-full);
     background: var(--danger);
     color: var(--bg-app);
 
-    font-size: 12px;
-    line-height: 18px;
+    font-size: 0.75rem;
+    line-height: 1.125rem;
     text-align: center;
 }
 
@@ -489,4 +487,16 @@
 .leaflet-top,
 .leaflet-bottom {
     z-index: 100;
+}
+.leaflet-accent-pin {
+    color: var(--color-black);
+    background: transparent;
+    border: 0;
+}
+
+.leaflet-accent-pin svg {
+    width: 32px;
+    height: 32px;
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
 }

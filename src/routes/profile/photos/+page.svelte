@@ -288,7 +288,14 @@
                                 Upload Photo
                             {/if}
                         </button>
-
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => imagePicker.replaceImage()}
+                            disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                        >
+                            Replace
+                        </button>
                         <button
                             type="button"
                             class="btn btn--ghost"
@@ -307,8 +314,8 @@
                         on:click={() => imagePicker.open()}
                         disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                     >
-                        <span class="add-photo-btn__icon" aria-hidden="true">＋</span>
-                        <span class="add-photo-btn__text">Add photo</span>
+                        <span class="add-photo-btn__icon" aria-hidden="true">+</span>
+                        <span class="add-photo-btn__text">Upload</span>
                     </button>
                 </div>
             {/if}
@@ -348,7 +355,7 @@
                                     {/if}
                                 </div>
 
-                                <p class="hint">{timeAgo(img.created_at)}</p>
+                                <p class="text-hint">{timeAgo(img.created_at)}</p>
                             </div>
                         </div>
                     </section>
@@ -365,7 +372,6 @@
         position: relative;
     }
 
-    /* When empty, remove the stack gap so the add button sits flush */
     .photos__upload.is-empty {
         gap: 0;
     }
@@ -388,7 +394,7 @@
 
         padding: 0.9rem 1rem;
         border-radius: var(--radius-lg);
-        border: 1px dashed color-mix(in oklab, var(--border-color) 70%, var(--text-muted));
+        border: var(--border-width) dashed color-mix(in oklab, var(--border-color) 70%, var(--text-muted));
         background: color-mix(in oklab, var(--bg-surface) 92%, var(--border-color));
         color: var(--text-primary);
 
@@ -410,12 +416,12 @@
     .add-photo-btn__icon {
         font-size: 1.25rem;
         line-height: 1;
-        font-weight: 800;
+        font-weight: var(--font-weight-bold);
     }
 
     .add-photo-btn__text {
-        font-weight: 650;
-        letter-spacing: 0.2px;
+        font-weight: var(--font-weight-bold);
+        letter-spacing: 0.015rem;
     }
 
     .photos__confirm {
@@ -442,7 +448,7 @@
     }
 
     .photos-pill {
-        font-weight: 650;
+        font-weight: var(--font-weight-semibold);
     }
 
     .no-photos {

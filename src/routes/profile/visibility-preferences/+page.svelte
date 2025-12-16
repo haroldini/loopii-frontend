@@ -1,3 +1,4 @@
+
 <script>
     import { goto } from "$app/navigation";
     import { get } from "svelte/store";
@@ -135,7 +136,7 @@
         <div class="bar__inner">
             <div class="bar__title">
                 <h3>Visibility Preferences</h3>
-                <p class="hint">Control who can see your profile.</p>
+                <p class="text-hint">Control who can see your profile.</p>
             </div>
 
             <div class="bar__actions">
@@ -148,7 +149,7 @@
 
     <div class="content stack">
         {#if status === "error"}
-            <p class="red">{error}</p>
+            <p class="text-danger">{error}</p>
         {/if}
 
         <section class="card">

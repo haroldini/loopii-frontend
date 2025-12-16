@@ -62,13 +62,13 @@
     }
 </script>
 
+
 {#if variant === "banner"}
-    <!-- Banner: title left, X+spinner right, description under -->
     <div class="popup popup--banner" role="group">
         <div class="popup-header">
             <button
                 type="button"
-                class="popup-titleblock bare pressable"
+                class="popup-titleblock ui-pressable"
                 on:click={action}
                 on:keydown={handleKeyActivate}
             >
@@ -82,7 +82,7 @@
 
             <button
                 type="button"
-                class="dismiss bare pressable"
+                class="dismiss ui-pressable"
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -106,9 +106,8 @@
     </div>
 
 {:else if variant === "popup"}
-    <!-- Rich popup: text at top, optional component below -->
     <div
-        class="popup popup--rich pressable"
+        class="popup popup--rich ui-pressable"
         role="button"
         tabindex="0"
         on:click={action}
@@ -127,7 +126,7 @@
 
             <button
                 type="button"
-                class="dismiss bare pressable"
+                class="dismiss ui-pressable"
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -162,7 +161,6 @@
     </div>
 
 {:else}
-    <!-- Modal -->
     <div
         class="modal-backdrop"
         role="dialog"
@@ -189,7 +187,7 @@
 
                 <button
                     type="button"
-                    class="dismiss bare pressable"
+                    class="dismiss ui-pressable"
                     on:click={(e) => {
                         e.stopPropagation();
                         dismiss();
@@ -238,21 +236,21 @@
     </div>
 {/if}
 
+
 <style>
-    /* Shared popup container */
     .popup {
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 0.5rem;
+        gap: var(--space-2);
 
         background: var(--bg-surface);
-        border: 1px solid var(--border-color);
+        border: var(--border-width) solid var(--border-color);
         border-radius: var(--radius-lg);
 
-        padding: 0.75rem 0.9rem;
-        max-width: 500px;
-        width: 100%;
+        padding: calc(var(--space-2) + var(--space-1)) var(--space-3);
+        max-width: min(40rem, 90%);
+        width: 90%;
     }
 
     .popup--banner {
@@ -270,9 +268,9 @@
     .popup--rich:focus-visible {
         outline: var(--focus-ring-width) solid var(--focus-ring-color);
         outline-offset: var(--focus-ring-offset);
+        border-radius: var(--radius-lg);
     }
 
-    /* Modal */
     .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -280,46 +278,46 @@
         align-items: center;
         justify-content: center;
 
-        background: rgba(0, 0, 0, 0.45);
+        background: var(--scrim-1);
         z-index: var(--z-modal);
         padding: var(--space-4);
     }
 
     .popup--modal {
-        max-width: 480px;
-        width: min(480px, 100%);
+        max-width: 40rem;
+        width: min(40rem, 90%);
         box-shadow: var(--shadow-2);
         cursor: default;
     }
 
     .popup-actions {
-        margin-top: 0.75rem;
+        margin-top: calc(var(--space-2) + var(--space-1));
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 0.5rem;
+        gap: var(--space-2);
     }
 
-    /* Header row: title on left, dismiss button on right */
     .popup-header {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
+        gap: calc(var(--space-2) + var(--space-1));
     }
 
     .popup-titleblock {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: var(--space-1);
         min-width: 0;
         flex: 1 1 auto;
         text-align: left;
     }
 
     .popup-title {
-        font-weight: 600;
+        font-weight: var(--font-weight-semibold);
+        font-size: 1rem;
         margin: 0;
         color: var(--text-primary);
         overflow-wrap: anywhere;
@@ -335,19 +333,18 @@
     .popup-inner {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: var(--space-2);
     }
 
-    /* Dismiss button */
     .dismiss {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.25rem;
-        min-width: 32px;
-        height: 32px;
+        gap: var(--space-1);
+        min-width: 2.5rem;
+        height: 2.5rem;
         padding: 0 0.4rem;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         flex-shrink: 0;
         background: transparent;
         color: var(--text-secondary);
@@ -358,14 +355,14 @@
     }
 
     .dismiss-icon {
-        font-size: 0.9rem;
+        font-size: 1rem;
         line-height: 1;
         color: var(--text-secondary);
     }
 
     .dismiss svg.progress {
-        width: 18px;
-        height: 18px;
+        width: 1.5rem;
+        height: 1.5rem;
         display: inline-block;
     }
 
@@ -377,4 +374,3 @@
         transition: stroke-dasharray 0.1s linear;
     }
 </style>
-

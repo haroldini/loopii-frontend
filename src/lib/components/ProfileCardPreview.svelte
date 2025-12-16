@@ -42,7 +42,7 @@
 
 
 <div
-    class="profile-preview card profile-surface pressable"
+    class="profile-preview card ui-pressable"
     role="button"
     tabindex="0"
     aria-label="Open profile preview"

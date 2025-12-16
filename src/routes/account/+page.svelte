@@ -276,11 +276,11 @@
                         on:input={(e) => confirmNewPassword.set(e.target.value)}
                     />
 
-                    <p class="hint">
+                    <p class="text-hint">
                         This will automatically sign you out on all other devices. Click
                         <button
                             type="button"
-                            class="link"
+                            class="text-link"
                             on:click={() => setMode("reset")}
                         >
                             here
@@ -289,7 +289,7 @@
                     </p>
 
                 {:else if $mode === "email"}
-                    <p class="hint">
+                    <p class="text-hint">
                         Current email: <strong>{$user?.email}</strong>
                     </p>
 
@@ -313,19 +313,19 @@
                         on:input={(e) => confirmPhrase.set(e.target.value)}
                     />
 
-                    <p class="red">
+                    <p class="text-danger">
                         This action permanently deletes your account and data.
                     </p>
 
-                    <p class="hint">
-                        To confirm, type <strong class="no-select">{$expectedPhrase}</strong> above.
+                    <p class="text-hint">
+                        To confirm, type <strong class="text-no-select">{$expectedPhrase}</strong> above.
                     </p>
 
-                    <p class="hint">
+                    <p class="text-hint">
                         Click
                         <button
                             type="button"
-                            class="link"
+                            class="text-link"
                             on:click={() => setMode("reset")}
                         >
                             here
@@ -334,41 +334,41 @@
                     </p>
 
                 {:else if $mode === "reset"}
-                    <p class="hint">
+                    <p class="text-hint">
                         Click the button below to send a password reset email to your inbox (<strong>{$user?.email}</strong>).
                     </p>
 
                 {:else if $mode === "revoke"}
-                    <p class="hint">
+                    <p class="text-hint">
                         Click the button below to sign out of all sessions on all devices, including this one.
                     </p>
                 {/if}
 
                 {#if $validationErrors.filter((e) => e.display).length || $error || ["failed", "emailPending"].includes($status)}
-                    <div class="divider"></div>
+                    <div class="u-divider" role="separator" aria-hidden="true"></div>
 
                     <div class="stack">
                         {#each $validationErrors.filter((e) => e.display) as err}
-                            <p class="red">{err.message}</p>
+                            <p class="text-danger">{err.message}</p>
                         {/each}
 
                         {#if $error}
-                            <p class="red">{$error}</p>
+                            <p class="text-danger">{$error}</p>
                         {/if}
 
                         {#if $status === "emailPending" && $mode === "email"}
-                            <p class="green">
+                            <p class="text-success">
                                 Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.
                             </p>
                         {:else if $status === "emailPending" && $mode === "reset"}
-                            <p class="green">
+                            <p class="text-success">
                                 Password reset email sent! Check your inbox (<strong>{$user?.email}</strong>).
                             </p>
                         {/if}
                     </div>
                 {/if}
 
-                <div class="form-actions">
+                <div class="form__actions">
                     <button
                         type="button"
                         class="btn btn--primary"

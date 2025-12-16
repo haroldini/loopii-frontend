@@ -235,8 +235,8 @@
 <div class="prefs-form stack">
     {#if mode === "visibility"}
         <div class="field">
-            <label class="field__label" for="global-visibility">Profile visibility</label>
-            <p class="hint">You won't be shown profiles that aren't allowed to view you.</p>
+            <label class="field__label" for="global-visibility">Profile Visibility</label>
+            <p class="text-hint">You won't be shown profiles that aren't allowed to view you.</p>
 
             <label class="switch" for="global-visibility">
                 <span class="switch__text">Show my profile in other people's feeds</span>
@@ -322,9 +322,9 @@
             <div class="field__label">Location</div>
 
             {#if mode === "search"}
-                <p class="hint">Only show me people near a chosen location.</p>
+                <p class="text-hint">Only show me people near a chosen location.</p>
             {:else}
-                <p class="hint">Only show me to people near a chosen location.</p>
+                <p class="text-hint">Only show me to people near a chosen location.</p>
             {/if}
 
             {#if proximityLat != null && proximityLng != null}
@@ -375,6 +375,7 @@
     {/if}
 </div>
 
+
 <style>
     fieldset {
         border: 0;
@@ -385,7 +386,7 @@
 
     .choice-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
         gap: var(--space-2);
     }
 
@@ -398,8 +399,8 @@
     }
 
     .location-row > select {
-        flex: 1 1 240px;
-        min-width: 220px;
+        flex: 1 1 10rem;
+        min-width: 10rem;
     }
 
     .location-row > .btn {

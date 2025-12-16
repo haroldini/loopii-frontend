@@ -156,11 +156,11 @@
 
     <div class="content stack">
         {#if $profileEditState === "error"}
-            <p class="red">{$error}</p>
+            <p class="text-danger">{$error}</p>
         {/if}
 
         {#if $profileEditState === "idle"}
-            <p class="hint">Loading profile…</p>
+            <p class="text-hint">Loading profile…</p>
         {:else}
             <section class="card">
                 <div class="section stack">
@@ -206,7 +206,7 @@
             <section class="card">
                 <div class="section stack">
                     <h3>Your Interests</h3>
-                    <p class="hint">You can select up to 20 interests.</p>
+                    <p class="text-hint">You can select up to 20 interests.</p>
 
                     <ProfileFields
                         fields={["interests"]}
@@ -242,7 +242,7 @@
             <section class="card">
                 <div class="section stack">
                     <h3>Your Essential Info</h3>
-                    <p class="hint">These fields cannot be frequently changed.</p>
+                    <p class="text-hint">These fields cannot be frequently changed.</p>
 
                     {#key JSON.stringify(profileCooldowns)}
                         <ProfileFields

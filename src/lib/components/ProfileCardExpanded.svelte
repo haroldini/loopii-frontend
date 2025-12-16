@@ -208,12 +208,12 @@
 
             {#if profile.socials?.length}
                 <h4>Socials</h4>
-                <div class="social-list">
+                <div class="socials-list">
                     {#each profile.socials as social}
                         {#if buildSocialLink(social, $platformMap)}
                             {#if $platformMap[social.platform_id]}
                                 <div
-                                    class="social-item"
+                                    class="social-row"
                                     role="button"
                                     tabindex="0"
                                     on:click={() => {
@@ -242,10 +242,13 @@
                                         {/if}
                                     </div>
 
-                                    <span class="social-username">@{social.handle}</span>
+                                    <div class="social-preview">
+                                        <span class="social-handle">@{social.handle}</span>
+                                    </div>
 
                                     <div class="copy-buttons">
                                         <button
+                                            type="button"
                                             class="copy-btn"
                                             title="Copy profile URL"
                                             on:click={(event) => {
@@ -258,6 +261,7 @@
                                         </button>
 
                                         <button
+                                            type="button"
                                             class="copy-btn"
                                             title="Copy username"
                                             on:click={(event) => {
@@ -270,9 +274,14 @@
                                     </div>
                                 </div>
                             {:else}
-                                <div class="social-item">
-                                    <div class="social-icon-placeholder">?</div>
-                                    <span class="social-username">Unknown Platform</span>
+                                <div class="social-row">
+                                    <div class="social-icon">
+                                        <div class="social-icon-placeholder">?</div>
+                                    </div>
+
+                                    <div class="social-preview">
+                                        <span class="social-handle">Unknown Platform</span>
+                                    </div>
                                 </div>
                             {/if}
                         {/if}
@@ -284,7 +293,7 @@
 
     {#if loop}
         <div class="profile-block">
-            <p class="muted">Looped {timeAgo(loop.created_at)}</p>
+            <p class="text-muted">Looped {timeAgo(loop.created_at)}</p>
 
             <div class="actions actions--center">
                 <button
