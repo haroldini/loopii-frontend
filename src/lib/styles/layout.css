@@ -35,7 +35,10 @@
 /* ===== App shell ===== */
 
 .app {
-    min-height: 100svh;
+    /* lock the app to the viewport; scrolling happens inside pages */
+    height: 100svh;
+    box-sizing: border-box;
+
     background: var(--bg-app);
     color: var(--text-secondary);
 
@@ -43,11 +46,21 @@
     padding-top: var(--nav-top-space);
     padding-bottom: var(--nav-bottom-space);
 
+    overflow: hidden;
     overflow-x: clip;
 }
 
 .app-body {
-    min-height: 100%;
+    height: 100%;
+    min-height: 0;
+
+    /* let the page stretch to fill available height */
+    display: flex;
+}
+
+.app-body > .page {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 /* ===== Gate screens (auth / create profile / loading) ===== */
@@ -77,37 +90,70 @@
 
 .page {
     width: 100%;
+    height: 100%;
+    min-height: 0;
+
+    /* universal shell: header / scrollable content / optional actionbar */
+    display: flex;
+    flex-direction: column;
+
+    /* prevent whole-document scrolling */
+    overflow: hidden;
 }
+
+/* header/actionbar are fixed rows in-flow */
+.page > .bar--header,
+.page > .bar--actionbar {
+    flex: 0 0 auto;
+}
+
+/* content is the scroll container by default */
+.page > .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* ===== Content container =====
+   Content scrolls full-width; children are capped. */
 
 .content {
     width: 100%;
-    max-width: var(--content-max);
-    margin-inline: auto;
+    max-width: none;
+    margin-inline: 0;
     padding-inline: var(--gutter);
 
-    /* default page breathing room */
     padding-top: var(--space-3);
     padding-bottom: var(--space-4);
 }
 
-.content--narrow {
+/* cap children while keeping scroll container full width */
+.content:not(.content--full) > * {
+    width: 100%;
+    max-width: var(--content-max);
+    margin-inline: auto;
+}
+
+.content--narrow:not(.content--full) > * {
     max-width: 500px;
 }
 
 .content--full {
-    max-width: none;
     padding-inline: 0;
 }
 
+.content--full > * {
+    max-width: none;
+    margin-inline: 0;
+}
+
 /* ===== Viewport pages =====
-   header / content / actionbar
-   (no overlap; actionbar is in-flow as row 3) */
+   These pages normally DO NOT scroll in .content (feed/profile).
+   But we allow opt-in scrolling via .content--scroll. */
 
 .page--viewport {
-    height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
     display: grid;
     grid-template-rows: auto 1fr auto;
-    overflow: hidden;
 }
 
 .page--viewport > .bar--header {
@@ -117,12 +163,6 @@
 .page--viewport > .content {
     grid-row: 2;
 
-    /* IMPORTANT: match other pages' max width */
-    max-width: var(--content-max);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-
-    /* profile/feed: no wasted top space */
     padding-top: 0;
     padding-bottom: 0;
 
@@ -133,60 +173,10 @@
     flex-direction: column;
 }
 
-.page--viewport > .bar--actionbar {
-    grid-row: 3;
-}
-
-/* ===== Non-viewport pages WITH actionbar =====
-   Problem: short pages -> actionbar floats mid.
-   Fix: make them a 3-row grid too, with scrollable middle row.
-
-   You can apply this via:
-   - class: .page--has-actionbar
-   - OR automatically via :has() when supported
-*/
-
-.page--has-actionbar:not(.page--viewport) {
-    height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    overflow: hidden;
-}
-
-.page--has-actionbar:not(.page--viewport) > .bar--header {
-    grid-row: 1;
-}
-
-.page--has-actionbar:not(.page--viewport) > .content {
-    grid-row: 2;
-    min-height: 0;
+.page--viewport > .content.content--scroll {
     overflow: auto;
 }
 
-.page--has-actionbar:not(.page--viewport) > .bar--actionbar {
+.page--viewport > .bar--actionbar {
     grid-row: 3;
-}
-
-/* Auto-apply when supported (so you don't have to track flags) */
-@supports selector(.page:has(> .bar--actionbar)) {
-    .page:has(> .bar--actionbar):not(.page--viewport) {
-        height: calc(100svh - var(--nav-top-space) - var(--nav-bottom-space));
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        overflow: hidden;
-    }
-
-    .page:has(> .bar--actionbar):not(.page--viewport) > .bar--header {
-        grid-row: 1;
-    }
-
-    .page:has(> .bar--actionbar):not(.page--viewport) > .content {
-        grid-row: 2;
-        min-height: 0;
-        overflow: auto;
-    }
-
-    .page:has(> .bar--actionbar):not(.page--viewport) > .bar--actionbar {
-        grid-row: 3;
-    }
 }

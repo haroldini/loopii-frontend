@@ -126,7 +126,7 @@
 </svelte:head>
 
 
-<div class="page" class:page--has-actionbar={$selectedRequest}>
+<div class="page">
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">

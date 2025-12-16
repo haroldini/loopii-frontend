@@ -25,7 +25,7 @@
 </svelte:head>
 
 
-<div class="page page--viewport page--has-actionbar">
+<div class="page page--viewport">
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
@@ -53,7 +53,7 @@
         </div>
     </header>
 
-    <div class="content stack">
+    <div class="content stack" class:content--scroll={expanded}>
         {#if expanded}
             <ProfileCardExpanded profile={$profile} onAvatarClick={close} />
         {:else}

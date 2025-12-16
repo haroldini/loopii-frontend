@@ -232,10 +232,11 @@
     .mappicker__preview {
         width: 100%;
         aspect-ratio: 16 / 9;
-        max-width: 600px;
         overflow: hidden;
         padding: 0;
         border-radius: var(--radius-lg);
+        position: relative;
+        z-index: 0;
     }
 
     .mappicker__panel {

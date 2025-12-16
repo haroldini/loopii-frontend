@@ -17,7 +17,7 @@
             </div>
 
             <div class="bar__actions">
-                <button type="button" on:click={() => goto("/profile")}>Back</button>
+                <button type="button" class="btn btn--ghost" on:click={() => goto("/profile")}>Back</button>
             </div>
         </div>
     </header>

@@ -130,7 +130,7 @@
 </svelte:head>
 
 
-<div class="page page--has-actionbar">
+<div class="page">
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">

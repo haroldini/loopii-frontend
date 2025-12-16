@@ -27,10 +27,7 @@
 </svelte:head>
 
 
-<div
-    class="page page--viewport"
-    class:page--has-actionbar={$peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}
->
+<div class="page page--viewport">
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
@@ -58,7 +55,7 @@
         </div>
     </header>
 
-    <div class="content stack">
+    <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
             <p class="hint">Loading next profile…</p>
         {:else if $peerStatus === "error"}
