@@ -4,7 +4,9 @@ import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 
 import { supabase } from "$lib/stores/auth.js";
+import { getRequestByDecider } from "$lib/api/request.js";
 import { getProfileFromLoop, updateLoopState } from "$lib/api/loop.js";
+import { upsertRequestItem,selectedRequest, loopRequests } from "$lib/stores/loopRequests.js";
 import { upsertLoopItem, selectedLoop, loops, adjustNewLoopsCount } from "$lib/stores/loops.js";
 import { addToast } from "$lib/stores/popups.js";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
@@ -24,8 +26,7 @@ function buildNotificationConfig(n, profile = null, loop = null) {
     };
 
     if (n.type === "loop") {
-        const username =
-            profile?.username ?? n.data?.profile_username ?? "someone";
+        const username = profile?.username ?? n.data?.profile_username ?? "someone";
 
         return {
             ...base,
@@ -37,6 +38,20 @@ function buildNotificationConfig(n, profile = null, loop = null) {
             props: profile ? { profile, loop } : {},
         };
     }
+
+	if (n.type === "request") {
+		const username = profile?.username ?? "someone";
+
+		return {
+			...base,
+			variant: "popup",
+			text: `Loop request from ${username}`,
+			description: "Click to view.",
+			autoHideMs: null,
+			component: ProfileCardPreview,
+			props: profile ? { profile } : {},
+		};
+	}
 
     return base;
 }
@@ -85,7 +100,7 @@ export async function initNotificationSub() {
                 console.log("New notification received:", n);
 
                 try {
-                    // Loop notification with profile card + navigation
+                    // Loop notification with profile card + /loops nav
                     if (n.type === "loop" && n.data?.loop_id) {
                         const loopId = n.data.loop_id;
 
@@ -150,20 +165,64 @@ export async function initNotificationSub() {
                             data: { notificationId: n.id, type: n.type },
                             onAction: openLoop,
                         });
-                    
-                    // Other notification types
-                    } else {
-                        const config = buildNotificationConfig(n, profile);
-                        addToast({
-                            ...config,
-                            data: { notificationId: n.id, type: n.type },
-                        });
                     }
-                } catch (err) {
-                    console.error("Error handling notification payload:", err);
-                }
-            }
-        )
+
+					// Request notification with profile card + /request nav
+					if (n.type === "request" && n.data?.decider_id) {
+						const deciderId = n.data.decider_id;
+						const decisionId = n.data?.decision_id ?? null;
+
+						let item = null;
+
+						try {
+							// returns { decision, profile }
+							item = await getRequestByDecider(deciderId);
+							if (!item?.decision || !item?.profile) return;
+						} catch (err) {
+							console.error("Notification dropped: failed to load request:", err);
+							return;
+						}
+
+						upsertRequestItem(item);
+
+						const config = buildNotificationConfig(n, item.profile, null, item.decision);
+
+						const openRequest = async () => {
+							const all = get(loopRequests);
+
+							// prefer decision_id match if present
+							const match =
+								(decisionId
+									? all.find((x) => x?.decision?.id === decisionId)
+									: null) ||
+								all.find((x) => x?.profile?.id === deciderId) ||
+								all.find((x) => x?.profile?.id === item.profile?.id);
+
+							selectedRequestStore.set(match || item);
+							goto("/requests");
+							return { success: true };
+						};
+
+						addToast({
+							...config,
+							data: { notificationId: n.id, type: n.type },
+							onAction: openRequest,
+						});
+
+						return;
+					}
+
+					// Generic notification fallback
+					const config = buildNotificationConfig(n, null, null, null);
+					addToast({
+						...config,
+						data: { notificationId: n.id, type: n.type },
+					});
+				} catch (err) {
+					console.error("Error handling notification payload:", err);
+				}
+			}
+		)
         .subscribe((status, err) => {
             console.log("Notification channel:", status, err ?? "");
         });

@@ -1,7 +1,6 @@
 
 import { writable, get } from "svelte/store";
-import { getUserRequests } from "$lib/api/feed.js";
-
+import { getUserRequests } from "$lib/api/request.js";
 
 // Store of pending loop requests: [{ decision, profile }]
 export const loopRequests = writable([]);
@@ -27,13 +26,67 @@ export const loopRequestsState = writable({
 
 export const loopRequestsStatus = writable("unloaded");
 
+// --- Helper: sort newest first by decision.created_at ---
+function sortRequests(items) {
+	return (items || []).slice().sort((a, b) => {
+		const aTime = a?.decision?.created_at ? new Date(a.decision.created_at).getTime() : 0;
+		const bTime = b?.decision?.created_at ? new Date(b.decision.created_at).getTime() : 0;
+		if (aTime !== bTime) return bTime - aTime;
+
+		// stable-ish tie-breaker
+		const aId = String(a?.decision?.id ?? "");
+		const bId = String(b?.decision?.id ?? "");
+		return bId.localeCompare(aId);
+	});
+}
+
+// --- Helper: dedupe by decision.id (keeps last occurrence) ---
+function dedupeByDecisionId(items) {
+	const map = new Map();
+	for (const it of items || []) {
+		const id = it?.decision?.id;
+		if (id) map.set(id, it);
+	}
+	return [...map.values()];
+}
+
+// --- Public: upsert one request item (used by notifications) ---
+export function upsertRequestItem(item) {
+	const decisionId = item?.decision?.id;
+	if (!decisionId) return;
+
+	let wasPresent = false;
+
+	loopRequests.update((prev) => {
+		wasPresent = prev.some((x) => x?.decision?.id === decisionId);
+
+		const merged = wasPresent
+			? prev.map((x) => {
+					if (x?.decision?.id !== decisionId) return x;
+					return {
+						...x,
+						...item,
+						decision: { ...(x.decision || {}), ...(item.decision || {}) },
+						profile: item.profile ?? x.profile,
+					};
+			  })
+			: [...prev, item];
+
+		return sortRequests(dedupeByDecisionId(merged));
+	});
+
+	// counts are "pending requests", so increment only if it's a new request
+	if (!wasPresent) {
+		loopRequestsTotal.update((n) => n + 1);
+		newRequestsCount.update((n) => n + 1);
+	}
+}
 
 // Initialize requests on first visit
 export async function initLoopRequestsStore() {
 	if (get(loopRequestsStatus) !== "unloaded") return;
 	await loadInitialLoopRequests();
 }
-
 
 // Load initial loop requests
 export async function loadInitialLoopRequests() {
@@ -43,14 +96,9 @@ export async function loadInitialLoopRequests() {
 	loopRequestsStatus.set("loading");
 
 	try {
-		const {
-			items,
-			has_more,
-			next_cursor,
-			total,
-		} = await getUserRequests({ limit: s.limit });
+		const { items, has_more, next_cursor, total } = await getUserRequests({ limit: s.limit });
 
-		loopRequests.set(items || []);
+		loopRequests.set(sortRequests(dedupeByDecisionId(items || [])));
 		loopRequestsTotal.set(total || 0);
 		newRequestsCount.set(total || 0);
 
@@ -69,7 +117,6 @@ export async function loadInitialLoopRequests() {
 	}
 }
 
-
 // Load more loop requests (pagination)
 export async function loadMoreLoopRequests() {
 	const s = get(loopRequestsState);
@@ -77,17 +124,15 @@ export async function loadMoreLoopRequests() {
 	loopRequestsState.set({ ...s, loading: true });
 
 	try {
-		const {
-			items,
-			has_more,
-			next_cursor,
-			total,
-		} = await getUserRequests({
+		const { items, has_more, next_cursor, total } = await getUserRequests({
 			limit: s.limit,
 			after_id: s.cursorId,
 		});
 
-		loopRequests.update((prev) => [...prev, ...(items || [])]);
+		loopRequests.update((prev) =>
+			sortRequests(dedupeByDecisionId([...prev, ...(items || [])]))
+		);
+
 		if (total !== undefined) {
 			loopRequestsTotal.set(total);
 			newRequestsCount.set(total);
@@ -104,7 +149,6 @@ export async function loadMoreLoopRequests() {
 		loopRequestsState.update((x) => ({ ...x, loading: false }));
 	}
 }
-
 
 // Refresh loop requests (reload from scratch)
 export async function refreshLoopRequestsStore() {
@@ -124,14 +168,9 @@ export async function refreshLoopRequestsStore() {
 			cursorId: null,
 		});
 
-		const {
-			items,
-			has_more,
-			next_cursor,
-			total,
-		} = await getUserRequests({ limit: s.limit });
+		const { items, has_more, next_cursor, total } = await getUserRequests({ limit: s.limit });
 
-		loopRequests.set(items || []);
+		loopRequests.set(sortRequests(dedupeByDecisionId(items || [])));
 		loopRequestsTotal.set(total || 0);
 		newRequestsCount.set(total || 0);
 
