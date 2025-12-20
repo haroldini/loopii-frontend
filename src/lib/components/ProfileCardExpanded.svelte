@@ -356,27 +356,27 @@
         {/if}
 
         {#if loop}
-            <div class="profile-block">
-                <p class="text-muted">Looped {timeAgo(loop.created_at)}</p>
-
+            <div class="profile-block profile-section">
+                
                 <div class="actions actions--center">
                     <button
-                        type="button"
-                        class="btn btn--toggle"
-                        aria-pressed={loop.is_favourite}
-                        on:click={toggleFav}
+                    type="button"
+                    class="btn btn--toggle"
+                    aria-pressed={loop.is_favourite}
+                    on:click={toggleFav}
                     >
                         ★ {loop.is_favourite ? "Favourited" : "Favourite"}
                     </button>
-
+                    
                     <button
-                        type="button"
-                        class="btn btn--danger"
-                        on:click={unloop}
-                    >
+                    type="button"
+                    class="btn btn--danger"
+                    on:click={unloop}
+                        >
                         ✕ Remove Loop
                     </button>
                 </div>
+                <p class="text-muted text-center u-space-above">Looped {timeAgo(loop.created_at)}</p>
             </div>
         {/if}
     </div>

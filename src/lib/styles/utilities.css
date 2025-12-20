@@ -13,3 +13,7 @@
     height: var(--border-width);
     background: var(--border-color);
 }
+
+.u-space-above {
+    margin-top: var(--space-3);
+}

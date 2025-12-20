@@ -41,6 +41,10 @@ b {
     color: var(--text-muted);
 }
 
+.text-center {
+    text-align: center;
+}
+
 /* ===== Helper text ===== */
 
 .text-hint {

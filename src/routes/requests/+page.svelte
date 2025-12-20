@@ -162,66 +162,17 @@
         </div>
     </header>
 
-    <div class="content stack">
-        {#if $selectedRequest}
-            <ProfileCardExpanded
+    <!-- Expanded card view -->
+    {#if $selectedRequest}
+        <div class="page page--viewport">
+            <div class="content stack content--scroll">
+                <ProfileCardExpanded
                 profile={$selectedRequest.profile}
                 onAvatarClick={close}
-            />
-        {:else}
-            <div class="gutter">
-                {#if $loopRequestsStatus === "loading"}
-                    <p class="text-hint">Loading...</p>
-                {:else if $loopRequestsStatus === "error"}
-                    <p class="text-hint text-danger">We couldn't load your requests. Please refresh or try again later.</p>
-                {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
-                    <div class="grid grid-2">
-                        {#each $loopRequests as entry}
-                            {#if entry?.profile}
-                                <div class="stack u-aspect-square">
-                                    <ProfileCardPreview
-                                        profile={entry.profile}
-                                        on:expand={() => expandRequest(entry)}
-                                    />
-
-                                    <div class="actions actions--center">
-                                        <button
-                                            type="button"
-                                            class="btn btn--primary"
-                                            on:click={() => handleAccept(entry)}
-                                        >
-                                            Accept
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="btn btn--danger"
-                                            on:click={() => handleDecline(entry)}
-                                        >
-                                            Decline
-                                        </button>
-                                    </div>
-                                </div>
-                            {/if}
-                        {/each}
-                    </div>
-
-                    {#if !$loopRequestsState.end}
-                        <button
-                            type="button"
-                            class="btn btn--ghost"
-                            on:click={loadMoreLoopRequests}
-                            disabled={$loopRequestsState.loading}
-                        >
-                            {$loopRequestsState.loading ? "Loading…" : "Load More"}
-                        </button>
-                    {/if}
-                {/if}
+                />
             </div>
-        {/if}
-    </div>
+        </div>
 
-    {#if $selectedRequest}
         <div class="bar bar--actionbar">
             <div class="bar__inner">
                 <div class="actionbar">
@@ -233,6 +184,58 @@
                     </button>
                 </div>
             </div>
+        </div>
+        
+    <!-- Requests grid view -->
+    {:else}
+        <div class="content stack gutter">
+            {#if $loopRequestsStatus === "loading"}
+                <p class="text-hint">Loading...</p>
+            {:else if $loopRequestsStatus === "error"}
+                <p class="text-hint text-danger">We couldn't load your requests. Please refresh or try again later.</p>
+            {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
+                <div class="grid grid-2">
+                    {#each $loopRequests as entry}
+                        {#if entry?.profile}
+                            <div class="stack u-aspect-square">
+                                <ProfileCardPreview
+                                    profile={entry.profile}
+                                    on:expand={() => expandRequest(entry)}
+                                />
+
+                                <div class="actions actions--center">
+                                    <button
+                                        type="button"
+                                        class="btn btn--primary"
+                                        on:click={() => handleAccept(entry)}
+                                    >
+                                        Accept
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn--danger"
+                                        on:click={() => handleDecline(entry)}
+                                    >
+                                        Decline
+                                    </button>
+                                </div>
+                            </div>
+                        {/if}
+                    {/each}
+                </div>
+
+                {#if !$loopRequestsState.end}
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={loadMoreLoopRequests}
+                        disabled={$loopRequestsState.loading}
+                    >
+                        {$loopRequestsState.loading ? "Loading…" : "Load More"}
+                    </button>
+                {/if}
+            {/if}
         </div>
     {/if}
 </div>

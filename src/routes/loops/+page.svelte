@@ -173,46 +173,51 @@
         </div>
     </header>
 
-    <div class="content stack">
-        {#if $selectedLoop}
-            <ProfileCardExpanded
+    <!-- Expanded card view -->
+    {#if $selectedLoop}
+        <div class="page page--viewport">
+            <div class="content stack content--scroll">
+                <ProfileCardExpanded
                 profile={$selectedLoop.profile}
                 loop={$selectedLoop.loop}
                 onAvatarClick={close}
                 on:toggleFav={handleFav}
                 on:unloop={handleUnloop}
-            />
-        {:else}
-            <div class="gutter">
-                {#if $loopsStatus === "loading"}
-                    <p class="text-hint">Loading...</p>
-                {:else if $loopsStatus === "error"}
-                    <p class="text-hint text-danger">We couldn't load your loops. Please refresh or try again later.</p>
-                {:else if $loopsStatus === "loaded" && $loops.length > 0}
-                    <div class="grid grid-3">
-                        {#each $loops as { loop, profile }}
-                            <ProfileCardPreview
-                                profile={profile}
-                                loop={loop}
-                                on:toggleFav={handleFav}
-                                on:unloop={handleUnloop}
-                                on:expand={() => expandProfile({ loop, profile })}
-                            />
-                        {/each}
-                    </div>
-
-                    {#if !$loopsState.end}
-                        <button
-                            type="button"
-                            class="btn btn--ghost"
-                            on:click={loadMoreLoops}
-                            disabled={$loopsState.loading}
-                        >
-                            {$loopsState.loading ? "Loading..." : "Load More"}
-                        </button>
-                    {/if}
-                {/if}
+                />
             </div>
-        {/if}
-    </div>
+        </div>
+        
+    <!-- Loops grid view -->
+    {:else}
+        <div class="content stack gutter">
+            {#if $loopsStatus === "loading"}
+                <p class="text-hint">Loading...</p>
+            {:else if $loopsStatus === "error"}
+                <p class="text-hint text-danger">We couldn't load your loops. Please refresh or try again later.</p>
+            {:else if $loopsStatus === "loaded" && $loops.length > 0}
+                <div class="grid grid-3">
+                    {#each $loops as { loop, profile }}
+                        <ProfileCardPreview
+                            profile={profile}
+                            loop={loop}
+                            on:toggleFav={handleFav}
+                            on:unloop={handleUnloop}
+                            on:expand={() => expandProfile({ loop, profile })}
+                        />
+                    {/each}
+                </div>
+
+                {#if !$loopsState.end}
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={loadMoreLoops}
+                        disabled={$loopsState.loading}
+                    >
+                        {$loopsState.loading ? "Loading..." : "Load More"}
+                    </button>
+                {/if}
+            {/if}
+        </div>  
+    {/if}
 </div>
