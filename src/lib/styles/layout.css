@@ -199,7 +199,7 @@
 /* ===== Responsive grids ===== */
 
 /* Very small devices */
-@media (max-width: 220px) {
+@media (max-width: 280px) {
     .grid-2,
     .grid-3 {
         grid-template-columns: 1fr;
@@ -207,7 +207,7 @@
 }
 
 /* Small devices */
-@media (min-width: 221px) and (max-width: 480px) {
+@media (min-width: 281px) and (max-width: 560px) {
     .grid-3 {
         grid-template-columns: repeat(2, 1fr);
     }

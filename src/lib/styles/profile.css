@@ -368,6 +368,36 @@
     min-height: 0;
 }
 
+.profile-preview__age {
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--accent);
+    margin: 0;
+}
+
+.profile-preview__username {
+    margin: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+
+    font-size: 0.8rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-preview__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
 .profile-preview__top {
     display: flex;
     align-items: center;
@@ -389,7 +419,6 @@
 .profile-preview__date {
     font-size: 0.8rem;
     color: var(--text-muted);
-    margin: 0;
 }
 
 .icon-btn-row {
@@ -424,7 +453,7 @@
 }
 
 .icon-btn--fav {
-    color: color-mix(in oklab, var(--warning) 70%, var(--text-muted));
+    color: var(--text-primary);
 }
 
 .icon-btn--fav.is-active {
@@ -433,6 +462,10 @@
 
 .icon-btn--danger {
     color: color-mix(in oklab, var(--danger) 70%, var(--text-muted));
+}
+
+.icon-btn--accept {
+    color: var(--success);
 }
 
 /* ===== Regular profile card ===== */

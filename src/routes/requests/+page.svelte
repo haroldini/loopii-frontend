@@ -140,6 +140,8 @@
                     <p class="text-hint">Loading...</p>
                 {:else if $loopRequestsStatus === "error"}
                     <p class="text-hint text-danger">We couldn't load your requests.</p>
+                {:else if $selectedRequest}
+                    <p class="text-hint">Showing {$selectedRequest.profile.username}</p>
                 {/if}
             </div>
 
@@ -167,8 +169,9 @@
         <div class="page page--viewport">
             <div class="content stack content--scroll">
                 <ProfileCardExpanded
-                profile={$selectedRequest.profile}
-                onAvatarClick={close}
+                    profile={$selectedRequest.profile}
+                    request={$selectedRequest.decision}
+                    onAvatarClick={close}
                 />
             </div>
         </div>
@@ -179,7 +182,7 @@
                     <button type="button" class="btn btn--danger" on:click={declineSelected}>
                         Decline
                     </button>
-                    <button type="button" class="btn btn--primary" on:click={acceptSelected}>
+                    <button type="button" class="btn btn--success" on:click={acceptSelected}>
                         Accept
                     </button>
                 </div>
@@ -200,26 +203,11 @@
                             <div class="stack u-aspect-square">
                                 <ProfileCardPreview
                                     profile={entry.profile}
+                                    request={entry.decision}
                                     on:expand={() => expandRequest(entry)}
+                                    on:accept={() => handleAccept(entry)}
+                                    on:decline={() => handleDecline(entry)}
                                 />
-
-                                <div class="actions actions--center">
-                                    <button
-                                        type="button"
-                                        class="btn btn--primary"
-                                        on:click={() => handleAccept(entry)}
-                                    >
-                                        Accept
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        class="btn btn--danger"
-                                        on:click={() => handleDecline(entry)}
-                                    >
-                                        Decline
-                                    </button>
-                                </div>
                             </div>
                         {/if}
                     {/each}

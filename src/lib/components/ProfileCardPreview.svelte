@@ -6,15 +6,18 @@
     import { timeAgo } from "$lib/utils/misc.js";
 
     export let profile;
-    export let loop = null; // just take the loop
-
-    const { icon: gender_icon, color: gender_color } =
-        GENDER_ICONS[profile.gender?.toLowerCase()] || GENDER_ICONS.other;
+    export let loop = null;
+    export let request = null; // NEW
 
     const dispatch = createEventDispatcher();
 
+    $: genderMeta =
+        GENDER_ICONS[profile?.gender?.toLowerCase?.()] || GENDER_ICONS.other;
+    $: gender_icon = genderMeta.icon;
+    $: gender_color = genderMeta.color;
+    $: username = profile?.username ? `@${profile.username}` : "";
+    $: createdAt = loop?.created_at || request?.created_at || null;
 
-    // Open expanded profile view // emit event to parent
     function open() {
         dispatch("expand");
     }
@@ -26,18 +29,29 @@
         }
     }
 
-    // Toggle favourite status // emit event to parent
-    function toggleFav(event) {
-        event.stopPropagation();
+    function toggleFav(e) {
+        e.stopPropagation();
+        if (!loop) return;
         dispatch("toggleFav", { loopId: loop.id });
     }
 
-    // Unloop profile // emit event to parent
-    function unloop(event) {
-        event.stopPropagation();
+    function unloop(e) {
+        e.stopPropagation();
+        if (!loop) return;
         dispatch("unloop", { loopId: loop.id });
     }
 
+    function acceptRequest(e) {
+        e.stopPropagation();
+        if (!request) return;
+        dispatch("accept", { request, profile });
+    }
+
+    function declineRequest(e) {
+        e.stopPropagation();
+        if (!request) return;
+        dispatch("decline", { request, profile });
+    }
 </script>
 
 
@@ -57,20 +71,22 @@
 
     <div class="profile-preview__info">
         <div class="profile-preview__top">
-            <span>{profile.age}</span>
-
-            <span
+            <span class="profile-preview__age">{profile.age}</span>
+            <p class="profile-preview__username">{username}</p>
+            <div class="profile-preview__meta">
+                <span
                 class="gender-icon"
                 style={`--icon-url: url('${gender_icon}'); --icon-color: ${gender_color};`}
-            ></span>
-
-            {#if $countryMap[profile.country_id]?.flag_url}
+                ></span>
+                
+                {#if $countryMap[profile.country_id]?.flag_url}
                 <img
                     src={$countryMap[profile.country_id].flag_url}
                     alt="Country flag"
                     class="profile-flag"
-                />
-            {/if}
+                    />
+                {/if}
+            </div>
         </div>
 
         {#if loop}
@@ -98,6 +114,27 @@
                     </button>
                 </div>
             </div>
+        {:else if request}
+            <div class="profile-preview__bottom">
+                
+                <div class="actionbar u-space-above">
+                    <button
+                        type="button"
+                        class="btn btn--danger btn--sm"
+                        on:click|stopPropagation={declineRequest}
+                        >
+                        Decline
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn--success btn--sm"
+                        on:click|stopPropagation={acceptRequest}
+                        >
+                        Accept
+                    </button>
+                </div>
+            </div>
+            <p class="profile-preview__date text-center u-space-above">Requested {timeAgo(request.created_at)}</p>
         {/if}
     </div>
 </div>

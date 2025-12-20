@@ -5,7 +5,7 @@ import { goto } from "$app/navigation";
 
 import { supabase } from "$lib/stores/auth.js";
 import { getProfileFromLoop, updateLoopState } from "$lib/api/loop.js";
-import { refreshLoopsStore, selectedLoop, loops, adjustNewLoopsCount } from "$lib/stores/loops.js";
+import { upsertLoopItem, selectedLoop, loops, adjustNewLoopsCount } from "$lib/stores/loops.js";
 import { addToast } from "$lib/stores/popups.js";
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
@@ -13,7 +13,7 @@ import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 // ---------------- Notification Type Resolver ---------------- //
 
-function buildNotificationConfig(n, profile = null) {
+function buildNotificationConfig(n, profile = null, loop = null) {
     const base = {
         variant: "banner",
         text: n.data?.message ?? "You have a new notification.",
@@ -24,7 +24,6 @@ function buildNotificationConfig(n, profile = null) {
     };
 
     if (n.type === "loop") {
-        const loopId = n.data?.loop_id ?? null;
         const username =
             profile?.username ?? n.data?.profile_username ?? "someone";
 
@@ -35,7 +34,7 @@ function buildNotificationConfig(n, profile = null) {
             description: "Click to view their profile.",
             autoHideMs: null,
             component: ProfileCardPreview,
-            props: profile ? { profile } : {},
+            props: profile ? { profile, loop } : {},
         };
     }
 
@@ -92,22 +91,28 @@ export async function initNotificationSub() {
 
                         // Try to get profile
                         let profile = null;
+                        let loop = null;
+
                         try {
-                            profile = await getProfileFromLoop(loopId);
-                            if (!profile) {
-                                console.error("Notification dropped: profile not found for loop", loopId);
+                            const data = await getProfileFromLoop(loopId);
+                            profile = data?.profile ?? null;
+                            loop = data?.loop ?? null;
+                            if (!profile || !loop) {
+                                console.error("Notification dropped: profile or loop not found", loopId);
                                 return;
                             }
                         } catch (err) {
-                            console.error("Notification dropped: failed to load profile:", err);
+                            console.error("Notification dropped: failed to load profile/loop:", err);
                             return;
                         }
 
-                        const config = buildNotificationConfig(n, profile);
+                        upsertLoopItem({ loop, profile });
+
+                        const config = buildNotificationConfig(n, profile, loop);
 
                         const openLoop = async () => {
                             const allLoops = get(loops);
-                            const match = allLoops.find((item) => item.loop.id === loopId);
+                            const match = allLoops.find((item) => item?.loop?.id === loopId);
 
                             if (match) {
                                 const wasSeen = match.loop.is_seen;
@@ -128,12 +133,11 @@ export async function initNotificationSub() {
                                 }
                                 updateLoopState(loopId, { is_seen: true }).catch(console.error);
 
-                            } else if (profile) {
-                                selectedLoop.set({ loop: { id: loopId }, profile });
-                                adjustNewLoopsCount();
-                                updateLoopState(loopId, { is_seen: true }).catch(console.error);
                             } else {
-                                return { success: false, reason: "profile_not_found" };
+                                const wasSeen = !!loop?.is_seen;
+                                selectedLoop.set({ loop, profile });
+                                if (!wasSeen) adjustNewLoopsCount();
+                                updateLoopState(loopId, { is_seen: true }).catch(console.error);
                             }
 
                             goto("/loops");
@@ -146,12 +150,10 @@ export async function initNotificationSub() {
                             data: { notificationId: n.id, type: n.type },
                             onAction: openLoop,
                         });
-
-                        refreshLoopsStore();
                     
                     // Other notification types
                     } else {
-                        const config = buildNotificationConfig(n, null);
+                        const config = buildNotificationConfig(n, profile);
                         addToast({
                             ...config,
                             data: { notificationId: n.id, type: n.type },

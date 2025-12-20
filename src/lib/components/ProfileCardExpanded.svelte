@@ -25,6 +25,7 @@
     export let profile;
     export let onAvatarClick = null;
     export let loop = null;
+    export let request = null;
 
     const dispatch = createEventDispatcher();
 
@@ -377,6 +378,10 @@
                     </button>
                 </div>
                 <p class="text-muted text-center u-space-above">Looped {timeAgo(loop.created_at)}</p>
+            </div>
+        {:else if request}
+            <div class="profile-block profile-section">
+                <p class="text-muted text-center">Requested {timeAgo(request.created_at)}</p>
             </div>
         {/if}
     </div>

@@ -33,12 +33,62 @@ export const loopDeleteConfirmEnabled = writable(true);
 
 // --- Helper: sort favourites first, then newest ---
 function sortLoops(items) {
-	return [...items].sort((a, b) => {
-		const favA = a.loop?.is_favourite ? 1 : 0;
-		const favB = b.loop?.is_favourite ? 1 : 0;
-		if (favA !== favB) return favB - favA; // favourites first
-		return new Date(b.loop.created_at) - new Date(a.loop.created_at); // newest first
-	});
+    return (items || []).slice().sort((a, b) => {
+        const favA = a?.loop?.is_favourite ? 1 : 0;
+        const favB = b?.loop?.is_favourite ? 1 : 0;
+        if (favA !== favB) return favB - favA;
+
+        const aTime = a?.loop?.created_at ? new Date(a.loop.created_at).getTime() : 0;
+        const bTime = b?.loop?.created_at ? new Date(b.loop.created_at).getTime() : 0;
+        if (aTime !== bTime) return bTime - aTime;
+
+        const aId = String(a?.loop?.id ?? "");
+        const bId = String(b?.loop?.id ?? "");
+        return bId.localeCompare(aId);
+    });
+}
+
+// --- Helper: dedupe by loop.id (keeps last occurrence) ---
+function dedupeByLoopId(items) {
+    const map = new Map();
+    for (const it of items) {
+        const id = it?.loop?.id;
+        if (id) map.set(id, it);
+    }
+    return [...map.values()];
+}
+
+
+// --- Public: upsert one loop item (used by notifications) ---
+export function upsertLoopItem(item) {
+    const loopId = item?.loop?.id;
+    if (!loopId) return;
+
+    let wasPresent = false;
+
+    loops.update((prev) => {
+        wasPresent = prev.some((x) => x?.loop?.id === loopId);
+
+        // merge if exists, else append
+        const merged = wasPresent
+            ? prev.map((x) => {
+                  if (x?.loop?.id !== loopId) return x;
+                  return {
+                      ...x,
+                      ...item,
+                      loop: { ...(x.loop || {}), ...(item.loop || {}) },
+                      profile: item.profile ?? x.profile,
+                  };
+              })
+            : [...prev, item];
+
+        return sortLoops(dedupeByLoopId(merged));
+    });
+
+    if (!wasPresent) {
+        loopsTotal.update((n) => n + 1);
+        if (!item.loop?.is_seen) newLoopsCount.update((n) => n + 1);
+    }
 }
 
 
@@ -103,7 +153,7 @@ export async function loadMoreLoops() {
 			after_id: s.cursorId,
 		});
 
-		loops.update((prev) => sortLoops([...prev, ...items]));
+		loops.update((prev) => sortLoops(dedupeByLoopId([...prev, ...(items || [])])));
 		if (total !== undefined) loopsTotal.set(total);
 		if (unseen_total !== undefined) newLoopsCount.set(unseen_total || 0);
 

@@ -151,9 +151,12 @@
                     <p class="text-hint">Loading...</p>
                 {:else if $loopsStatus === "error"}
                     <p class="text-hint text-danger">We couldn't load your loops.</p>
+                {:else if $selectedLoop}
+                    <p class="text-hint">Showing {$selectedLoop.profile.username}</p>
                 {/if}
             </div>
-
+            
+            
             <div class="bar__actions">
                 {#if $selectedLoop}
                     <button type="button" class="btn btn--ghost" on:click={close}>
