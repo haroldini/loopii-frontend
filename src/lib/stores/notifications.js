@@ -15,7 +15,7 @@ import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 // ---------------- Notification Type Resolver ---------------- //
 
-function buildNotificationConfig(n, profile = null, loop = null) {
+function buildNotificationConfig(n, profile = null, loop = null, decision = null) {
     const base = {
         variant: "banner",
         text: n.data?.message ?? "You have a new notification.",
@@ -26,7 +26,7 @@ function buildNotificationConfig(n, profile = null, loop = null) {
     };
 
     if (n.type === "loop") {
-        const username = profile?.username ?? n.data?.profile_username ?? "someone";
+        const username = profile?.username ?? "someone";
 
         return {
             ...base,
@@ -49,7 +49,7 @@ function buildNotificationConfig(n, profile = null, loop = null) {
 			description: "Click to view.",
 			autoHideMs: null,
 			component: ProfileCardPreview,
-			props: profile ? { profile } : {},
+			props: profile ? { profile, decision } : {},
 		};
 	}
 
@@ -165,10 +165,9 @@ export async function initNotificationSub() {
                             data: { notificationId: n.id, type: n.type },
                             onAction: openLoop,
                         });
-                    }
 
 					// Request notification with profile card + /request nav
-					if (n.type === "request" && n.data?.decider_id) {
+                    } else if (n.type === "request" && n.data?.decider_id) {
 						const deciderId = n.data.decider_id;
 						const decisionId = n.data?.decision_id ?? null;
 
@@ -198,7 +197,7 @@ export async function initNotificationSub() {
 								all.find((x) => x?.profile?.id === deciderId) ||
 								all.find((x) => x?.profile?.id === item.profile?.id);
 
-							selectedRequestStore.set(match || item);
+							selectedRequest.set(match || item);
 							goto("/requests");
 							return { success: true };
 						};
@@ -210,14 +209,15 @@ export async function initNotificationSub() {
 						});
 
 						return;
-					}
-
-					// Generic notification fallback
-					const config = buildNotificationConfig(n, null, null, null);
-					addToast({
-						...config,
-						data: { notificationId: n.id, type: n.type },
-					});
+                    
+                    // Generic notification fallback
+					} else {
+                        const config = buildNotificationConfig(n, null, null, null);
+                        addToast({
+                            ...config,
+                            data: { notificationId: n.id, type: n.type },
+                        });
+                    }
 				} catch (err) {
 					console.error("Error handling notification payload:", err);
 				}

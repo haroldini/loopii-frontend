@@ -149,7 +149,7 @@
         </div>
 
         {#if component}
-            <div class="popup-inner">
+            <div class="popup-inner popup-inner-no-hover">
                 <svelte:component
                     this={component}
                     {...props}
@@ -249,7 +249,7 @@
         border-radius: var(--radius-lg);
 
         padding: calc(var(--space-2) + var(--space-1)) var(--space-3);
-        max-width: min(40rem, 90%);
+        max-width: min(40rem, 90%, 50vh, 300px);
         width: 90%;
     }
 
@@ -262,7 +262,7 @@
     }
 
     .popup--rich:hover {
-        background: var(--bg-hover);
+        background: var(--bg-secondary);
     }
 
     .popup--rich:focus-visible {
@@ -334,6 +334,10 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
+    }
+
+    :global(.popup-inner-no-hover .profile-preview:hover) {
+        background: var(--bg-surface) !important;
     }
 
     .dismiss {

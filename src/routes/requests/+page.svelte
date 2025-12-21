@@ -170,7 +170,7 @@
             <div class="content stack content--scroll">
                 <ProfileCardExpanded
                     profile={$selectedRequest.profile}
-                    request={$selectedRequest.decision}
+                    decision={$selectedRequest.decision}
                     onAvatarClick={close}
                 />
             </div>
@@ -203,7 +203,7 @@
                             <div class="stack u-aspect-square">
                                 <ProfileCardPreview
                                     profile={entry.profile}
-                                    request={entry.decision}
+                                    decision={entry.decision}
                                     on:expand={() => expandRequest(entry)}
                                     on:accept={() => handleAccept(entry)}
                                     on:decline={() => handleDecline(entry)}

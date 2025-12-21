@@ -7,7 +7,7 @@
 
     export let profile;
     export let loop = null;
-    export let request = null; // NEW
+    export let decision = null; // NEW
 
     const dispatch = createEventDispatcher();
 
@@ -16,7 +16,7 @@
     $: gender_icon = genderMeta.icon;
     $: gender_color = genderMeta.color;
     $: username = profile?.username ? `@${profile.username}` : "";
-    $: createdAt = loop?.created_at || request?.created_at || null;
+    $: createdAt = loop?.created_at || decision?.created_at || null;
 
     function open() {
         dispatch("expand");
@@ -43,14 +43,14 @@
 
     function acceptRequest(e) {
         e.stopPropagation();
-        if (!request) return;
-        dispatch("accept", { request, profile });
+        if (!decision) return;
+        dispatch("accept", { decision, profile });
     }
 
     function declineRequest(e) {
         e.stopPropagation();
-        if (!request) return;
-        dispatch("decline", { request, profile });
+        if (!decision) return;
+        dispatch("decline", { decision, profile });
     }
 </script>
 
@@ -114,7 +114,7 @@
                     </button>
                 </div>
             </div>
-        {:else if request}
+        {:else if decision}
             <div class="profile-preview__bottom">
                 
                 <div class="actionbar u-space-above">
@@ -134,7 +134,7 @@
                     </button>
                 </div>
             </div>
-            <p class="profile-preview__date text-center u-space-above">Requested {timeAgo(request.created_at)}</p>
+            <p class="profile-preview__date text-center u-space-above">Requested {timeAgo(decision.created_at)}</p>
         {/if}
     </div>
 </div>
