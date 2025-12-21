@@ -136,12 +136,13 @@
     bind:this={expandedEl}
 >
     <div class="profile-expanded__media-wrap" bind:this={mediaWrapEl}>
-        <ProfileMediaCarousel
-            images={profile.images}
-            fallbackUrl={getAvatarUrl(profile)}
-            alt={`Photos of ${displayName}`}
-        />
-
+        {#key profile?.id}
+            <ProfileMediaCarousel
+                images={profile?.images}
+                fallbackUrl={getAvatarUrl(profile)}
+                alt={`Photos of ${displayName}`}
+            />
+        {/key}
         {#if onAvatarClick}
             <button
                 type="button"

@@ -125,11 +125,13 @@
     on:click={open}
     on:keydown={handleKey}
 >
-    <ProfileMediaCarousel
-        images={profile.images}
-        fallbackUrl={getAvatarUrl(profile)}
-        alt={`Photos of ${displayName}`}
-    />
+    {#key profile?.id}
+        <ProfileMediaCarousel
+            images={profile?.images}
+            fallbackUrl={getAvatarUrl(profile)}
+            alt={`Photos of ${displayName}`}
+        />
+    {/key}
 
     <div class="gutter">
         <div class="profile-card__body" bind:this={bodyEl}>
