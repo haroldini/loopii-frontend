@@ -14,3 +14,13 @@
 @import "./utilities.css" layer(utilities);
 
 @import "nouislider/dist/nouislider.css";
+
+
+/* Global styles */
+
+.logo {
+    display: block;
+    height: 3.231rem;
+    width: auto;
+}
+

@@ -3,6 +3,7 @@
     import MapPicker from "$lib/components/MapPicker.svelte";
     import AudioPicker from "$lib/components/AudioPicker.svelte";
     import MultiSelect from "$lib/components/MultiSelect.svelte";
+    import Icon from "@iconify/svelte";
 
     /**
      * fields: array of either:
@@ -481,15 +482,11 @@
                                 {@const after = parts[1] ?? ""}
 
                                 <div class="social-row">
-                                    <div class="social-icon">
-                                        {#if platform.icon_url}
-                                            <img src={platform.icon_url} alt={platform.name} loading="lazy" />
-                                        {:else}
-                                            <div class="social-icon-placeholder">
-                                                {platform.name?.[0] || "?"}
-                                            </div>
-                                        {/if}
-                                    </div>
+                                    <Icon
+                                        icon={platform.icon_url}
+                                        class="social-icon__icon"
+                                        aria-label={platform.name}
+                                    />
 
                                     <div class="social-preview">
                                         <span class="social-base">

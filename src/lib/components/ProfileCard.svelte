@@ -1,6 +1,7 @@
 
 <script>
     import { createEventDispatcher, onMount } from "svelte";
+    import Icon from "@iconify/svelte";
     import { interestMap, countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { profile as profileStore } from "$lib/stores/profile.js";
     import { getAvatarUrl } from "$lib/utils/profile.js";
@@ -75,8 +76,8 @@
         };
     });    
 
-    $: genderMeta =
-        GENDER_ICONS[profile?.gender?.toLowerCase?.()] || GENDER_ICONS.other;
+    $: genderKey = profile?.gender?.toLowerCase?.() || "other";
+    $: genderIcon = GENDER_ICONS[genderKey] || GENDER_ICONS.other;
 
     $: visibleInterests = profile?.interests?.slice?.(0, 10) || [];
     $: extraInterestCount = Math.max(
@@ -155,15 +156,14 @@
                     <div class="profile-card__right-main">
                         <span class="profile-card__age">{profile.age}</span>
 
-                        <span
-                            class="gender-icon"
-                            style={`--icon-url: url('${genderMeta.icon}'); --icon-color: ${genderMeta.color};`}
-                        ></span>
+                        <Icon
+                            icon={genderIcon}
+                            class={"gender-icon gender-icon--" + genderKey}
+                        />
 
-                        {#if $countryMap[profile.country_id]?.flag_url}
-                            <img
-                                src={$countryMap[profile.country_id].flag_url}
-                                alt="Country flag"
+                        {#if $countryMap[profile.country_id]?.flag_icon}
+                            <Icon
+                                icon={$countryMap[profile.country_id].flag_icon}
                                 class="profile-flag"
                             />
                         {/if}

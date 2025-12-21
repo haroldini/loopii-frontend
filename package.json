@@ -18,6 +18,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@iconify/svelte": "^5.1.0",
 		"@supabase/supabase-js": "^2.55.0",
 		"cropperjs": "^1.6.2",
 		"leaflet": "^1.9.4",

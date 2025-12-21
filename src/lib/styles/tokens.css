@@ -8,6 +8,9 @@
 
     /* Global colors */
     --color-black: #121212;
+    --gender-male: #4A90E2;
+    --gender-female: #E94E77;
+    --gender-other: #9B59B6;
 
     /* Spacing */
     --space-1: 0.25rem;

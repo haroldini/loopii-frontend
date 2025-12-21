@@ -1,6 +1,7 @@
 
 <script>
     import { onMount, onDestroy } from "svelte";
+    import Icon from "@iconify/svelte";
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
     import { profile } from "$lib/stores/profile.js";

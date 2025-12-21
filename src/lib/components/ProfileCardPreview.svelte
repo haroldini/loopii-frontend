@@ -1,6 +1,7 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
+    import Icon from "@iconify/svelte";
     import { getAvatarUrl } from "$lib/utils/profile.js";
     import { countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { timeAgo } from "$lib/utils/misc.js";
@@ -11,10 +12,8 @@
 
     const dispatch = createEventDispatcher();
 
-    $: genderMeta =
-        GENDER_ICONS[profile?.gender?.toLowerCase?.()] || GENDER_ICONS.other;
-    $: gender_icon = genderMeta.icon;
-    $: gender_color = genderMeta.color;
+    $: genderKey = profile?.gender?.toLowerCase?.() || "other";
+    $: genderIcon = GENDER_ICONS[genderKey] || GENDER_ICONS.other;
     $: username = profile?.username ? `@${profile.username}` : "";
     $: createdAt = loop?.created_at || decision?.created_at || null;
 
@@ -74,16 +73,15 @@
             <span class="profile-preview__age">{profile.age}</span>
             <p class="profile-preview__username">{username}</p>
             <div class="profile-preview__meta">
-                <span
-                class="gender-icon"
-                style={`--icon-url: url('${gender_icon}'); --icon-color: ${gender_color};`}
-                ></span>
-                
-                {#if $countryMap[profile.country_id]?.flag_url}
-                <img
-                    src={$countryMap[profile.country_id].flag_url}
-                    alt="Country flag"
-                    class="profile-flag"
+                <Icon
+                    icon={genderIcon}
+                    class={"gender-icon gender-icon--" + genderKey}
+                />
+    
+                {#if $countryMap[profile.country_id]?.flag_icon}
+                    <Icon
+                        icon={$countryMap[profile.country_id].flag_icon}
+                        class="profile-flag"
                     />
                 {/if}
             </div>

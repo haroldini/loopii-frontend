@@ -85,29 +85,27 @@ if (browser) {
 // ---------------- Icons ---------------- //
 
 const PLATFORM_ICONS = {
-	"discord": "/platforms/discord.svg",
-	"twitter / x": "/platforms/twitter.svg",
-	"tiktok": "/platforms/tiktok.svg",
-	"snapchat": "/platforms/snapchat.svg",
-	"reddit": "/platforms/reddit.svg",
-	"instagram": "/platforms/instagram.svg",
-	"threads": "/platforms/threads.svg",
-	"bluesky": "/platforms/bluesky.svg",
+    "discord": "meteor-icons:discord",
+    "twitter / x": "meteor-icons:x",
+    "tiktok": "meteor-icons:tiktok",
+    "reddit": "meteor-icons:reddit",
+    "instagram": "meteor-icons:instagram",
+    "threads": "meteor-icons:threads",
+    "bluesky": "meteor-icons:bluesky",
+    "snapchat": "mingcute:snapchat-line",
 };
 
 export const GENDER_ICONS = {
-    male: {
-        icon: "/genders/male.svg",
-        color: "#4A90E2", // soft blue
-    },
-    female: {
-        icon: "/genders/female.svg",
-        color: "#E94E77", // rose pink
-    },
-    other: {
-        icon: "/genders/other.svg",
-        color: "#9B59B6", // violet / neutral
-    },
+    male: "material-symbols:male-rounded",
+    female: "material-symbols:female-rounded",
+    other: "material-symbols:transgender-rounded",
+};
+
+export const UI_ICONS = {
+    "btnLoading": "line-md:loading-loop",
+    "btnRefresh": "mdi:refresh",
+    "btnTune": "mdi:tune-variant",
+    "pageLoading": "svg-spinners:gooey-balls-2"
 };
 
 // ---------------- Reference Data ---------------- //
@@ -145,10 +143,10 @@ export async function initReferences({ force = false } = {}) {
             return a.name.localeCompare(b.name);
         });
 
-        // Attach flag URLs
+        // Attach flag icons by country code
         const countriesWithFlags = sortedCountries.map((c) => ({
             ...c,
-            flag_url: c.code ? `/flags/${c.code.toLowerCase()}.svg` : null,
+            flag_icon: c.code ? `circle-flags:${c.code.toLowerCase()}` : null,
         }));
 
         // Attach static icons by normalized name

@@ -1,6 +1,7 @@
 
 <script>
     import { createEventDispatcher, onMount } from "svelte";
+    import Icon from "@iconify/svelte";
     import {
         interestMap,
         platformMap,
@@ -37,12 +38,16 @@
         dispatch("unloop", { loopId: loop.id });
     }
 
-    $: genderMeta =
-        GENDER_ICONS[profile?.gender?.toLowerCase?.()] || GENDER_ICONS.other;
-
+    $: genderKey = profile?.gender?.toLowerCase?.() || "other";
+    $: genderIcon = GENDER_ICONS[genderKey] || GENDER_ICONS.other;
     $: displayName = profile?.name || profile?.username;
     $: hasSeparateUsername =
         profile?.name && profile?.username && profile.name !== profile.username;
+    $: socialPlatforms =
+        profile?.socials?.map((s) => ({
+            ...s,
+            platform: $platformMap[s.platform_id] || null,
+    })) || [];
 
     $: lastSeenDate = profile?.last_seen_at
         ? new Date(profile.last_seen_at)
@@ -206,15 +211,14 @@
                         <div class="profile-card__right-main">
                             <span class="profile-card__age">{profile.age}</span>
 
-                            <span
-                                class="gender-icon"
-                                style={`--icon-url: url('${genderMeta.icon}'); --icon-color: ${genderMeta.color};`}
-                            ></span>
+                            <Icon
+                                icon={genderIcon}
+                                class={"gender-icon gender-icon--" + genderKey}
+                            />
 
-                            {#if $countryMap[profile.country_id]?.flag_url}
-                                <img
-                                    src={$countryMap[profile.country_id].flag_url}
-                                    alt="Country flag"
+                            {#if $countryMap[profile.country_id]?.flag_icon}
+                                <Icon
+                                    icon={$countryMap[profile.country_id].flag_icon}
                                     class="profile-flag"
                                 />
                             {/if}
@@ -275,7 +279,7 @@
                 {#if profile.socials?.length}
                     <h4>Socials</h4>
                     <div class="socials-list">
-                        {#each profile.socials as social}
+                        {#each socialPlatforms as social}
                             {#if buildSocialLink(social, $platformMap)}
                                 {#if $platformMap[social.platform_id]}
                                     <div
@@ -294,19 +298,11 @@
                                             }
                                         }}
                                     >
-                                        <div class="social-icon">
-                                            {#if $platformMap[social.platform_id].icon_url}
-                                                <img
-                                                    src={$platformMap[social.platform_id].icon_url}
-                                                    alt={$platformMap[social.platform_id].name}
-                                                    loading="lazy"
-                                                />
-                                            {:else}
-                                                <div class="social-icon-placeholder">
-                                                    {$platformMap[social.platform_id].name?.[0] || "?"}
-                                                </div>
-                                            {/if}
-                                        </div>
+                                            <Icon
+                                                icon={social.platform.icon_url}
+                                                class="social-icon__icon"
+                                                aria-label={social.platform.name}
+                                            />
 
                                         <div class="social-preview">
                                             <span class="social-handle">@{social.handle}</span>

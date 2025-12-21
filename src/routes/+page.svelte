@@ -1,6 +1,8 @@
 
 <script>
+    import Icon from "@iconify/svelte";
     import { goto } from "$app/navigation";
+    import { UI_ICONS } from "$lib/stores/app.js"; 
     import { initPeerStore, peer, peerStatus, handleDecision, refreshPeerStore } from "$lib/stores/feed.js";
     import ProfileCard from "$lib/components/ProfileCard.svelte";
     import ProfileCardExpanded from "$lib/components/ProfileCardExpanded.svelte";
@@ -31,7 +33,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>loopii</h3>
+                <img src="/logo/logo.png" alt="loopii" class="logo logo--long" />
             </div>
 
             <div class="bar__actions">
@@ -41,7 +43,17 @@
                     on:click={refreshPeerStore}
                     disabled={$peerStatus === "loading"}
                 >
-                    {$peerStatus === "loading" ? "Loading…" : "Refresh"}
+                    {#if $peerStatus === "loading"}
+                        <Icon 
+                            icon={UI_ICONS.btnLoading}
+                            class="btn__icon"
+                        />
+                    {:else}
+                        <Icon 
+                            icon={UI_ICONS.btnRefresh}
+                            class="btn__icon"
+                        />
+                    {/if}
                 </button>
 
                 <button
@@ -49,7 +61,10 @@
                     class="btn btn--ghost"
                     on:click={() => goto("/profile/search-preferences")}
                 >
-                    Preferences
+                    <Icon 
+                        icon={UI_ICONS.btnTune}
+                        class="btn__icon"
+                    />
                 </button>
             </div>
         </div>
@@ -57,9 +72,10 @@
 
     <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
-            <div class="gutter gutter-vertical">
-                <p class="text-hint">Loading next profile…</p>
-            </div>
+            <Icon 
+                icon={UI_ICONS.pageLoading}
+                class="page__loading-icon"
+            />
         {:else if $peerStatus === "error"}
             <div class="gutter gutter-vertical">
                 <div class="card">
@@ -74,7 +90,11 @@
                 <div class="card">
                     <div class="section stack">
                         <p>Your profile is hidden.</p>
-                        <p class="text-hint">Update your visibility settings to see other profiles.</p>
+                        <p class="text-hint">
+                            Update your 
+                            <a href="/profile/visibility-preferences" class="text-link">visibility preferences</a>
+                            to see other profiles.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -83,7 +103,10 @@
                 <div class="card">
                     <div class="section stack">
                         <p>We couldn't find any matching profiles.</p>
-                        <p class="text-hint">Try refreshing or expanding your search preferences.</p>
+                        <p class="text-hint">
+                            Try refreshing or expanding your
+                            <a href="/profile/search-preferences" class="text-link">search preferences</a>.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -101,24 +124,30 @@
                 <div class="actionbar">
                     <button
                         type="button"
-                        class="btn btn--ghost"
+                        class="btn btn--ghost text-fw-semibold"
                         on:click={() => {
                             handleDecision(false);
                             if (expanded) close();
                         }}
                     >
-                        Skip
+                        <Icon 
+				            icon="mdi:close"
+                            class="btn__icon btn__icon--large"
+                        />
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn--primary"
+                        class="btn btn--primary text-fw-semibold"
                         on:click={() => {
                             handleDecision(true);
                             if (expanded) close();
                         }}
                     >
-                        Like
+                        <Icon 
+				            icon="mdi:heart"
+                            class="btn__icon btn__icon--large"
+                        />
                     </button>
                 </div>
             </div>

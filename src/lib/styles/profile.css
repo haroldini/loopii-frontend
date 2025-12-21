@@ -3,27 +3,29 @@
 /* ===== Shared profile primitives ===== */
 
 .profile-flag {
-    width: 1.2rem;
-    height: auto;
-    border-radius: calc(var(--radius-sm) / 2);
-    box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.4);
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    flex-shrink: 0;
     object-fit: contain;
 }
 
 .gender-icon {
-    display: inline-block;
-    width: 1.1rem;
-    height: 1.1rem;
-    mask: var(--icon-url) no-repeat center / contain;
-    -webkit-mask: var(--icon-url) no-repeat center / contain;
-    background-color: var(--icon-color, var(--text-primary));
-    opacity: 0.9;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    width: 1.25em;
+    height: 1.25rem;
+    vertical-align: middle;
 }
 
-.gender-icon:hover {
-    opacity: 1;
-    transform: scale(1.05);
+.gender-icon--male {
+    color: var(--gender-male, #4A90E2);
+}
+
+.gender-icon--female {
+    color: var(--gender-female, #E94E77);
+}
+
+.gender-icon--other {
+    color: var(--gender-other, #9B59B6);
 }
 
 /* Status dot for .pill */
@@ -733,9 +735,9 @@
     background: var(--bg-hover);
 }
 
-.social-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+.social-icon__icon {
+    width: 1.75rem;
+    height: 1.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -745,26 +747,6 @@
 
     margin-left: var(--space-3);
     margin-right: var(--space-3);
-}
-
-.social-icon img {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: var(--radius-sm);
-}
-
-.social-icon-placeholder {
-    width: 1.25rem;
-    height: 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: var(--border-color);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-
-    border-radius: var(--radius-sm);
 }
 
 .social-preview {
