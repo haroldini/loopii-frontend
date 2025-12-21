@@ -114,7 +114,7 @@
     overflow: auto;
 }
 
-.page__loading-icon {
+.page__icon {
     width: 5rem;
     height: 5rem;
     color: var(--accent);

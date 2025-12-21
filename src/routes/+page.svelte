@@ -45,12 +45,12 @@
                 >
                     {#if $peerStatus === "loading"}
                         <Icon 
-                            icon={UI_ICONS.btnLoading}
+                            icon={UI_ICONS.animSpinner}
                             class="btn__icon"
                         />
                     {:else}
                         <Icon 
-                            icon={UI_ICONS.btnRefresh}
+                            icon={UI_ICONS.refresh}
                             class="btn__icon"
                         />
                     {/if}
@@ -62,7 +62,7 @@
                     on:click={() => goto("/profile/search-preferences")}
                 >
                     <Icon 
-                        icon={UI_ICONS.btnTune}
+                        icon={UI_ICONS.tune}
                         class="btn__icon"
                     />
                 </button>
@@ -73,8 +73,8 @@
     <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
             <Icon 
-                icon={UI_ICONS.pageLoading}
-                class="page__loading-icon"
+                icon={UI_ICONS.animLoading}
+                class="page__icon"
             />
         {:else if $peerStatus === "error"}
             <div class="gutter gutter-vertical">
@@ -131,7 +131,7 @@
                         }}
                     >
                         <Icon 
-				            icon="mdi:close"
+				            icon={UI_ICONS.close}
                             class="btn__icon btn__icon--large"
                         />
                     </button>
@@ -145,7 +145,7 @@
                         }}
                     >
                         <Icon 
-				            icon="mdi:heart"
+				            icon={UI_ICONS.heart}
                             class="btn__icon btn__icon--large"
                         />
                     </button>

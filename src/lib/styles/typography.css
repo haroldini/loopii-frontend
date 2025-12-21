@@ -43,6 +43,12 @@ b {
 
 .text-center {
     text-align: center;
+    align-self: center;
+}
+
+.text-right {
+    text-align: right;
+    align-self: flex-end;
 }
 
 /* ===== Helper text ===== */
@@ -70,3 +76,12 @@ b {
 .text-no-select {
     user-select: none;
 }
+
+/* ===== Icon helpers ===== */
+
+.icon--large {
+    width: 4.5rem;
+    height: 4.5rem;
+    align-self: center;
+}
+

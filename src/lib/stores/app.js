@@ -102,10 +102,25 @@ export const GENDER_ICONS = {
 };
 
 export const UI_ICONS = {
-    "btnLoading": "line-md:loading-loop",
-    "btnRefresh": "mdi:refresh",
-    "btnTune": "mdi:tune-variant",
-    "pageLoading": "svg-spinners:gooey-balls-2"
+    "animSpinner": "svg-spinners:tadpole",
+    "animLoading": "svg-spinners:gooey-balls-2",
+    "animFailed": "line-md:emoji-frown",
+    "animSuccess": "line-md:check-all",
+    "animEmailCheck": "line-md:email-check",
+    "animEmailSent": "line-md:email-arrow-right",
+
+    "refresh": "mdi:refresh",
+    "logout": "mdi:logout",
+    "login": "mdi:login",
+    "swap": "mdi:swap-horizontal",
+    "close": "meteor-icons:xmark",
+    "heart": "mdi:heart-outline",
+    "tune": "mdi:tune-variant",
+    "resetPassword": "mdi:lock-open-check-outline",
+    "signUp": "mdi:emoticon-plus-outline",
+    "arrowLeft": "mdi:arrow-left",
+    "arrowRight": "mdi:arrow-right",
+    "send": "mdi:send",
 };
 
 // ---------------- Reference Data ---------------- //

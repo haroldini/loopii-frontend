@@ -2,7 +2,9 @@
 <script>
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
+    import Icon from "@iconify/svelte";
 
+    import { UI_ICONS } from "$lib/stores/app.js";
     import { 
         user, signInWithEmail, signUpWithEmail, requestPasswordReset, 
         resetPasswordWithToken, resetToken, authState
@@ -66,6 +68,7 @@
                 result = await resetPasswordWithToken($password);
                 if (!result.error && result.data.user) {
                     authFormStatus.set("passwordReset");
+                    toggleForm(false);
                 }
                 else {
                     authFormStatus.set("resetPasswordFailed")
@@ -75,6 +78,7 @@
             // Show error if exists
             if (result.error) {
                 error.set(result.error || "Something went wrong");
+                showForm.set(true);
             }
         } finally {
             if (!$error) {
@@ -88,18 +92,18 @@
     }
 
     const pageTitles = {
-        signup: "Sign Up",
-        login: "Login",
-        requestReset: "Reset Password",
-        reset: "Reset Password"
+        signup: "Sign up",
+        login: "Log in",
+        requestReset: "Reset password",
+        reset: "Reset password"
     };
+
 </script>
 
 
-<h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
-
-
+<!-- FORM STATES -->
 {#if $showForm}
+    <h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
     <form class="form" on:submit|preventDefault={handleSubmit}>
         {#if $subPage !== "reset"}
             <div class="field">
@@ -183,96 +187,137 @@
             </p>
         {/if}
 
+        {#if $error}
+            <p class="text-danger">{$error}</p>
+        {/if}
+        
         <div class="form__actions">
             {#if $subPage === "signup"}
-                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                    {$isSubmitting ? "Creating account…" : "Create account"}
-                </button>
-
-                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
-                    Login instead
-                </button>
+                <div class="actionbar">                    
+                    <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
+                        Log in instead
+                    </button>
+                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                        {#if $isSubmitting}
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.signUp} class="btn__icon" /> Sign up
+                        {/if}
+                    </button>
+                </div>
 
             {:else if $subPage === "login"}
-                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                    {$isSubmitting ? "Logging in…" : "Login"}
-                </button>
-
-                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("signup")}>
-                    Sign up instead
-                </button>
-
-                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("requestReset")}>
+                <div class="actionbar">
+                    <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("signup")}>
+                        Sign up instead
+                    </button>
+                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                        {#if $isSubmitting}
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.login} class="btn__icon" /> Log in
+                        {/if}
+                    </button>
+                </div>
+                
+                <button class="text-right text-link" on:click|preventDefault={() => toggleMode("requestReset")}>
                     Forgot password?
                 </button>
 
             {:else if $subPage === "requestReset"}
-                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                    {$isSubmitting ? "Sending reset email…" : "Send reset email"}
-                </button>
-
-                <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
-                    Back to login
-                </button>
-
-            {:else if $subPage === "reset"}
-                <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                    {$isSubmitting ? "Setting new password…" : "Set new password"}
-                </button>
-            {/if}
-        </div>
-    </form>
-{/if}
-
-{#if $error || $authFormStatus === "signedUp" || $authFormStatus === "resetEmailSent"}
-    <section class="card">
-        <div class="section stack">
-            {#if $authFormStatus === "signedUp"}
-                <p class="text-success">
-                    Confirmation email sent. Check your inbox ({$email}) to verify your account.
-                </p>
-
-                {#if !$showForm}
-                    <p>
-                        Need to resend?
-                        <button type="button" class="text-link" on:click={() => toggleForm(true)}>
-                            Click here
-                        </button>.
-                    </p>
-                {/if}
-
-                <p>
-                    If you don't receive it, your email may already be in use — try
-                    <button type="button" class="text-link" on:click={() => toggleMode("login")}>
-                        logging in
+                <div class="actionbar">                    
+                    <button type="button" class="btn btn--ghost btn--icon" on:click={() => toggleMode("login")}>
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                     </button>
-                    instead.
-                </p>
-
-            {:else if $authFormStatus === "resetEmailSent"}
-                <p class="text-success">
-                    Password reset email sent. Check your inbox ({$email}) to set a new password.
-                </p>
-
-                {#if !$showForm}
-                    <p>
-                        Want to resend?
-                        <button type="button" class="text-link" on:click={() => toggleForm(true)}>
-                            Click here
-                        </button>.
-                    </p>
-                {/if}
-            {/if}
-
-            {#if $error}
-                <p class="text-danger">{$error}</p>
+                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                        {#if $isSubmitting}
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.send} class="btn__icon" /> Send reset link
+                        {/if}
+                    </button>
+                </div>
+                    
+            {:else if $subPage === "reset"}
+                <div class="actionbar">                    
+                    <button type="button" class="btn btn--ghost btn--icon" on:click={() => toggleMode("login")}>
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
+                    </button>
+                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
+                        {#if $isSubmitting}
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.resetPassword} class="btn__icon" /> Reset password
+                        {/if}
+                    </button>
+                </div>
             {/if}
         </div>
-    </section>
-{/if}
 
-{#if $authFormStatus === "passwordReset"}
-    <button type="button" class="btn btn--primary btn--block" on:click={() => window.location.replace("/")}>
-        Continue to loopii
-    </button>
+    </form>
+
+<!-- TERMINAL / RESULT STATES -->
+{:else}
+    {#if $authFormStatus === "signedUp"}
+        <Icon icon={UI_ICONS.animEmailSent} class="page__icon" />
+        <p>
+            <span class="text-success">Confirmation email sent.</span> Check your inbox to verify your account.
+        </p>
+        <p>
+            Didn't receive it? Your email may already be in use. Try 
+            <button type="button" class="text-link" on:click={() => toggleMode("login")}>
+                logging in
+            </button> instead.
+        </p>
+        <p>
+            Alternatively,
+            <button type="button" class="text-link" on:click={() => toggleMode("signup")}>
+                send another
+            </button> confirmation email.
+        </p>
+
+    {:else if $authFormStatus === "resetEmailSent"}
+        <Icon icon={UI_ICONS.animEmailSent} class="page__icon" />
+        <p>
+            <span class="text-success">Password reset email sent.</span> Check your inbox to continue.
+        </p>
+
+        <p>
+            Didn't get it?
+            <button type="button" class="text-link" on:click={() => toggleMode("requestReset")}>
+                Resend
+            </button>.
+        </p>
+
+    {:else if $authFormStatus === "passwordReset"}
+        <Icon icon={UI_ICONS.animSuccess} class="page__icon" />
+        <p class="text-success">
+            Your password has been reset successfully.
+        </p>
+
+        <button
+            type="button"
+            class="btn btn--primary btn--block"
+            on:click={() => window.location.replace("/")}
+        >
+            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+            Continue
+        </button>
+    
+    <!-- Escape hatch -->
+    {:else}
+        <Icon icon={UI_ICONS.animFailed} class="page__icon" />
+        <p class="text-danger">
+            An unexpected error occurred. Please try again.
+        </p>
+
+        <button
+            type="button"
+            class="btn btn--primary btn--block"
+            on:click={() => toggleMode("login")}
+        >
+            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+            Go to login
+        </button>
+    {/if}
 {/if}

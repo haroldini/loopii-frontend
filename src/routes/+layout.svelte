@@ -1,12 +1,13 @@
 
 <script>
     import favicon from "$lib/assets/favicon.svg";
+    import Icon from "@iconify/svelte";
     import "$lib/styles/app.css";
 
     import { get } from "svelte/store";
     import { onMount } from "svelte";
 
-    import { initReferences, retryReferences, referencesStatus } from "$lib/stores/app.js";
+    import { initReferences, retryReferences, referencesStatus, UI_ICONS } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
@@ -83,6 +84,10 @@
         }
     }
 
+    function refreshPage() {
+        window.location.replace("/");
+    }
+
     // Confirm single-device sign-out
     function confirmLocalSignOut() {
         addToast({
@@ -116,51 +121,53 @@
 <Popups />
 
 
+<!-- Couldn't connect to loopii // Missing db, auth, profile, etc. -->
 {#if $referencesStatus === "error" || $authState === "error" || $profileState === "error"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
+            
             <h1 class="gate__brand">loopii</h1>
-
             <section class="card">
                 <div class="section stack">
-                    <p>Couldn't connect to loopii.</p>
-                    <p class="text-hint">Please refresh or try again later.</p>
-
-                    <button type="button" class="btn btn--primary btn--block" onclick={retryAll}>
-                        Retry
-                    </button>
-
-                    {#if $authState === "authenticated"}
-                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                            Log out
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <p class="text-center text-fw-semibold">Couldn't connect to loopii.</p>
+                    <p class="text-center text-hint">Please refresh or try again later.</p>
+                    <div class="actionbar">
+                        <button type="button" class="btn btn--primary btn--block" onclick={retryAll}>
+                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Retry
                         </button>
-                    {/if}
+    
+                        {#if $authState === "authenticated"}
+                            <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                                <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                            </button>
+                        {/if}
+                    </div>
                 </div>
             </section>
         </div>
     </div>
 
-{:else if $referencesStatus === "loading" || $referencesStatus === "unloaded"}
-    <div class="gate">
-        <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
-            <section class="card">
-                <div class="section stack">
-                    <p class="text-hint">Connecting to loopii...</p>
-                </div>
-            </section>
-        </div>
-    </div>
+<!-- Loading -->
+{:else if 
+        $referencesStatus === "loading" 
+        || $referencesStatus === "unloaded" 
+        || $authState === "loading"
+        || $profileState === "loading"}
 
-{:else if $authState === "loading" || $profileState === "loading"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             <h1 class="gate__brand">loopii</h1>
-            <section class="card">
-                <div class="section stack">
-                    <p class="text-hint">Logging you in...</p>
-                </div>
-            </section>
+            <Icon icon={UI_ICONS.animLoading} class="page__icon" />
+
+            <!-- Loading // fetching resources -->
+            {#if $referencesStatus === "loading" || $referencesStatus === "unloaded"}
+                <p class="text-center text-hint">Connecting...</p>
+            
+            <!-- Loading // Logging in -->
+            {:else if $authState === "loading" || $profileState === "loading"}
+                <p class="text-center text-hint">Logging in...</p>
+            {/if}
         </div>
     </div>
 
@@ -171,11 +178,17 @@
 
             <section class="card">
                 <div class="section stack">
-                    <p>Loading is taking longer than expected.</p>
-                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
-                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                        Log out
-                    </button>
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <p class="text-center">Sorry, loopii is taking longer than expected to load.</p>
+                    <p class="text-center text-hint">Try refreshing, or log out and log back in.</p>
+                    <div class="actionbar">
+                        <button type="button" class="btn btn--primary btn--block" onclick={refreshPage}>
+                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Refresh
+                        </button>
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
@@ -233,7 +246,8 @@
 
             <section class="card">
                 <div class="section stack">
-                    <p>Stale session.</p>
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <p>Sorry, something went wrong.</p>
                     <p class="text-hint">Try refreshing, or log out and log back in.</p>
                     <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                         Log out

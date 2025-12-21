@@ -377,7 +377,7 @@
     width: 100%;
 }
 
-.actionbar > * {
+.actionbar > .btn--block {
     flex: 1 1 0;
 }
 
