@@ -21,3 +21,10 @@ export function getPlatforms() {
         method: "GET"
     });
 }
+
+// Get all reference data at once
+export function getAllReferences() {
+    return request("/references/all", {
+        method: "GET"
+    });
+}

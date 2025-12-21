@@ -3,7 +3,7 @@ import { writable, get, derived } from "svelte/store";
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 
-import { getCountries, getInterests, getPlatforms } from "$lib/api/references.js";
+import { getAllReferences } from "$lib/api/references.js";
 import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops.js";
 import { getProfileFromLoop } from "$lib/api/loop.js";
 
@@ -115,17 +115,26 @@ export const GENDER_ICONS = {
 export const allCountries = writable([]);
 export const allInterests = writable([]);
 export const allPlatforms = writable([]);
-export const referencesLoaded = writable(false);
 
-export async function initReferences() {
-    if (get(referencesLoaded)) return;
+// "unloaded" | "loading" | "loaded" | "error"
+export const referencesStatus = writable("unloaded");
+
+export async function initReferences({ force = false } = {}) {
+    const s = get(referencesStatus);
+    if (!force && (s === "loading" || s === "loaded")) return;
+
+    referencesStatus.set("loading");
 
     try {
-        const [countries, interests, platforms] = await Promise.all([
-            getCountries(),
-            getInterests(),
-            getPlatforms(),
-        ]);
+        const data = await getAllReferences();
+
+        const countries = data?.countries ?? [];
+        const interests = data?.interests ?? [];
+        const platforms = data?.platforms ?? [];
+
+        if (!Array.isArray(countries) || !Array.isArray(interests) || !Array.isArray(platforms)) {
+            throw new Error("Invalid references payload");
+        }
 
         // Sort countries with US and GB first
         const sortedCountries = [...countries].sort((a, b) => {
@@ -136,37 +145,48 @@ export async function initReferences() {
             return a.name.localeCompare(b.name);
         });
 
-        // Attach flag URLs by country code
+        // Attach flag URLs
         const countriesWithFlags = sortedCountries.map((c) => ({
             ...c,
             flag_url: c.code ? `/flags/${c.code.toLowerCase()}.svg` : null,
         }));
 
-		// Attach static icons by normalized name
-		const platformsWithIcons = platforms.map(p => {
-			const key = p.name.trim().toLowerCase();
-			return {
-				...p,
-				icon_url: PLATFORM_ICONS[key] || null,
-			};
-		});
+        // Attach static icons by normalized name
+        const platformsWithIcons = platforms.map((p) => {
+            const key = (p.name ?? "").trim().toLowerCase();
+            return {
+                ...p,
+                icon_url: PLATFORM_ICONS[key] || null,
+            };
+        });
 
         allCountries.set(countriesWithFlags);
         allInterests.set(interests);
         allPlatforms.set(platformsWithIcons);
-        referencesLoaded.set(true);
+
+        referencesStatus.set("loaded");
     } catch (err) {
         console.error("Failed to load reference data", err);
+        allCountries.set([]);
+        allInterests.set([]);
+        allPlatforms.set([]);
+        referencesStatus.set("error");
     }
 }
 
+export function retryReferences() {
+    return initReferences({ force: true });
+}
+
 export const interestMap = derived(allInterests, (list) =>
-    Object.fromEntries(list.map((i) => [i.id, i.name]))
+    Object.fromEntries((list || []).map((i) => [i.id, i.name]))
 );
+
 export const platformMap = derived(allPlatforms, (list) =>
-    Object.fromEntries(list.map((p) => [p.id, p]))
+    Object.fromEntries((list || []).map((p) => [p.id, p]))
 );
+
 export const countryMap = derived(allCountries, (list) =>
-    Object.fromEntries(list.map((c) => [c.id, c]))
+    Object.fromEntries((list || []).map((c) => [c.id, c]))
 );
 

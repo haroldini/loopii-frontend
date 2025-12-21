@@ -6,7 +6,7 @@
     import { get } from "svelte/store";
     import { onMount } from "svelte";
 
-    import { initReferences } from "$lib/stores/app.js";
+    import { initReferences, retryReferences, referencesStatus } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
@@ -30,8 +30,13 @@
         initReferences();
         initAuth();
         setTimeout(() => {
+            if ($referencesStatus === "loading") {
+                console.warn("References loading timeout.");
+                referencesStatus.set("error");
+            }
+
             if ($authState === "loading") {
-                console.warn("Auth loading timeout → forcing timeout");
+                console.warn("Auth loading timeout.");
                 authState.set("timeout");
             }
         }, LOADING_TIMEOUT);
@@ -43,7 +48,7 @@
             initProfile();
             setTimeout(() => {
                 if ($profileState === "loading") {
-                    console.warn("Profile loading timeout → forcing timeout");
+                    console.warn("Profile loading timeout.");
                     profileState.set("timeout");
                 }
             }, LOADING_TIMEOUT);
@@ -52,7 +57,11 @@
 
     // ---------------- App data setup ---------------- //
     $effect(() => {
-        if ($authState === "authenticated" && $profileState === "loaded") {
+        if (
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded"
+        ) {
             initPeerStore();
             initLoopsStore();
             initLoopRequestsStore();
@@ -61,6 +70,18 @@
             clearNotificationSub();
         }
     });
+
+    function retryAll() {
+        if ($referencesStatus === "error") {
+            retryReferences();
+        }
+        if ($authState === "error") {
+            initAuth();
+        }
+        if ($authState === "authenticated" && $profileState === "error") {
+            initProfile();
+        }
+    }
 
     // Confirm single-device sign-out
     function confirmLocalSignOut() {
@@ -95,18 +116,37 @@
 <Popups />
 
 
-{#if $authState === "timeout" || $profileState === "timeout"}
+{#if $referencesStatus === "error" || $authState === "error" || $profileState === "error"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             <h1 class="gate__brand">loopii</h1>
 
             <section class="card">
                 <div class="section stack">
-                    <p>Loading is taking longer than expected.</p>
-                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
-                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                        Log out
+                    <p>Couldn't connect to loopii.</p>
+                    <p class="text-hint">Please refresh or try again later.</p>
+
+                    <button type="button" class="btn btn--primary btn--block" onclick={retryAll}>
+                        Retry
                     </button>
+
+                    {#if $authState === "authenticated"}
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            Log out
+                        </button>
+                    {/if}
+                </div>
+            </section>
+        </div>
+    </div>
+
+{:else if $referencesStatus === "loading" || $referencesStatus === "unloaded"}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+            <section class="card">
+                <div class="section stack">
+                    <p class="text-hint">Connecting to loopii...</p>
                 </div>
             </section>
         </div>
@@ -118,7 +158,24 @@
             <h1 class="gate__brand">loopii</h1>
             <section class="card">
                 <div class="section stack">
-                    <p class="text-hint">Loading…</p>
+                    <p class="text-hint">Logging you in...</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+{:else if $authState === "timeout" || $profileState === "timeout"}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand">loopii</h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <p>Loading is taking longer than expected.</p>
+                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
+                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                        Log out
+                    </button>
                 </div>
             </section>
         </div>
@@ -161,7 +218,7 @@
         </div>
     </div>
 
-{:else if $authState === "authenticated" && $profileState === "loaded"}
+{:else if $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded"}
     <div class="app">
         <Navbar />
         <div class="app-body">
