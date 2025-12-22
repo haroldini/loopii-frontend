@@ -284,7 +284,6 @@
     }
 }
 
-/* Top header (title/hint area) */
 .overlay__header {
     flex: 0 0 auto;
 
@@ -295,14 +294,12 @@
     border-bottom: var(--border-width) solid var(--border-color);
 }
 
-/* Middle scroll area */
 .overlay__body {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
 }
 
-/* Bottom action bar (buttons) */
 .overlay__actionbar {
     flex: 0 0 auto;
 
@@ -313,13 +310,12 @@
     border-top: var(--border-width) solid var(--border-color);
 }
 
-/* Buttons layout: first left, rest right */
 .overlay__actions {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     width: 100%;
-    flex-wrap: wrap; /* set to nowrap if you insist on single row */
+    flex-wrap: wrap;
 }
 
 .overlay__actions > :first-child {

@@ -451,6 +451,7 @@
                 <label class="field__label" for="interests">{labelFor(field)}</label>
                 <MultiSelect
                     title="Your interests"
+                    hint="Select up to 20 interests that describe you."
                     placeholder="Any"
                     searchPlaceholder="Search interests..."
                     items={allInterests}
@@ -460,6 +461,7 @@
                     max={20}
                     showSearch={false}
                     showBulkActions={false}
+                    allowGroupSelect={false}
                     value={values.interests ?? []}
                     on:change={(e) => setters.interests && setters.interests(e.detail.value)}
                 />

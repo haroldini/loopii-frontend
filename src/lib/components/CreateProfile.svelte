@@ -268,15 +268,13 @@
             />
 
             <div class="row row--between">
-                <div class="actionbar">
-                    <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 0)}>
-                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/> <span class="btn__label">Back</span>
-                    </button>
-                    
-                    <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
-                        <span class="btn__label">Continue</span> <Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
-                    </button>
-                </div>
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 0)}>
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/> <span class="btn__label">Back</span>
+                </button>
+                
+                <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
+                    <span class="btn__label">Continue</span> <Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
+                </button>
             </div>
         {/if}
 

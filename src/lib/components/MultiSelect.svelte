@@ -16,6 +16,7 @@
     }
 
     export let title = "Select";
+    export let hint = "You can select multiple options.";
     export let placeholder = "Any";
     export let searchPlaceholder = "Search...";
     export let items = [];
@@ -354,43 +355,21 @@
 
     {#if isOpen}
         <div class="overlay" role="dialog" aria-modal="true" aria-label={title}>
-            <button
-                type="button"
-                class="overlay__scrim"
-                aria-label="Close"
-                on:click={() => closeOverlay(false)}
-            ></button>
+            <div class="overlay__scrim"></div>
 
             <div class="overlay__panel">
+                <!-- Header -->
                 <header class="overlay__header">
-                    <button type="button" class="btn btn--ghost" on:click={() => closeOverlay(false)}>
-                        <Icon icon={UI_ICONS.close} class="btn__icon" />
-                        <span class="btn__label">Close</span>
-                    </button>
-
-                    <div class="overlay__title">{title}</div>
-
-                    <div class="overlay__actions">
-                        <span
-                            class={"multi-select__headerCount text-muted " + (atMax ? "is-at-max" : "")}
-                            aria-live="polite"
-                        >
-                            {headerCountText}
-                        </span>
-
-                        <button
-                            type="button"
-                            class="btn btn--primary"
-                            on:click={() => closeOverlay(true)}
-                            disabled={doneDisabled}
-                        >
-                            <Icon icon={UI_ICONS.check} class="btn__icon" />
-                            <span class="btn__label">Done</span>
-                        </button>
+                    <div class="bar__title">
+                        <h3>{title}</h3>
+                        {#if hint}
+                            <p class="text-hint">{hint}</p>
+                        {/if}
                     </div>
                 </header>
 
-                <div class="overlay__body">
+                <!-- Body: scrollable content -->
+                <main class="overlay__body multi-select__body">
                     {#if showSearch || showBulkActions}
                         <div class="multi-select__tools">
                             {#if showSearch}
@@ -435,27 +414,35 @@
                             {#each visibleGroups as g (g.key)}
                                 {#if groupKey}
                                     {@const st = groupStatesByKey[g.key]}
-                                    <label
-                                        class="multi-select__row multi-select__row--group"
-                                        aria-disabled={disabled || !allowGroupSelect}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={!!st?.checked}
-                                            use:captureGroupCheckbox={g.key}
-                                            on:change={(e) => {
-                                                const scope = groupAllItems(g);
-                                                toggleMany(scope.map((it) => it.id), e.target.checked);
-                                            }}
-                                            disabled={
-                                                disabled ||
-                                                !allowGroupSelect ||
-                                                (st?.total || 0) === 0
-                                            }
-                                        />
-                                        <span class="multi-select__label">{g.label}</span>
-                                        <span class="multi-select__count text-muted">{st?.total || 0}</span>
-                                    </label>
+
+                                    {#if allowGroupSelect}
+                                        <label
+                                            class="multi-select__row multi-select__row--group"
+                                            aria-disabled={disabled}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={!!st?.checked}
+                                                use:captureGroupCheckbox={g.key}
+                                                on:change={(e) => {
+                                                    const scope = groupAllItems(g);
+                                                    toggleMany(scope.map((it) => it.id), e.target.checked);
+                                                }}
+                                                disabled={disabled || (st?.total || 0) === 0}
+                                            />
+                                            <span class="multi-select__label">{g.label}</span>
+                                            <span class="multi-select__count text-muted">{st?.total || 0}</span>
+                                        </label>
+                                    {:else}
+                                        <div
+                                            class="multi-select__row multi-select__row--group multi-select__row--group--static"
+                                            aria-disabled="true"
+                                        >
+                                            <span class="multi-select__group-spacer" aria-hidden="true"></span>
+                                            <span class="multi-select__label">{g.label}</span>
+                                            <span class="multi-select__count text-muted">{st?.total || 0}</span>
+                                        </div>
+                                    {/if}
                                 {/if}
 
                                 {#if (g.visibleItems || []).length > 0}
@@ -475,6 +462,37 @@
                                 {/if}
                             {/each}
                         {/if}
+                    </div>
+                </main>
+
+                <!-- Bottom actionbar -->
+                <div class="overlay__actionbar">
+                    <div class="overlay__actions">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => closeOverlay(false)}
+                        >
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
+                            <span class="btn__label">Cancel</span>
+                        </button>
+
+                        <span
+                            class={"multi-select__headerCount text-muted " + (atMax ? "is-at-max" : "")}
+                            aria-live="polite"
+                        >
+                            {headerCountText}
+                        </span>
+
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={() => closeOverlay(true)}
+                            disabled={doneDisabled}
+                        >
+                            <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <span class="btn__label">Done</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -616,4 +634,19 @@
     .multi-select__row--group[aria-disabled="true"] input[type="checkbox"] {
         cursor: not-allowed;
     }
+
+    .multi-select__row--group--static {
+        cursor: default;
+    }
+
+    .multi-select__row--group--static:hover {
+        background: color-mix(in oklab, var(--bg-surface) 84%, var(--border-color));
+    }
+
+    .multi-select__group-spacer {
+        width: 1.5rem;
+        height: 1.5rem;
+        display: block;
+    }
+
 </style>

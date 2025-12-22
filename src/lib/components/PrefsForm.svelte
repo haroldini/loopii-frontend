@@ -342,6 +342,8 @@
                         lat={proximityLat}
                         lng={proximityLng}
                         radius={proximityKm ? Number(proximityKm) * 1000 : 0}
+                        title="Select location"
+                        hint="You will only see people near this location."
                         mode="preview"
                         defaultZoom={11}
                         on:confirm={(e) => {

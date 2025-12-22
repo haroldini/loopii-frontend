@@ -24,8 +24,8 @@
     export let lng = -0.09;        // initial longitude (default: London)
     export let radius;             // optional radius for drawing a circle (meters)
     export let defaultZoom = 11;   // default zoom level
-    export let title = "";         // fullscreen title
-    export let hint = "";          // fullscreen hint text
+    export let title = "Select location";                       // fullscreen title
+    export let hint = "Pin the location on the map";            // fullscreen hint text
 
     // ─── Constants and utility functions ────────────────────────────────────────
     const FALLBACK_LAT = 51.505;
@@ -240,60 +240,67 @@
 </script>
 
 
-<div class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}>
+<div
+    class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}
+    role={mode === "fullscreen" ? "dialog" : undefined}
+    aria-modal={mode === "fullscreen" ? "true" : undefined}
+    aria-label={mode === "fullscreen" ? title : "Map picker"}
+>
     {#if mode === "fullscreen"}
         <div class="overlay__scrim"></div>
     {/if}
 
+
     <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
         {#if mode === "fullscreen"}
-            <header 
-                class="overlay__header"
-                class:overlay__header-row={title || hint}
-                class:overlay__header-column={!title && !hint}
-            >
-                {#if title || hint}
-                    <div class="bar__title">
-                        {#if title}
-                            <h3>{title}</h3>
-                        {/if}
-                        {#if hint}
-                            <p class="text-hint">{hint}</p>
-                        {/if}
-                    </div>
-                {/if}
-                <div 
-                    class="overlay__actions"
-                    class:overlay__actions-left-first={!title && !hint}
-                >
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
-                        on:click={() => exitToPreview(false)}
-                    >
-                        <Icon icon={UI_ICONS.close} class="btn__icon" />
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn--primary btn--icon"
-                        on:click={() => exitToPreview(true)}
-                    >
-                        <Icon icon={UI_ICONS.check} class="btn__icon" />
-                    </button>
+            <header class="overlay__header">
+                <div class="bar__title">
+                    {#if title}<h3>{title}</h3>{/if}
+                    {#if hint}<p class="text-hint">{hint}</p>{/if}
                 </div>
             </header>
         {/if}
 
-        <div class={mode === "fullscreen" ? "overlay__body mappicker__body" : "mappicker__body"}>
-            <button
-                type="button"
-                bind:this={mapContainer}
-                class="mappicker__map ui-pressable"
-                on:click={mode === "preview" ? enterFullscreen : null}
-                aria-label="Open map in fullscreen"
-            ></button>
-        </div>
+        <main class={mode === "fullscreen"
+            ? "overlay__body overlay__body--no-scroll mappicker__body"
+            : "mappicker__body"}
+        >
+            <div class="mappicker__stage">
+                <div class="mappicker__map-wrapper">
+                    <button
+                        type="button"
+                        bind:this={mapContainer}
+                        class="mappicker__map ui-pressable"
+                        on:click={mode === "preview" ? enterFullscreen : null}
+                        aria-label="Open map in fullscreen"
+                    ></button>
+                </div>
+            </div>
+        </main>
+
+        {#if mode === "fullscreen"}
+            <div class="overlay__actionbar">
+                <div class="overlay__actions">
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={() => exitToPreview(false)}
+                    >
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                        <span class="btn__label">Cancel</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => exitToPreview(true)}
+                    >
+                        <Icon icon={UI_ICONS.check} class="btn__icon" />
+                        <span class="btn__label">Confirm</span>
+                    </button>
+                </div>
+            </div>
+        {/if}
     </div>
 </div>
 
@@ -319,9 +326,49 @@
     .mappicker__body {
         flex: 1 1 auto;
         min-height: 0;
+        overflow: hidden;
         width: 100%;
         height: 100%;
+    }
+
+    .mappicker__stage {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        display: flex;
+    }
+
+    .overlay .mappicker__body {
+        padding: var(--space-3);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .overlay .mappicker__stage {
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+    }
+
+    .mappicker__map-wrapper {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+    }
+
+    .overlay .mappicker__map-wrapper {
+        width: min(100%, 75rem);
+        height: 100%;
+
+        background: var(--bg-app);
+        border: var(--border-width) solid var(--border-color);
+        border-radius: var(--radius-lg);
         overflow: hidden;
+
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
     }
 
     .mappicker__map {
@@ -332,5 +379,6 @@
         margin: 0;
         border-radius: 0;
         background: transparent;
+        display: block;
     }
 </style>
