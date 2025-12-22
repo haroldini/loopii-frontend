@@ -104,6 +104,7 @@ export const GENDER_ICONS = {
 export const UI_ICONS = {
     "animSpinner": "svg-spinners:tadpole",
     "animLoading": "svg-spinners:gooey-balls-2",
+    "animLoadingDots": "svg-spinners:3-dots-move",
     "animFailed": "line-md:emoji-frown",
     "animSuccess": "line-md:check-all",
     "animEmailCheck": "line-md:email-check",
@@ -121,6 +122,9 @@ export const UI_ICONS = {
     "arrowLeft": "mdi:arrow-left",
     "arrowRight": "mdi:arrow-right",
     "send": "mdi:send",
+
+    "imageAdd": "mdi:image-plus-outline",
+    "imageRemove": "mdi:image-remove-outline",
 };
 
 // ---------------- Reference Data ---------------- //

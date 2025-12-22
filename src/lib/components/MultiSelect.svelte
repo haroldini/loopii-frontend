@@ -319,7 +319,7 @@
 <div class="multi-select">
     <button
         type="button"
-        class="multi-select__control ui-pressable"
+        class="btn btn--block multi-select__control"
         on:click={openOverlay}
         disabled={disabled}
         aria-haspopup="dialog"
@@ -471,12 +471,6 @@
         align-items: center;
         justify-content: space-between;
         gap: var(--space-2);
-
-        padding: var(--space-2) var(--space-3);
-        border-radius: var(--radius-md);
-        border: var(--border-width) solid var(--border-color);
-        background: var(--bg-surface);
-        color: var(--text-secondary);
         text-align: left;
     }
 

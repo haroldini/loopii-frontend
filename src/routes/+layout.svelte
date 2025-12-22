@@ -14,7 +14,7 @@
     import { initLoopsStore } from "$lib/stores/loops.js";
     import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
     import { initPeerStore } from "$lib/stores/feed.js";
-    import { profileFormState } from "$lib/stores/createProfile.js";
+    import { profileFormState, submissionProgress } from "$lib/stores/createProfile.js";
     import { addToast } from "$lib/stores/popups.js";
 
     import Auth from "$lib/components/Auth.svelte";
@@ -208,28 +208,40 @@
     </div>
 
 {:else if $authState === "authenticated" && $profileState === "missing"}
-    <div class="gate">
-        <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
 
-            <section class="card">
-                <div class="section stack">
-                    <CreateProfile />
-                </div>
-            </section>
+    {#if $profileFormState === "submitting"}
+        <div class="gate">
+            <div class="gate__inner content content--narrow stack">
+                <h1 class="gate__brand">loopii</h1>
+                <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
+                <p class="text-center text-fw-semibold">{$submissionProgress}...</p>
+            </div>
+        </div>
+    {:else }
+        <div class="gate">
+            <div class="gate__inner content content--narrow stack">
+                <h1 class="gate__brand">loopii</h1>
 
-            {#if ["idle", "error"].includes($profileFormState)}
                 <section class="card">
                     <div class="section stack">
-                        <p class="text-hint">Logged in as {$user.email}</p>
-                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                            Log out
-                        </button>
+                        <CreateProfile />
                     </div>
                 </section>
-            {/if}
+
+                {#if !["success", "partial", "exists", "submitting"].includes($profileFormState)}
+                    <section class="u-separator-top">
+                        <div class="section stack">
+                            <p class="text-hint text-center">Logged in as {$user.email}</p>
+                            <button type="button" class="btn btn--danger btn--mini text-center" onclick={confirmLocalSignOut}>
+                                <Icon icon={UI_ICONS.logout} class="btn__icon" /> Log out
+                            </button>
+                        </div>
+                    </section>
+                {/if}
+            </div>
         </div>
-    </div>
+    {/if}
+
 
 {:else if $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded"}
     <div class="app">
@@ -250,7 +262,7 @@
                     <p>Sorry, something went wrong.</p>
                     <p class="text-hint">Try refreshing, or log out and log back in.</p>
                     <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                        Log out
+                        <Icon icon={UI_ICONS.logout} class="btn__icon" /> Log out
                     </button>
                 </div>
             </section>

@@ -39,26 +39,19 @@
             <div class="bar__actions">
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--icon"
+                    class:is-loading={$peerStatus === "loading"}
                     on:click={refreshPeerStore}
                     disabled={$peerStatus === "loading"}
+                    aria-label="Refresh"
                 >
-                    {#if $peerStatus === "loading"}
-                        <Icon 
-                            icon={UI_ICONS.animSpinner}
-                            class="btn__icon"
-                        />
-                    {:else}
-                        <Icon 
-                            icon={UI_ICONS.refresh}
-                            class="btn__icon"
-                        />
-                    {/if}
+                    <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                 </button>
 
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--icon"
                     on:click={() => goto("/profile/search-preferences")}
                 >
                     <Icon 
@@ -124,7 +117,7 @@
                 <div class="actionbar">
                     <button
                         type="button"
-                        class="btn btn--ghost text-fw-semibold"
+                        class="btn btn--ghost btn--block"
                         on:click={() => {
                             handleDecision(false);
                             if (expanded) close();
@@ -138,7 +131,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--primary text-fw-semibold"
+                        class="btn btn--primary btn--block"
                         on:click={() => {
                             handleDecision(true);
                             if (expanded) close();

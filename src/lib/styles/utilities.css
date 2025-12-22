@@ -17,3 +17,11 @@
 .u-space-above {
     margin-top: var(--space-1);
 }
+
+.u-separator-top {
+    border-top: var(--border-width) solid var(--border-color);
+}
+
+.u-invisible {
+    visibility: hidden !important;
+}

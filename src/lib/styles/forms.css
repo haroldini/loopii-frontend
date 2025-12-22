@@ -10,6 +10,7 @@ select {
     background: var(--bg-surface);
     color: var(--text-secondary);
     font: inherit;
+    line-height: var(--line-height);
 }
 
 input:focus,

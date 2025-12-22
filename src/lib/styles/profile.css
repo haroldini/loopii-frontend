@@ -790,6 +790,9 @@
 
 .social-remove-btn {
     color: var(--danger);
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .social-remove-btn:hover {

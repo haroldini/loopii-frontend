@@ -1,9 +1,10 @@
 
 <script>
 	import { onMount, onDestroy } from "svelte";
+    import Icon from "@iconify/svelte";
 	import { get } from "svelte/store";
 	import { user, signOut } from "$lib/stores/auth.js";
-	import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+	import { allCountries, allInterests, allPlatforms, UI_ICONS } from "$lib/stores/app.js";
 	import { 
 		username, name, dob, gender, country, bio, loop_bio, looking_for,
 		latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
@@ -112,14 +113,12 @@
 </script>
 
 
-{#if $profileFormState === "submitting"}
-    <p class="text-hint">{$submissionProgress}...</p>
-
-{:else if ["success", "partial", "exists"].includes($profileFormState)}
-    <p>Profile created. Loading app...</p>
+{#if ["success", "partial", "exists"].includes($profileFormState)}
+    <Icon icon={UI_ICONS.animSpinner} class="page__icon" />
+    <p class="text-center text-success">Loading app...</p>
 
     {#if showFallback}
-        <p class="text-hint">
+        <p class="text-hint text-center">
             Not loading?
             <button
                 type="button"
@@ -133,7 +132,9 @@
 
 {:else if $profileFormState === "error"}
     <p class="text-danger">{$error}</p>
-    <button type="button" class="btn btn--primary" on:click={resetState}>Try again</button>
+    <button type="button" class="btn btn--primary" on:click={resetState}>
+        <Icon icon={UI_ICONS.refresh} class="btn__icon"/> Try again
+    </button>
 
 {:else}
     <form class="form" on:submit|preventDefault={submitProfile}>
@@ -190,16 +191,16 @@
                                     avatarPicker.reset();
                                 }}
                             >
-                                Clear image
+                                <Icon icon={UI_ICONS.imageRemove} class="btn__icon"/> Clear image
                             </button>
                         </div>
                     {:else}
                         <button
                             type="button"
-                            class="btn btn--primary btn--block"
+                            class="btn btn--block"
                             on:click={() => avatarPicker.open()}
                         >
-                            Select image
+                            <Icon icon={UI_ICONS.imageAdd} class="btn__icon"/> Select image
                         </button>
                     {/if}
 
@@ -223,10 +224,13 @@
                 <button
                     type="button"
                     class="btn btn--primary btn--block"
-                    on:click={handlePage0Continue}
+                    class:is-loading={$usernameAvailability.state === "checking"}
                     disabled={!$readyToSubmit || $usernameAvailability.state === "checking"}
-                >
-                    {$usernameAvailability.state === "checking" ? "Checking username…" : "Continue"}
+                    on:click={handlePage0Continue}
+                    >
+                    <span class="btn__label">Continue</span>
+                    <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                 </button>
             </div>
         {/if}
@@ -255,13 +259,15 @@
             />
 
             <div class="row row--between">
-                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 0)}>
-                    Back
-                </button>
-
-                <button type="button" class="btn btn--primary" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
-                    Continue
-                </button>
+                <div class="actionbar">
+                    <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 0)}>
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/> <span class="btn__label">Back</span>
+                    </button>
+                    
+                    <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
+                        <span class="btn__label">Continue</span> <Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
+                    </button>
+                </div>
             </div>
         {/if}
 
@@ -281,12 +287,12 @@
             />
 
             <div class="row row--between">
-                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 1)}>
-                    Back
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 1)}>
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label"> Back</span>
                 </button>
 
-                <button type="button" class="btn btn--primary" on:click={() => ($currentPage = 3)} disabled={!$readyToSubmit}>
-                    Continue
+                <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 3)} disabled={!$readyToSubmit}>
+                    <span class="btn__label">Continue</span><Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
                 </button>
             </div>
         {/if}
@@ -306,16 +312,20 @@
             />
 
             <div class="row row--between">
-                <button type="button" class="btn btn--ghost" on:click={() => ($currentPage = 2)}>
-                    Back
+                <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 2)}>
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label"> Back</span>
                 </button>
 
                 <button
                     type="submit"
-                    class="btn btn--primary"
+                    class="btn btn--primary btn--block"
+                    class:is-loading={$profileFormState === "submitting"}
                     disabled={$profileFormState === "submitting" || !$readyToSubmit || !prefsValid}
-                >
-                    {$profileFormState === "submitting" ? "Creating…" : "Create profile"}
+                    on:click={handlePage0Continue}
+                    >
+                    <span class="btn__label">Create profile</span>
+                    <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                 </button>
             </div>
         {/if}

@@ -175,7 +175,7 @@ export async function ensureUsernameAvailable() {
 // --- Submit profile ---
 export async function submitProfile() {
 	profileFormState.set("submitting");
-	submissionProgress.set("Creating profile");
+	submissionProgress.set("Creating your profile");
 	error.set(null);
 
 	try {
@@ -204,7 +204,7 @@ export async function submitProfile() {
 		// Step 1: Create profile
 		let createdProfile;
 		try {
-			submissionProgress.set("Creating profile");
+			submissionProgress.set("Creating your profile");
 			createdProfile = await createProfile({
 				username: normalized.username,
 				dob: normalized.dob,
@@ -254,7 +254,7 @@ export async function submitProfile() {
 		let interestsError = false;
 		if (normalized.interests && normalized.interests.length > 0) {
 			try {
-				submissionProgress.set("Adding interests");
+				submissionProgress.set("Adding your interests");
 				await createProfileInterests({ interest_ids: normalized.interests });
 			} catch {
 				interestsError = true;
@@ -265,7 +265,7 @@ export async function submitProfile() {
 		let socialsError = false;
 		if (normalized.socials && normalized.socials.length > 0) {
 			try {
-				submissionProgress.set("Adding socials");
+				submissionProgress.set("Adding yoursocials");
 				await createProfileSocials({ socials: normalized.socials });
 			} catch {
 				socialsError = true;
@@ -308,7 +308,7 @@ export async function submitProfile() {
 
 			// Search prefs: full payload
 			try {
-				submissionProgress.set("Saving search preferences");
+				submissionProgress.set("Setting your preferences");
 				const searchPayload = {
 					genders,
 					age_min,
@@ -335,7 +335,7 @@ export async function submitProfile() {
 			// Visibility prefs: only genders + is_visible = true
 			if (Array.isArray(genders) && genders.length > 0) {
 				try {
-					submissionProgress.set("Saving visibility preferences");
+					submissionProgress.set("Setting your preferences");
 					const visibilityPayload = {
 						genders,
 						age_min: null,
@@ -397,7 +397,7 @@ export async function submitProfile() {
 
 		// Step 6: Fetch profile
 		try {
-			submissionProgress.set("Done. Getting your profile");
+			submissionProgress.set("Done. Logging you in");
 			const fetchedProfile = await getProfile();
 			profile.set(fetchedProfile);
 			profileState.set("loaded");

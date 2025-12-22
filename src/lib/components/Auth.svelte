@@ -197,12 +197,15 @@
                     <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("login")}>
                         Log in instead
                     </button>
-                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                        {#if $isSubmitting}
-                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
-                        {:else}
-                            <Icon icon={UI_ICONS.signUp} class="btn__icon" /> Sign up
-                        {/if}
+                    <button
+                        type="submit"
+                        class="btn btn--primary btn--block"
+                        class:is-loading={$isSubmitting}
+                        disabled={!$readyToSubmit || $isSubmitting}
+                        >
+                        <span class="btn__label">Sign up</span>
+                        <Icon icon={UI_ICONS.signUp} class="btn__icon" />
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                     </button>
                 </div>
 
@@ -211,12 +214,15 @@
                     <button type="button" class="btn btn--ghost btn--block" on:click={() => toggleMode("signup")}>
                         Sign up instead
                     </button>
-                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                        {#if $isSubmitting}
-                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
-                        {:else}
-                            <Icon icon={UI_ICONS.login} class="btn__icon" /> Log in
-                        {/if}
+                    <button
+                        type="submit"
+                        class="btn btn--primary btn--block"
+                        class:is-loading={$isSubmitting}
+                        disabled={!$readyToSubmit || $isSubmitting}
+                    >
+                        <span class="btn__label">Log in</span>
+                        <Icon icon={UI_ICONS.login} class="btn__icon" />
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                     </button>
                 </div>
                 
@@ -229,12 +235,15 @@
                     <button type="button" class="btn btn--ghost btn--icon" on:click={() => toggleMode("login")}>
                         <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                     </button>
-                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                        {#if $isSubmitting}
-                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
-                        {:else}
-                            <Icon icon={UI_ICONS.send} class="btn__icon" /> Send reset link
-                        {/if}
+                    <button
+                        type="submit"
+                        class="btn btn--primary btn--block"
+                        class:is-loading={$isSubmitting}
+                        disabled={!$readyToSubmit || $isSubmitting}
+                    >
+                        <span class="btn__label">Send reset link</span>
+                        <Icon icon={UI_ICONS.send} class="btn__icon" />
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                     </button>
                 </div>
                     
@@ -243,12 +252,15 @@
                     <button type="button" class="btn btn--ghost btn--icon" on:click={() => toggleMode("login")}>
                         <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                     </button>
-                    <button type="submit" class="btn btn--primary btn--block" disabled={!$readyToSubmit || $isSubmitting}>
-                        {#if $isSubmitting}
-                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon" />
-                        {:else}
-                            <Icon icon={UI_ICONS.resetPassword} class="btn__icon" /> Reset password
-                        {/if}
+                    <button
+                        type="submit"
+                        class="btn btn--primary btn--block"
+                        class:is-loading={$isSubmitting}
+                        disabled={!$readyToSubmit || $isSubmitting}
+                    >
+                        <span class="btn__label">Reset password</span>
+                        <Icon icon={UI_ICONS.resetPassword} class="btn__icon" />
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                     </button>
                 </div>
             {/if}
