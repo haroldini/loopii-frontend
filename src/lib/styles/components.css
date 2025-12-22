@@ -322,6 +322,67 @@
     margin-right: auto;
 }
 
+/* ===== Sticky bars ===== */
+
+.bar {
+    width: 100%;
+    background: var(--bg-surface);
+    border-color: var(--border-color);
+    border-style: solid;
+    border-width: 0;
+}
+
+.bar__inner {
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding: var(--space-2) var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+}
+
+.bar__title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+.bar__title > * {
+    min-width: 0;
+}
+
+.bar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-end;
+}
+
+.bar--header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    border-bottom-width: var(--border-width);
+}
+
+.bar--actionbar {
+    position: relative;
+    z-index: var(--z-actionbar);
+    border-top-width: var(--border-width);
+}
+
+.actionbar {
+    display: flex;
+    gap: var(--space-2);
+    width: 100%;
+}
+
+.actionbar > * {
+    flex: 1 1 0;
+}
 
 /* ===== App navbar ===== */
 

@@ -343,7 +343,11 @@
                         lng={proximityLng}
                         radius={proximityKm ? Number(proximityKm) * 1000 : 0}
                         title="Select location"
-                        hint="You will only see people near this location."
+                        hint={
+                            mode === "search"
+                                ? "You will only see people near this location."
+                                : "Only people near this location will see you."
+                        }
                         mode="preview"
                         defaultZoom={11}
                         on:confirm={(e) => {

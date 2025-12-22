@@ -23,10 +23,6 @@ authState.subscribe((state) => {
 export async function initProfile() {
     profileState.set("loading");
 
-    // REMOVE LATER
-    profileState.set("missing");
-    return
-
     try {
         // Fetch profile
         const data = await getProfile(); // request.js throws on non-2xx
