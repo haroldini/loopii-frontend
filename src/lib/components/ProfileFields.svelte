@@ -4,6 +4,7 @@
     import AudioPicker from "$lib/components/AudioPicker.svelte";
     import MultiSelect from "$lib/components/MultiSelect.svelte";
     import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
 
     /**
      * fields: array of either:
@@ -77,20 +78,20 @@
 
     const defaultLabels = {
         username: "Username",
-        name: "Display Name",
-        dob: "Date of Birth",
+        name: "Display name",
+        dob: "Date of birth",
         gender: "Gender",
         country: "Country",
         location: "Location",
         bio: "Bio",
         interests: "Interests",
-        socials: "Social Media Links",
+        socials: "Social media links",
         map: "Location",
-        star_sign: "Star Sign",
-        mbti: "Personality Type",
-        loop_bio: "Loops-only Bio",
-        looking_for: "What You're Looking For",
-        audio: "Voice Intro",
+        star_sign: "Star sign",
+        mbti: "Personality type",
+        loop_bio: "Loops-only bio",
+        looking_for: "What you're looking for",
+        audio: "Voice intro",
     };
 
     const DAY_MS = 24 * 60 * 60 * 1000;
@@ -396,6 +397,8 @@
 
                 {#if values.latitude != null && values.longitude != null}
                     <MapPicker
+                        title={field.title ?? "Your location"}
+                        hint={field.hint ?? "Select your approximate location."}
                         lat={values.latitude}
                         lng={values.longitude}
                         radius={1000}
@@ -410,19 +413,20 @@
                     <div class="actions actions--end">
                         <button
                             type="button"
-                            class="btn btn--ghost"
+                            class="btn btn--danger"
                             on:click={() => {
                                 setters.latitude && setters.latitude(null);
                                 setters.longitude && setters.longitude(null);
                             }}
                         >
-                            {field.clearLabel ?? "Clear location"}
+                            <Icon icon={UI_ICONS.pinRemove} class="btn__icon" />
+                            <span class="btn__label">{field.clearLabel ?? "Clear location"}</span>
                         </button>
                     </div>
                 {:else}
                     <button
                         type="button"
-                        class="btn btn--primary btn--block"
+                        class="btn btn--block"
                         on:click={() => {
                             const lat = field.defaultLat ?? 51.505;
                             const lng = field.defaultLng ?? -0.09;
@@ -430,7 +434,8 @@
                             setters.longitude && setters.longitude(lng);
                         }}
                     >
-                        {field.pickLabel ?? "Pick location"}
+                        <Icon icon={UI_ICONS.pinAdd} class="btn__icon" />
+                        <span class="btn__label">{field.pickLabel ?? "Pick location"}</span>
                     </button>
                 {/if}
 
@@ -445,7 +450,7 @@
             <div class="field">
                 <label class="field__label" for="interests">{labelFor(field)}</label>
                 <MultiSelect
-                    title="Your Interests"
+                    title="Your interests"
                     placeholder="Any"
                     searchPlaceholder="Search interests..."
                     items={allInterests}

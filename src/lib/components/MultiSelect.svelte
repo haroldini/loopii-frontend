@@ -1,6 +1,19 @@
 
 <script>
     import { createEventDispatcher, onDestroy, tick } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
+
+    // Scroll locking
+    function lockScroll() {
+        document.documentElement.classList.add("overlay-open");
+        document.body.classList.add("overlay-open");
+    }
+
+    function unlockScroll() {
+        document.documentElement.classList.remove("overlay-open");
+        document.body.classList.remove("overlay-open");
+    }
 
     export let title = "Select";
     export let placeholder = "Any";
@@ -123,6 +136,7 @@
 
         draft = clampDraftToMax([...valueArr]);
         query = "";
+        lockScroll();
         isOpen = true;
 
         tick().then(() => {
@@ -140,6 +154,7 @@
         }
 
         isOpen = false;
+        unlockScroll();
         groupCheckboxEls = {};
     }
 
@@ -349,7 +364,8 @@
             <div class="overlay__panel">
                 <header class="overlay__header">
                     <button type="button" class="btn btn--ghost" on:click={() => closeOverlay(false)}>
-                        Back
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                        <span class="btn__label">Close</span>
                     </button>
 
                     <div class="overlay__title">{title}</div>
@@ -368,46 +384,49 @@
                             on:click={() => closeOverlay(true)}
                             disabled={doneDisabled}
                         >
-                            Done
+                            <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <span class="btn__label">Done</span>
                         </button>
                     </div>
                 </header>
 
                 <div class="overlay__body">
-                    <div class="multi-select__tools">
-                        {#if showSearch}
-                            <input
-                                bind:this={searchEl}
-                                type="search"
-                                placeholder={searchPlaceholder}
-                                bind:value={query}
-                                aria-label={searchPlaceholder}
-                                disabled={disabled}
-                            />
-                        {/if}
+                    {#if showSearch || showBulkActions}
+                        <div class="multi-select__tools">
+                            {#if showSearch}
+                                <input
+                                    bind:this={searchEl}
+                                    type="search"
+                                    placeholder={searchPlaceholder}
+                                    bind:value={query}
+                                    aria-label={searchPlaceholder}
+                                    disabled={disabled}
+                                />
+                            {/if}
 
-                        {#if showBulkActions}
-                            <div class="multi-select__bulk">
-                                <button
-                                    type="button"
-                                    class="btn btn--ghost btn--block"
-                                    on:click={selectAll}
-                                    disabled={disabled || (items || []).length === 0}
-                                >
-                                    Select all
-                                </button>
+                            {#if showBulkActions}
+                                <div class="multi-select__bulk">
+                                    <button
+                                        type="button"
+                                        class="btn btn--ghost btn--block"
+                                        on:click={selectAll}
+                                        disabled={disabled || (items || []).length === 0}
+                                    >
+                                        Select all
+                                    </button>
 
-                                <button
-                                    type="button"
-                                    class="btn btn--ghost btn--block"
-                                    on:click={deselectAll}
-                                    disabled={disabled || draft.length === 0}
-                                >
-                                    Deselect all
-                                </button>
-                            </div>
-                        {/if}
-                    </div>
+                                    <button
+                                        type="button"
+                                        class="btn btn--ghost btn--block"
+                                        on:click={deselectAll}
+                                        disabled={disabled || draft.length === 0}
+                                    >
+                                        Deselect all
+                                    </button>
+                                </div>
+                            {/if}
+                        </div>
+                    {/if}
 
                     <div class="multi-select__list">
                         {#if visibleGroups.length === 0}

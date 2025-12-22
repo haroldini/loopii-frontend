@@ -1,9 +1,22 @@
 
 <script>
-    import { onMount, tick } from "svelte";
+    import { onMount, tick, onDestroy } from "svelte";
     import { createEventDispatcher } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
 
     const ACCENT = "var(--color-black)";
+
+    // Scroll locking
+    function lockScroll() {
+        document.documentElement.classList.add("overlay-open");
+        document.body.classList.add("overlay-open");
+    }
+
+    function unlockScroll() {
+        document.documentElement.classList.remove("overlay-open");
+        document.body.classList.remove("overlay-open");
+    }
 
     // ─── Props passed into the component ─────────────────────────────────────────
     export let mode = "preview";   // "preview" (small static view) or "fullscreen"
@@ -11,11 +24,19 @@
     export let lng = -0.09;        // initial longitude (default: London)
     export let radius;             // optional radius for drawing a circle (meters)
     export let defaultZoom = 11;   // default zoom level
+    export let title = "";         // fullscreen title
+    export let hint = "";          // fullscreen hint text
+
+    // ─── Constants and utility functions ────────────────────────────────────────
+    const FALLBACK_LAT = 51.505;
+    const FALLBACK_LNG = -0.09;
+    const finiteOr = (v, fb) => (typeof v === "number" && Number.isFinite(v) ? v : fb);
 
     // ─── Local state ─────────────────────────────────────────────────────────────
     let interactable = mode === "fullscreen";  // interactive only in fullscreen
-    let confLat = lat ?? 51.505;  // confirmed (saved) latitude
-    let confLng = lng ?? -0.09;   // confirmed (saved) longitude
+
+    let confLat = finiteOr(lat, FALLBACK_LAT);
+    let confLng = finiteOr(lng, FALLBACK_LNG);
     let pinLat = confLat;         // current pin latitude (may differ before confirm)
     let pinLng = confLng;         // current pin longitude
 
@@ -61,6 +82,7 @@
 
     // Enter fullscreen mode, set interactable
     async function enterFullscreen() {
+        lockScroll();
         mode = "fullscreen";
         interactable = true;
         ignoreNextMapClick = true; // Avoid triggering immediately on open
@@ -91,6 +113,7 @@
         }
 
         mode = "preview";
+        unlockScroll();
         interactable = false;
         await tick();
         setInteractivity(false);
@@ -224,24 +247,39 @@
 
     <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
         {#if mode === "fullscreen"}
-            <header class="overlay__header">
-                <button
-                    type="button"
-                    class="btn btn--ghost"
-                    on:click={() => exitToPreview(false)}
+            <header 
+                class="overlay__header"
+                class:overlay__header-row={title || hint}
+                class:overlay__header-column={!title && !hint}
+            >
+                {#if title || hint}
+                    <div class="bar__title">
+                        {#if title}
+                            <h3>{title}</h3>
+                        {/if}
+                        {#if hint}
+                            <p class="text-hint">{hint}</p>
+                        {/if}
+                    </div>
+                {/if}
+                <div 
+                    class="overlay__actions"
+                    class:overlay__actions-left-first={!title && !hint}
                 >
-                    Back
-                </button>
-
-                <div class="overlay__title">Select Location</div>
-
-                <div class="overlay__actions">
                     <button
                         type="button"
-                        class="btn btn--primary"
+                        class="btn btn--ghost btn--icon"
+                        on:click={() => exitToPreview(false)}
+                    >
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--primary btn--icon"
                         on:click={() => exitToPreview(true)}
                     >
-                        Confirm
+                        <Icon icon={UI_ICONS.check} class="btn__icon" />
                     </button>
                 </div>
             </header>

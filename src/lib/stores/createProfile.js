@@ -111,7 +111,14 @@ export const readyToSubmit = derived(
 		if (isLastPage) return allValid;
 
 		const fields = pageFields[$currentPage] || [];
-		const pageErrors = get(validationErrors).filter(e => fields.includes(e.field));
+		const errs = get(validationErrors);
+		const pageErrors = errs.filter((e) => {
+			if (fields.includes(e.field)) return true;
+			if (fields.includes("socials") && typeof e.field === "string" && e.field.startsWith("socials.")) {
+				return true;
+			}
+			return false;
+		});
 		return pageErrors.length === 0;
 	},
 	false

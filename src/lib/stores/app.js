@@ -122,9 +122,14 @@ export const UI_ICONS = {
     "arrowLeft": "mdi:arrow-left",
     "arrowRight": "mdi:arrow-right",
     "send": "mdi:send",
+    "check": "mdi:check",
 
     "imageAdd": "mdi:image-plus-outline",
     "imageRemove": "mdi:image-remove-outline",
+    "imageReplace": "mdi:image-refresh-outline",
+
+    "pinAdd": "mdi:map-marker",
+    "pinRemove": "mdi:map-marker-remove",
 };
 
 // ---------------- Reference Data ---------------- //

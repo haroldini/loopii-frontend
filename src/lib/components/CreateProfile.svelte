@@ -168,6 +168,8 @@
                         initialOriginalUrl={$avatarOriginalUrl}
                         initialEditedUrl={$avatarUrl}
                         initialCropState={$avatarCropState}
+                        title="Profile picture"
+                        hint="Upload a profile picture to help others recognize you."
                         on:confirm={(e) => {
                             avatarFile.set(e.detail.editedFile);
                             avatarOriginalUrl.set(e.detail.originalUrl);
@@ -180,7 +182,14 @@
                         <div class="actions actions--end">
                             <button
                                 type="button"
-                                class="btn btn--ghost"
+                                class="btn btn--danger"
+                                on:click={() => avatarPicker.replaceImage()}
+                            >
+                                <Icon icon={UI_ICONS.imageReplace} class="btn__icon"/><span class="btn__label"> Replace</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn--danger"
                                 on:click={() => {
                                     if (typeof $avatarFile === "string" && $avatarFile.startsWith("blob:")) {
                                         try { URL.revokeObjectURL($avatarFile); } catch {}
@@ -191,7 +200,7 @@
                                     avatarPicker.reset();
                                 }}
                             >
-                                <Icon icon={UI_ICONS.imageRemove} class="btn__icon"/> Clear image
+                                <Icon icon={UI_ICONS.imageRemove} class="btn__icon"/><span class="btn__label"> Remove</span>
                             </button>
                         </div>
                     {:else}
@@ -305,10 +314,11 @@
 
             <PrefsForm
                 mode="search"
+                initial={$prefsState.payload}
                 on:change={handlePrefsChange}
                 bind:valid={prefsValid}
-                defaultLat={$latitude}
-                defaultLng={$longitude}
+                defaultLat={Number.isFinite($latitude) ? $latitude : 51.505}
+                defaultLng={Number.isFinite($longitude) ? $longitude : -0.09}
             />
 
             <div class="row row--between">
@@ -321,7 +331,6 @@
                     class="btn btn--primary btn--block"
                     class:is-loading={$profileFormState === "submitting"}
                     disabled={$profileFormState === "submitting" || !$readyToSubmit || !prefsValid}
-                    on:click={handlePage0Continue}
                     >
                     <span class="btn__label">Create profile</span>
                     <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />

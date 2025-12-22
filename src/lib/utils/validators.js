@@ -206,14 +206,14 @@ export function validateSocials(socials) {
         const handle = s.handle?.trim();
 
         if (!handle) {
-            errors.push({ field, message: "Handle required", display: true });
+            errors.push({ field, message: "Username required", display: false });
             return;
         }
 
         if (handle.length > 50) {
             errors.push({
                 field,
-                message: "Handle must be at most 50 characters",
+                message: "Username must be at most 50 characters",
                 display: true,
             });
             return;
@@ -222,7 +222,7 @@ export function validateSocials(socials) {
         if (handle.startsWith("@") || handle.startsWith("/")) {
             errors.push({
                 field,
-                message: "Handle cannot start with '@' or '/'",
+                message: "Username cannot start with '@' or '/'",
                 display: true,
             });
             return;
@@ -231,7 +231,7 @@ export function validateSocials(socials) {
         if (/\s/.test(handle)) {
             errors.push({
                 field,
-                message: "Handle cannot contain spaces",
+                message: "Username cannot contain spaces",
                 display: true,
             });
             return;

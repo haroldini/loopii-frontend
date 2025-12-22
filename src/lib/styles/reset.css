@@ -54,3 +54,22 @@ img {
     outline: var(--focus-ring-width) solid var(--focus-ring-color);
     outline-offset: var(--focus-ring-offset);
 }
+
+
+/* Hide scrollbars when overlay is open */
+html.overlay-open,
+body.overlay-open {
+    overflow: hidden;
+}
+html.overlay-open .app,
+html.overlay-open .app-body,
+html.overlay-open .page,
+html.overlay-open .page > .content {
+    overflow: hidden !important;
+}
+html.overlay-open .app {
+    overscroll-behavior: none;
+}
+html.overlay-open .page > .content {
+    scrollbar-gutter: auto;
+}

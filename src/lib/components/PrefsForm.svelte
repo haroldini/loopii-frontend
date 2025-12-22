@@ -1,6 +1,8 @@
 
 <script>
     import { createEventDispatcher } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
     import { profile } from "$lib/stores/profile.js";
     import { allCountries } from "$lib/stores/app.js";
     import MapPicker from "$lib/components/MapPicker.svelte";
@@ -20,6 +22,11 @@
 
     export let defaultLat = 51.505;
     export let defaultLng = -0.09;
+    const FALLBACK_LAT = 51.505;
+    const FALLBACK_LNG = -0.09;
+    function finiteOr(value, fallback) {
+        return (typeof value === "number" && Number.isFinite(value)) ? value : fallback;
+    }
 
     const dispatch = createEventDispatcher();
 
@@ -39,11 +46,12 @@
     let initialized = false;
 
     // Determine base prefs source: explicit initial > profile.*_prefs > null
-    $: basePrefs = initial
+    $: basePrefs =
+    initial != null
         ? initial
         : mode === "search"
-            ? $profile?.search_prefs
-            : $profile?.visibility_prefs;
+        ? $profile?.search_prefs
+        : $profile?.visibility_prefs;
 
     // One-time initialization from base prefs when they first become available
     $: if (!initialized && basePrefs) {
@@ -189,12 +197,13 @@
     }
 
     function pickLocation() {
+        const baseLat = finiteOr($profile?.latitude, finiteOr(defaultLat, FALLBACK_LAT));
+        const baseLng = finiteOr($profile?.longitude, finiteOr(defaultLng, FALLBACK_LNG));
+
         // Default London at 5km if no profile location
-        proximityLat = $profile?.latitude ?? defaultLat;
-        proximityLng = $profile?.longitude ?? defaultLng;
-        if (!proximityKm) {
-            proximityKm = "5";
-        }
+        proximityLat = baseLat;
+        proximityLng = baseLng;
+        if (!proximityKm) proximityKm = "5";
     }
 
     function clearLocationFilter() {
@@ -256,7 +265,7 @@
     {/if}
 
     {#if mode !== "visibility" || isVisible}
-        <fieldset class="field">
+        <div class="field">
             <legend class="field__label">Genders</legend>
 
             <div class="choice-grid">
@@ -287,7 +296,7 @@
                     Non-binary / Other
                 </button>
             </div>
-        </fieldset>
+        </div>
 
         <div class="field">
             <div class="field__label">Age</div>
@@ -327,7 +336,7 @@
                 <p class="text-hint">Only show me to people near a chosen location.</p>
             {/if}
 
-            {#if proximityLat != null && proximityLng != null}
+            {#if Number.isFinite(proximityLat) && Number.isFinite(proximityLng)}
                 <div class="field__control">
                     <MapPicker
                         lat={proximityLat}
@@ -363,12 +372,14 @@
                         class="btn btn--ghost"
                         on:click={clearLocationFilter}
                     >
-                        Clear
+                        <Icon icon={UI_ICONS.pinRemove} class="btn__icon" />
+                        <span class="btn__label">Clear</span>
                     </button>
                 </div>
             {:else}
-                <button type="button" class="btn btn--primary" on:click={pickLocation}>
-                    Enable Location Filter
+                <button type="button" class="btn btn--block" on:click={pickLocation}>
+                    <Icon icon={UI_ICONS.pinAdd} class="btn__icon" />
+                    <span class="btn__label">Enable location filter</span>
                 </button>
             {/if}
         </div>
@@ -377,13 +388,6 @@
 
 
 <style>
-    fieldset {
-        border: 0;
-        padding: 0;
-        margin: 0;
-        min-inline-size: 0;
-    }
-
     .choice-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));

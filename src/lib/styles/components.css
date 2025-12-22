@@ -265,6 +265,7 @@
     background: var(--bg-app);
 }
 
+/* Desktop: windowed overlay */
 @media (min-width: 768px) {
     .overlay {
         align-items: center;
@@ -283,11 +284,9 @@
     }
 }
 
+/* Top header (title/hint area) */
 .overlay__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
+    flex: 0 0 auto;
 
     padding: var(--space-2) var(--space-3);
     padding-top: calc(var(--space-2) + var(--safe-top));
@@ -296,90 +295,37 @@
     border-bottom: var(--border-width) solid var(--border-color);
 }
 
-.overlay__title {
-    min-width: 0;
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.overlay__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-
+/* Middle scroll area */
 .overlay__body {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
 }
 
-/* ===== Sticky bars ===== */
+/* Bottom action bar (buttons) */
+.overlay__actionbar {
+    flex: 0 0 auto;
 
-.bar {
-    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    padding-bottom: calc(var(--space-2) + var(--safe-bottom));
+
     background: var(--bg-surface);
-    border-color: var(--border-color);
-    border-style: solid;
-    border-width: 0;
+    border-top: var(--border-width) solid var(--border-color);
 }
 
-.bar__inner {
-    max-width: var(--content-max);
-    margin-inline: auto;
-    padding: var(--space-2) var(--gutter);
+/* Buttons layout: first left, rest right */
+.overlay__actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    min-height: 2.75rem;
-}
-
-.bar__title {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    min-width: 0;
-}
-
-.bar__title > * {
-    min-width: 0;
-}
-
-.bar__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    justify-content: flex-end;
-}
-
-.bar--header {
-    position: sticky;
-    top: 0;
-    z-index: var(--z-header);
-    border-bottom-width: var(--border-width);
-}
-
-.bar--actionbar {
-    position: relative;
-    z-index: var(--z-actionbar);
-    border-top-width: var(--border-width);
-}
-
-.actionbar {
-    display: flex;
     gap: var(--space-2);
     width: 100%;
+    flex-wrap: wrap; /* set to nowrap if you insist on single row */
 }
 
-.actionbar > .btn--block {
-    flex: 1 1 0;
+.overlay__actions > :first-child {
+    margin-right: auto;
 }
+
 
 /* ===== App navbar ===== */
 

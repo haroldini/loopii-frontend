@@ -3,8 +3,21 @@
     import { createEventDispatcher, tick, onDestroy, onMount } from "svelte";
     import Cropper from "cropperjs";
     import "cropperjs/dist/cropper.css";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
 
     const dispatch = createEventDispatcher();
+
+    // Scroll locking
+    function lockScroll() {
+        document.documentElement.classList.add("overlay-open");
+        document.body.classList.add("overlay-open");
+    }
+
+    function unlockScroll() {
+        document.documentElement.classList.remove("overlay-open");
+        document.body.classList.remove("overlay-open");
+    }
 
     // --- Props from parent ---
     export let initialOriginalUrl = null;
@@ -12,6 +25,8 @@
     export let initialCropState = null;
     export let imageSize = 1080; // max size for cropped image
     export let imageQuality = 0.9; // JPEG quality for cropped image (0 to 1)
+    export let title = "Upload photo";
+    export let hint = "Select and crop an image to upload.";
 
     // --- State ---
     let originalUrl = null;   // last confirmed raw image
@@ -77,6 +92,7 @@
 
     // --- Core Logic ---
     async function enterFullscreen() {
+        lockScroll();
         internalMode = "fullscreen";
         if (!originalUrl && !workingUrl) {
             if (fileInput) fileInput.value = "";
@@ -134,6 +150,7 @@
             cropper = null;
         }
         internalMode = "preview";
+        unlockScroll();
     }
 
     function handleFileSelect(e) {
@@ -230,40 +247,13 @@
 
         <div class="overlay__panel">
             <header class="overlay__header">
-                <button
-                    type="button"
-                    class="btn btn--ghost"
-                    on:click={() => exitToPreview(false)}
-                >
-                    Back
-                </button>
-
-                <div class="overlay__title">Upload Image</div>
-
-                <div class="overlay__actions">
-                    <button
-                        type="button"
-                        class="btn btn--ghost"
-                        on:click={replaceImage}
-                    >
-                        {#if (workingUrl || originalUrl)}
-                            Replace
-                        {:else}
-                            Select
-                        {/if}
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn--primary"
-                        on:click={() => exitToPreview(true)}
-                    >
-                        Confirm
-                    </button>
+                <div class="bar__title">
+                    <h3>{title}</h3>
+                    <p class="text-hint">{hint}</p>
                 </div>
             </header>
 
-            <main class="overlay__body imagepicker__body">
+            <main class="overlay__body overlay__body--no-scroll imagepicker__body">
                 {#if (workingUrl || originalUrl)}
                     <div class="imagepicker__stage">
                         <div class="imagepicker__image-wrapper">
@@ -285,16 +275,50 @@
                             on:click={replaceImage}
                             on:keydown={(e) => e.key === "Enter" && replaceImage()}
                         >
-                            <h3>
-                                No image selected.
-                            </h3>
-                            <p class="text-fw-semibold text-hint">
-                                +  Click to choose an image.
-                            </p>
+                            <Icon icon={UI_ICONS.imageAdd} class="icon--large text-accent" />
+                            <h3>No photo selected.</h3>
+                            <p class="text-fw-semibold text-hint">Click to choose a photo.</p>
                         </div>
                     </div>
                 {/if}
             </main>
+
+            <div class="overlay__actionbar">
+                <div class="overlay__actions">
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={() => exitToPreview(false)}
+                    >
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                        <span class="btn__label">Cancel</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={replaceImage}
+                    >
+                        <Icon icon={UI_ICONS.imageReplace} class="btn__icon" />
+                        <span class="btn__label">
+                            {#if (workingUrl || originalUrl)}
+                                Replace
+                            {:else}
+                                Select
+                            {/if}
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn--primary"
+                        on:click={() => exitToPreview(true)}
+                    >
+                        <Icon icon={UI_ICONS.check} class="btn__icon" />
+                        <span class="btn__label">Confirm</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 {:else}
