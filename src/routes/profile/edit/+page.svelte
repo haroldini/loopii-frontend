@@ -2,6 +2,7 @@
 <script>
     import { onMount, onDestroy } from "svelte";
     import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
     import { profile } from "$lib/stores/profile.js";
@@ -141,14 +142,14 @@
             <div class="bar__actions">
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--icon"
                     on:click={cancelEditingAndGoBack}
                     disabled={$profileEditState === "saving"}
                 >
                     {#if $hasChanges}
-                        Discard Changes
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
                     {:else}
-                        Back to Profile
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                     {/if}
                 </button>
             </div>
@@ -156,108 +157,100 @@
     </header>
 
     <div class="content stack gutter">
-        {#if $profileEditState === "error"}
-            <p class="text-danger">{$error}</p>
-        {/if}
+        <section class="card">
+            <div class="section stack">
+                <h3>About You</h3>
 
-        {#if $profileEditState === "idle"}
-            <p class="text-hint">Loading profile…</p>
-        {:else}
-            <section class="card">
-                <div class="section stack">
-                    <h3>About You</h3>
+                <ProfileFields
+                    fields={[
+                        "name", "location", "bio",
+                        {
+                            key: "audio",
+                            recordable: true,
+                            maxDuration: 30,
+                        }
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                />
+            </div>
+        </section>
 
+        <section class="card">
+            <div class="section stack">
+                <h3>Help Others Discover You</h3>
+
+                <ProfileFields
+                    fields={[
+                        {
+                            key: "map",
+                            hint: "Select your approximate location to appear in location searches.",
+                        },
+                        "looking_for",
+                        "star_sign",
+                        "mbti",
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                />
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section stack">
+                <h3>Your Interests</h3>
+                <p class="text-hint">You can select up to 20 interests.</p>
+
+                <ProfileFields
+                    fields={["interests"]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                    allInterests={$allInterests}
+                />
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section stack">
+                <h3>What Your Loops See</h3>
+
+                <ProfileFields
+                    fields={[
+                        { key: "socials", label: "Social Media Links" },
+                        "loop_bio"
+                    ]}
+                    values={fieldValues}
+                    setters={fieldSetters}
+                    errors={$validationErrors}
+                    socials={$socials}
+                    allPlatforms={$allPlatforms}
+                    onSocialRemove={removeSocial}
+                    onSocialHandleChange={updateHandle}
+                    onSocialAdd={handleSocialAdd}
+                />
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section stack">
+                <h3>Your Essential Info</h3>
+                <p class="text-hint">These fields cannot be frequently changed.</p>
+
+                {#key JSON.stringify(profileCooldowns)}
                     <ProfileFields
-                        fields={[
-                            "name", "location", "bio",
-                            {
-                                key: "audio",
-                                recordable: true,
-                                maxDuration: 30,
-                            }
-                        ]}
+                        fields={["username", "dob", "gender", "country"]}
                         values={fieldValues}
                         setters={fieldSetters}
                         errors={$validationErrors}
+                        allCountries={$allCountries}
+                        cooldowns={profileCooldowns}
                     />
-                </div>
-            </section>
-
-            <section class="card">
-                <div class="section stack">
-                    <h3>Help Others Discover You</h3>
-
-                    <ProfileFields
-                        fields={[
-                            {
-                                key: "map",
-                                hint: "Select your approximate location to appear in location searches.",
-                            },
-                            "looking_for",
-                            "star_sign",
-                            "mbti",
-                        ]}
-                        values={fieldValues}
-                        setters={fieldSetters}
-                        errors={$validationErrors}
-                    />
-                </div>
-            </section>
-
-            <section class="card">
-                <div class="section stack">
-                    <h3>Your Interests</h3>
-                    <p class="text-hint">You can select up to 20 interests.</p>
-
-                    <ProfileFields
-                        fields={["interests"]}
-                        values={fieldValues}
-                        setters={fieldSetters}
-                        errors={$validationErrors}
-                        allInterests={$allInterests}
-                    />
-                </div>
-            </section>
-
-            <section class="card">
-                <div class="section stack">
-                    <h3>What Your Loops See</h3>
-
-                    <ProfileFields
-                        fields={[
-                            { key: "socials", label: "Social Media Links" },
-                            "loop_bio"
-                        ]}
-                        values={fieldValues}
-                        setters={fieldSetters}
-                        errors={$validationErrors}
-                        socials={$socials}
-                        allPlatforms={$allPlatforms}
-                        onSocialRemove={removeSocial}
-                        onSocialHandleChange={updateHandle}
-                        onSocialAdd={handleSocialAdd}
-                    />
-                </div>
-            </section>
-
-            <section class="card">
-                <div class="section stack">
-                    <h3>Your Essential Info</h3>
-                    <p class="text-hint">These fields cannot be frequently changed.</p>
-
-                    {#key JSON.stringify(profileCooldowns)}
-                        <ProfileFields
-                            fields={["username", "dob", "gender", "country"]}
-                            values={fieldValues}
-                            setters={fieldSetters}
-                            errors={$validationErrors}
-                            allCountries={$allCountries}
-                            cooldowns={profileCooldowns}
-                        />
-                    {/key}
-                </div>
-            </section>
-        {/if}
+                {/key}
+            </div>
+        </section>
     </div>
 
     <div class="bar bar--actionbar">
@@ -266,10 +259,17 @@
                 <button
                     type="button"
                     class="btn btn--primary"
+                    class:is-loading={$profileEditState === "saving"}
                     on:click={saveEdits}
                     disabled={$profileEditState === "saving" || !$readyToSubmit || !$hasChanges}
                 >
-                    {$profileEditState === "saving" ? "Saving…" : "Save Changes"}
+                    {#if $profileEditState === "saving"}
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                        <span class="btn__label">Saving...</span>
+                    {:else}
+                        <Icon icon={UI_ICONS.check} class="btn__icon" />
+                        <span class="btn__label">Save</span>
+                    {/if}
                 </button>
             </div>
         </div>

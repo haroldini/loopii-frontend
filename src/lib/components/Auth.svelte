@@ -51,6 +51,7 @@
                 if (!result.error && result.data.session) {
                     authFormStatus.set("loggedIn");
                     resetAuthForm()
+                    goto("/");
                 }
                 else authFormStatus.set("loginFailed")
                 
@@ -149,12 +150,14 @@
 
         {#if $subPage !== "requestReset"}
             <div class="field">
-                <label class="field__label" for="auth-password">Password</label>
+                <label class="field__label" for="auth-password">
+                    {$subPage === "signup" ? "New password" : "Password"}
+                </label>
                 <input
                     id="auth-password"
                     type="password"
                     autocomplete={$subPage === "signup" ? "new-password" : "current-password"}
-                    placeholder="Password"
+                    placeholder={$subPage === "signup" ? "new-password" : "password"}
                     value={$password}
                     on:input={(e) => {
                         password.set(e.target.value);

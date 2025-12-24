@@ -299,7 +299,6 @@
                         class="btn btn--ghost"
                         on:click={replaceImage}
                     >
-                        <Icon icon={UI_ICONS.imageReplace} class="btn__icon" />
                         <span class="btn__label">
                             {#if (workingUrl || originalUrl)}
                                 Replace

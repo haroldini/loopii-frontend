@@ -1,6 +1,8 @@
 
 <script>
     import { goto } from "$app/navigation";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js"; 
     import { addToast } from "$lib/stores/popups.js";
     
     import { theme, themeOptions, setTheme } from "$lib/stores/app.js";
@@ -14,7 +16,6 @@
         validationErrors, error, status, readyToSubmit,
         resetSensitive, resetValidation
     } from "$lib/stores/authSettings.js";
-
 
 
     // ACCOUNT / LOGIN SETTINGS
@@ -172,29 +173,47 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>Settings</h3>
+                <h3>
+                    Settings
+                </h3>
             </div>
             <div class="bar__actions">
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--icon"
                     on:click={() => goto("/profile")}
                 >
-                    Back
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn--danger"
-                    on:click={confirmLocalSignOut}
-                >
-                    Log Out
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                 </button>
             </div>
         </div>
     </header>
 
     <div class="content stack gutter">
+
+        <div class="section stack">
+            <h3>Appearance</h3>
+            <div class="card card--panel" role="region" aria-label="Visual settings">
+                <div class="section stack">
+                    <div class="row row--between">
+                        <label for="theme-select">Theme</label>
+
+                        <select
+                            id="theme-select"
+                            value={$theme}
+                            on:change={(e) => setTheme(e.target.value)}
+                        >
+                            {#each themeOptions as opt}
+                                <option value={opt.value}>{opt.label}</option>
+                            {/each}
+                        </select>
+                    </div>
+
+                    <p class="text-hint">Set the visual theme of loopii on this device.</p>
+                </div>
+            </div>
+        </div>
+
         <div class="section stack">
             <h3>Account / Login</h3>
             <div class="card card--panel" role="region" aria-label="Account settings">
@@ -363,46 +382,50 @@
                     <div class="form__actions">
                         <button
                             type="button"
-                            class="btn btn--primary"
-                            disabled={!$readyToSubmit || $isSubmitting}
+                            class="btn btn--ghost"
+                            class:is-loading={$isSubmitting}
                             on:click={handleSubmit}
+                            disabled={!$readyToSubmit || $isSubmitting}
                         >
                             {#if $isSubmitting}
-                                Submitting...
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                                <span class="btn__label">Submitting...</span>
                             {:else}
-                                {#if $mode === "password"}Update Password
-                                {:else if $mode === "email"}Update Email
-                                {:else if $mode === "delete"}Delete Account
-                                {:else if $mode === "reset"}Send reset Email
-                                {:else if $mode === "revoke"}Sign Out Everywhere
-                                {/if}
+                                <Icon icon={UI_ICONS.accountAction} class="btn__icon" />
+                                <span class="btn__label">
+                                    {#if $mode === "password"}Update password
+                                    {:else if $mode === "email"}Update email
+                                    {:else if $mode === "delete"}Delete account
+                                    {:else if $mode === "reset"}Send reset email
+                                    {:else if $mode === "revoke"}Sign out everywhere
+                                    {/if}
+                                </span>
                             {/if}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="section stack">
-            <h3>Appearance</h3>
+            <h3>Log out</h3>
             <div class="card card--panel" role="region" aria-label="Visual settings">
                 <div class="section stack">
-                    <div class="row row--between">
-                        <label for="theme-select">Theme</label>
-
-                        <select
-                            id="theme-select"
-                            value={$theme}
-                            on:change={(e) => setTheme(e.target.value)}
+                    <div class="form__actions">
+                        <button
+                            type="button"
+                            class="btn btn--danger"
+                            on:click={confirmLocalSignOut}
                         >
-                            {#each themeOptions as opt}
-                                <option value={opt.value}>{opt.label}</option>
-                            {/each}
-                        </select>
+                            <Icon icon={UI_ICONS.logout} class="btn__icon" />
+                            <span class="btn__label">Log Out</span>
+                        </button>
                     </div>
 
-                    <p class="text-hint">Applies immediately on this device.</p>
+                    <p class="text-hint">Log out of your account on this device.</p>
                 </div>
             </div>
         </div>
+
     </div>
 </div>

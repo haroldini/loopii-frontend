@@ -1,6 +1,8 @@
 
 <script>
     import { onMount } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
     import { get } from "svelte/store";
     import { writable, derived } from "svelte/store";
     import { goto } from "$app/navigation";
@@ -213,7 +215,7 @@
 
 
 <svelte:head>
-    <title>loopii • Edit Photos</title>
+    <title>loopii • Photos</title>
 </svelte:head>
 
 
@@ -227,11 +229,10 @@
             <div class="bar__actions">
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--icon"
                     on:click={() => goto("/profile")}
-                    disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                 >
-                    Back
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                 </button>
             </div>
         </div>
@@ -239,7 +240,7 @@
 
     <div class="content stack gutter photos">
         <section class={"photos__upload stack " + ($newImageUrl ? "is-confirm" : "is-empty")}>
-            <div class={"photos__picker"}>
+            <div>
                 <ImagePicker
                     bind:this={imagePicker}
                     initialOriginalUrl={$newImageOriginalUrl}
@@ -258,7 +259,7 @@
             </div>
 
             {#if $newImageUrl}
-                <div class="photos__confirm stack">
+                <div class="stack">
                     <label class="switch">
                         <span class="switch__text">Set as profile picture</span>
                         <span class="switch__control">
@@ -273,20 +274,15 @@
                         </span>
                     </label>
 
-                    <div class="actions actions--end">
+                    <div class="actions actions--end actions--first-left">
                         <button
                             type="button"
-                            class="btn btn--primary"
-                            on:click={handleUpload}
+                            class="btn btn--ghost"
+                            on:click={resetPicker}
                             disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                         >
-                            {#if $photosState === "uploading"}
-                                Uploading…
-                            {:else if $photosState === "settingAvatar"}
-                                Setting profile picture…
-                            {:else}
-                                Upload Photo
-                            {/if}
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
+                            <span class="btn__label">Cancel</span>
                         </button>
                         <button
                             type="button"
@@ -298,26 +294,33 @@
                         </button>
                         <button
                             type="button"
-                            class="btn btn--ghost"
-                            on:click={resetPicker}
+                            class="btn btn--primary"
+                            on:click={handleUpload}
+                            class:is-loading={$photosState === "uploading" || $photosState === "settingAvatar"}
                             disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                         >
-                            Cancel
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                            <Icon icon={UI_ICONS.upload} class="btn__icon" />
+                            <span class="btn__label">Upload</span>
                         </button>
                     </div>
                 </div>
             {:else}
-                <div class="photos__add">
-                    <button
-                        type="button"
-                        class="add-photo-btn"
-                        on:click={() => imagePicker.open()}
-                        disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
-                    >
-                        <span class="add-photo-btn__icon" aria-hidden="true">+</span>
-                        <span class="add-photo-btn__text">Upload</span>
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    class="btn btn--large u-border-dashed"
+                    on:click={() => imagePicker.open()}
+                    class:is-loading={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                    disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
+                >
+                    {#if $photosState === "uploading" || $photosState === "settingAvatar"}
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                        <span class="btn__label">Saving...</span>
+                    {:else}
+                        <Icon icon={UI_ICONS.imageAdd} class="btn__icon" />
+                        <span class="btn__label">Add photo</span>
+                    {/if}
+                </button>
             {/if}
         </section>
 
@@ -335,23 +338,24 @@
                                     {#if !img.is_avatar}
                                         <button
                                             type="button"
-                                            class="btn btn--ghost"
-                                            on:click={() => handleSetAvatar(img.id)}
-                                            disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
-                                        >
-                                            {$photosState === "settingAvatar" ? "Setting profile picture…" : "Set as profile picture"}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="btn btn--danger"
+                                            class="btn btn--danger btn--icon"
                                             on:click={() => handleDelete(img.id)}
                                             disabled={$photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
                                         >
-                                            {$photosState === "deleting" ? "Deleting…" : "Delete"}
+                                            <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn--ghost"
+                                            class:is-loading={$photosState === "settingAvatar"}
+                                            on:click={() => handleSetAvatar(img.id)}
+                                            disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
+                                        >
+                                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                                            <span class="btn__label">Set as profile picture</span>
                                         </button>
                                     {:else}
-                                        <span class="pill pill--success photos-pill">Profile picture</span>
+                                        <span class="pill pill--success">Profile picture</span>
                                     {/if}
                                 </div>
 
@@ -361,7 +365,7 @@
                     </section>
                 {/each}
             {:else}
-                <p class="no-photos">No photos uploaded yet.</p>
+                <p class="page__center">No photos uploaded yet.</p>
             {/if}
         {/if}
     </div>
@@ -380,61 +384,6 @@
         gap: var(--space-3);
     }
 
-    .photos__add {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .add-photo-btn {
-        width: 100%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-2);
-
-        padding: 0.9rem 1rem;
-        border-radius: var(--radius-lg);
-        border: var(--border-width) dashed color-mix(in oklab, var(--border-color) 70%, var(--text-muted));
-        background: color-mix(in oklab, var(--bg-surface) 92%, var(--border-color));
-        color: var(--text-primary);
-
-        cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-    }
-
-    .add-photo-btn:hover {
-        background: var(--bg-hover);
-        border-color: color-mix(in oklab, var(--border-color) 85%, var(--text-muted));
-    }
-
-    .add-photo-btn:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .add-photo-btn__icon {
-        font-size: 1.25rem;
-        line-height: 1;
-        font-weight: var(--font-weight-bold);
-    }
-
-    .add-photo-btn__text {
-        font-weight: var(--font-weight-bold);
-        letter-spacing: 0.015rem;
-    }
-
-    .photos__confirm {
-        gap: var(--space-3);
-    }
-
-    .photo-wrap {
-        width: 100%;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        background: color-mix(in oklab, var(--bg-surface) 88%, var(--border-color));
-    }
-
     .photo {
         width: 100%;
         aspect-ratio: 1 / 1;
@@ -445,14 +394,5 @@
         user-select: none;
         -webkit-user-drag: none;
         display: block;
-    }
-
-    .photos-pill {
-        font-weight: var(--font-weight-semibold);
-    }
-
-    .no-photos {
-        text-align: center;
-        color: var(--text-muted);
     }
 </style>

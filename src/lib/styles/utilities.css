@@ -30,3 +30,7 @@
     margin: auto;
     display: flex;
 }
+
+.u-border-dashed {
+    border-style: dashed !important;
+}

@@ -175,7 +175,7 @@
             <div class="actionbar">
                 <button
                     type="button"
-                    class="btn btn--ghost btn--round"
+                    class="btn btn--ghost"
                     on:click={triggerClearAll}
                     disabled={status === "saving"}
                 >
@@ -184,12 +184,14 @@
 
                 <button
                     type="button"
-                    class="btn btn--primary btn--round"
+                    class="btn btn--primary"
+                    class:is-loading={status === "saving"}
                     on:click={save}
                     disabled={status === "saving" || !canSave || !hasChanges}
                 >
                     {#if status === "saving"}
                         <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                        <span class="btn__label">Saving...</span>
                     {:else}
                         <Icon icon={UI_ICONS.check} class="btn__icon" />
                         <span class="btn__label">Save</span>

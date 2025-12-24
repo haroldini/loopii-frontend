@@ -108,6 +108,12 @@
     width: 100%;
 }
 
+.btn--large {
+    padding: 0.9rem 1rem;
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+}
+
 .btn__label {
     display: inline-flex;
     transform: translateY(-0.075rem);
