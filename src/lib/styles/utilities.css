@@ -15,7 +15,7 @@
 }
 
 .u-space-above {
-    margin-top: var(--space-1);
+    margin-top: var(--space-2);
 }
 
 .u-separator-top {
@@ -24,4 +24,9 @@
 
 .u-invisible {
     visibility: hidden !important;
+}
+
+.u-margin-fill {
+    margin: auto;
+    display: flex;
 }

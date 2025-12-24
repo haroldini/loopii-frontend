@@ -102,8 +102,9 @@ export const GENDER_ICONS = {
 };
 
 export const UI_ICONS = {
-    "animSpinner": "svg-spinners:tadpole",
+    "animSpinner": "svg-spinners:ring-resize",
     "animLoading": "svg-spinners:gooey-balls-2",
+    "animLoading2": "svg-spinners:gooey-balls-1",
     "animLoadingDots": "svg-spinners:3-dots-move",
     "animFailed": "line-md:emoji-frown",
     "animSuccess": "line-md:check-all",
@@ -111,6 +112,13 @@ export const UI_ICONS = {
     "animEmailSent": "line-md:email-arrow-right",
 
     "refresh": "mdi:refresh",
+    "refreshError": "mdi:cloud-off-outline",
+    "eyeClose": "mdi:eye-off-outline",
+    "filtersEmpty": "mdi:account-off-outline",
+
+
+    "error": "mdi:alert-circle-outline",
+    "alert": "mdi:alert-outline",
     "logout": "mdi:logout",
     "login": "mdi:login",
     "swap": "mdi:swap-horizontal",

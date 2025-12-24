@@ -65,45 +65,40 @@
 
     <div class="content stack" class:content--scroll={expanded}>
         {#if $peerStatus === "loading"}
-            <Icon 
-                icon={UI_ICONS.animLoading}
-                class="page__icon"
-            />
-        {:else if $peerStatus === "error"}
-            <div class="gutter gutter-vertical">
-                <div class="card">
-                    <div class="section stack">
-                        <p>An error occurred while loading the feed.</p>
-                        <p class="text-hint">Try refreshing.</p>
-                    </div>
-                </div>
-            </div>
-        {:else if $peerStatus === "hidden"}
-            <div class="gutter gutter-vertical">
-                <div class="card">
-                    <div class="section stack">
-                        <p>Your profile is hidden.</p>
-                        <p class="text-hint">
-                            Update your 
-                            <a href="/profile/visibility-preferences" class="text-link">visibility preferences</a>
-                            to see other profiles.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {:else if $peerStatus === "empty"}
-            <div class="gutter gutter-vertical">
-                <div class="card">
-                    <div class="section stack">
-                        <p>We couldn't find any matching profiles.</p>
-                        <p class="text-hint">
-                            Try refreshing or expanding your
-                            <a href="/profile/search-preferences" class="text-link">search preferences</a>.
-                        </p>
-                    </div>
-                </div>
+            <div class="page__center">
+                <Icon 
+                    icon={UI_ICONS.animLoading}
+                    class="page__icon"
+                />
+                <p class="text-hint">Fetching profiles...</p>
             </div>
 
+        {:else if $peerStatus === "error"}
+            <div class="page__center">
+                <Icon icon={UI_ICONS.refreshError} class="icon--medium" />
+                <p class="text-center u-space-above">We couldn't load your feed right now.</p>
+                <p class="text-hint text-center">Please try again in a moment.</p>
+            </div>
+        {:else if $peerStatus === "hidden"}
+            <div class="page__center">
+                <Icon icon={UI_ICONS.eyeClose} class="icon--medium" />
+                <p class="text-center u-space-above">Your profile is hidden.</p>
+                <p class="text-hint text-center">
+                    Update your 
+                    <a href="/profile/visibility-preferences" class="text-link">visibility preferences</a>
+                    to see other profiles.
+                </p>
+            </div>
+        {:else if $peerStatus === "empty"}
+            <div class="page__center">
+                <Icon icon={UI_ICONS.filtersEmpty} class="icon--medium" />
+                <p class="text-center u-space-above">We couldn't find any matching profiles.</p>
+                <p class="text-hint text-center">
+                    Expand your
+                    <a href="/profile/search-preferences" class="text-link">search preferences</a>
+                    or try again later.
+                </p>
+            </div>
         {:else if expanded}
             <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
         {:else}
@@ -117,7 +112,7 @@
                 <div class="actionbar">
                     <button
                         type="button"
-                        class="btn btn--ghost btn--block"
+                        class="btn btn--danger btn--mini btn--swipe"
                         on:click={() => {
                             handleDecision(false);
                             if (expanded) close();
@@ -131,7 +126,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--primary btn--block"
+                        class="btn btn--primary btn--mini btn--swipe"
                         on:click={() => {
                             handleDecision(true);
                             if (expanded) close();

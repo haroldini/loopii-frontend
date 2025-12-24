@@ -78,6 +78,10 @@
     width: fit-content;
 }
 
+.btn--swipe {
+    border-radius: var(--radius-full);
+}
+
 .btn--danger {
     background: var(--danger);
     border-color: var(--danger);

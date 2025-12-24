@@ -85,3 +85,8 @@ b {
     align-self: center;
 }
 
+.icon--medium {
+    width: 3rem;
+    height: 3rem;
+    align-self: center;
+}
