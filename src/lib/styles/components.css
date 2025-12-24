@@ -326,7 +326,7 @@
 
 .bar {
     width: 100%;
-    background: var(--bg-surface);
+    background: var(--bg-surface-alt);
     border-color: var(--border-color);
     border-style: solid;
     border-width: 0;

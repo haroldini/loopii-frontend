@@ -77,6 +77,10 @@ b {
     user-select: none;
 }
 
+.text-placeholder {
+    visibility: hidden;
+}
+
 /* ===== Icon helpers ===== */
 
 .icon--large {

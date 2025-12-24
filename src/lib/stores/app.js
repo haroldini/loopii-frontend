@@ -115,6 +115,8 @@ export const UI_ICONS = {
     "refreshError": "mdi:cloud-off-outline",
     "eyeClose": "mdi:eye-off-outline",
     "filtersEmpty": "mdi:account-off-outline",
+    "loopsEmpty": "mdi:heart-off-outline",
+    "chevronDown": "meteor-icons:chevron-down",
 
 
     "error": "mdi:alert-circle-outline",

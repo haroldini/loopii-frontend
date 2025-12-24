@@ -2,7 +2,8 @@
 <script>
 	import { onDestroy } from "svelte";
 	import { get } from "svelte/store";
-
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js"; 
 	import {
 		loopRequests,
 		loopRequestsTotal,
@@ -131,35 +132,39 @@
         <div class="bar__inner">
             <div class="bar__title">
                 <h3>Requests</h3>
-
                 {#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
                     <p class="text-hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
-                {:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0 && !$selectedRequest}
-                    <p class="text-hint">You don't have any requests at the moment.</p>
-                {:else if $loopRequestsStatus === "loading"}
-                    <p class="text-hint">Loading...</p>
-                {:else if $loopRequestsStatus === "error"}
-                    <p class="text-hint text-danger">We couldn't load your requests.</p>
                 {:else if $selectedRequest}
                     <p class="text-hint">Showing {$selectedRequest.profile.username}</p>
                 {/if}
             </div>
 
             <div class="bar__actions">
-                {#if $selectedRequest}
-                    <button type="button" class="btn btn--ghost" on:click={close}>
-                        Back
-                    </button>
-                {/if}
-
-                <button
-                    type="button"
-                    class="btn btn--ghost"
-                    on:click={refreshLoopRequestsStore}
-                    disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}
-                >
-                    {$loopRequestsStatus === "loading" ? "Loading…" : "Refresh"}
-                </button>
+				{#if !$selectedRequest}
+					<button
+						type="button"
+						class="btn btn--ghost btn--icon"
+						class:is-loading={$loopRequestsStatus === "loading" || $loopRequestsState.loading}
+						on:click={refreshLoopRequestsStore}
+						disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}
+						aria-label="Refresh"
+					>
+						<Icon icon={UI_ICONS.refresh} class="btn__icon" />
+						<Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+					</button>
+				{:else}
+					<button
+						type="button"
+						class="btn btn--ghost btn--icon"
+                        on:click={close}
+                        aria-label="Close"
+					>
+						<Icon 
+                            icon={UI_ICONS.chevronDown}
+                            class="btn__icon"
+                        />
+					</button>
+				{/if}
             </div>
         </div>
     </header>
@@ -179,11 +184,26 @@
         <div class="bar bar--actionbar">
             <div class="bar__inner">
                 <div class="actionbar">
-                    <button type="button" class="btn btn--danger" on:click={declineSelected}>
-                        Decline
+                    <button
+                        type="button"
+                        class="btn btn--danger btn--mini btn--round"
+                        on:click={declineSelected}
+                    >
+                        <Icon 
+				            icon={UI_ICONS.close}
+                            class="btn__icon btn__icon--large"
+                        />
                     </button>
-                    <button type="button" class="btn btn--success" on:click={acceptSelected}>
-                        Accept
+
+                    <button
+                        type="button"
+                        class="btn btn--primary btn--mini btn--round"
+                        on:click={acceptSelected}
+                    >
+                        <Icon 
+				            icon={UI_ICONS.heart}
+                            class="btn__icon btn__icon--large"
+                        />
                     </button>
                 </div>
             </div>
@@ -192,10 +212,29 @@
     <!-- Requests grid view -->
     {:else}
         <div class="content stack gutter">
+
             {#if $loopRequestsStatus === "loading"}
-                <p class="text-hint">Loading...</p>
+                <div class="page__center">
+                    <Icon 
+                        icon={UI_ICONS.animLoading}
+                        class="page__icon"
+                    />
+                </div>
+
             {:else if $loopRequestsStatus === "error"}
-                <p class="text-hint text-danger">We couldn't load your requests. Please refresh or try again later.</p>
+                <div class="page__center">
+                    <Icon icon={UI_ICONS.refreshError} class="icon--medium" />
+                    <p class="text-center u-space-above">We couldn't load your requests right now.</p>
+                    <p class="text-hint text-center">Please try again in a moment.</p>
+                </div>
+			
+			{:else if $loopRequestsStatus === "loaded" && $loopRequests.length === 0}
+				<div class="page__center">
+					<Icon icon={UI_ICONS.loopsEmpty} class="icon--medium" />
+					<p class="text-center u-space-above">You don't have any loop requests.</p>
+					<p class="text-hint text-center">When someone sends you a request, it will appear here.</p>
+				</div>
+			
             {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
                 <div class="grid grid-2">
                     {#each $loopRequests as entry}
@@ -214,13 +253,16 @@
                 </div>
 
                 {#if !$loopRequestsState.end}
-                    <button
+					<button
                         type="button"
-                        class="btn btn--ghost"
+                        class="btn btn--block btn--ghost"
+                        class:is-loading={$loopRequestsState === "loading" || $loopRequestsState.loading}
                         on:click={loadMoreLoopRequests}
-                        disabled={$loopRequestsState.loading}
+                        disabled={$loopRequestsStatus === "loading" || $loopRequestsState.loading}
+                        aria-label="Load More"
                     >
-                        {$loopRequestsState.loading ? "Loading…" : "Load More"}
+                        <Icon icon={UI_ICONS.chevronDown} class="btn__icon--large" />
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon--large btn__spinner" />
                     </button>
                 {/if}
             {/if}

@@ -78,7 +78,7 @@
     width: fit-content;
 }
 
-.btn--swipe {
+.btn--round {
     border-radius: var(--radius-full);
 }
 
