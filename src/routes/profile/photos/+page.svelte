@@ -238,8 +238,8 @@
         </div>
     </header>
 
-    <div class="content stack gutter photos">
-        <section class={"photos__upload stack " + ($newImageUrl ? "is-confirm" : "is-empty")}>
+    <div class="content stack gutter">
+        <section class="stack">
             <div>
                 <ImagePicker
                     bind:this={imagePicker}
@@ -326,44 +326,53 @@
 
         {#if !$newImageUrl}
             {#if $profile.images.length > 0}
-                {#each $profile.images as img (img.id)}
-                    <section class="card">
-                        <div class="section stack">
-                            <div class="photo-wrap">
-                                <img src={img.urls.medium} class="photo" alt="" />
-                            </div>
+                <div class="grid grid-2">
+                    {#each $profile.images as img (img.id)}
+                        <section class="card">
+                            <div class="section stack">
+                                <img class="photos__photo" src={img.urls.medium} alt="" />
 
-                            <div class="toolbar">
-                                <div class="toolbar__group">
-                                    {#if !img.is_avatar}
-                                        <button
-                                            type="button"
-                                            class="btn btn--danger btn--icon"
-                                            on:click={() => handleDelete(img.id)}
-                                            disabled={$photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
-                                        >
-                                            <Icon icon={UI_ICONS.delete} class="btn__icon" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn--ghost"
-                                            class:is-loading={$photosState === "settingAvatar"}
-                                            on:click={() => handleSetAvatar(img.id)}
-                                            disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
-                                        >
-                                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
-                                            <span class="btn__label">Set as profile picture</span>
-                                        </button>
-                                    {:else}
-                                        <span class="pill pill--success">Profile picture</span>
-                                    {/if}
+                                <div class="toolbar">
+                                    <div class="toolbar__group">
+                                        {#if !img.is_avatar}
+                                            <button
+                                                type="button"
+                                                class="btn btn--danger btn--icon"
+                                                on:click={() => handleDelete(img.id)}
+                                                disabled={$photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
+                                                aria-label="Delete photo"
+                                            >
+                                                <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn--ghost"
+                                                class:is-loading={$photosState === "settingAvatar"}
+                                                on:click={() => handleSetAvatar(img.id)}
+                                                disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
+                                                aria-label="Set as profile picture"
+                                            >
+                                                <Icon icon={UI_ICONS.imagePfpSet} class="btn__icon" />
+                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />    
+                                            </button>
+                                        {:else}
+                                            <button
+                                                type="button"
+                                                class="btn btn--ghost btn--icon"
+                                                disabled
+                                                aria-label="Current profile picture">
+
+                                                <Icon icon={UI_ICONS.imagePfp} class="btn__icon text-success" />
+                                            </button>
+                                        {/if}
+                                    </div>
+
+                                    <p class="text-hint">{timeAgo(img.created_at)}</p>
                                 </div>
-
-                                <p class="text-hint">{timeAgo(img.created_at)}</p>
                             </div>
-                        </div>
-                    </section>
-                {/each}
+                        </section>
+                    {/each}
+                </div>
             {:else}
                 <p class="page__center">No photos uploaded yet.</p>
             {/if}
@@ -372,27 +381,15 @@
 </div>
 
 <style>
-    .photos__upload {
-        position: relative;
-    }
-
-    .photos__upload.is-empty {
-        gap: 0;
-    }
-
-    .photos__upload.is-confirm {
-        gap: var(--space-3);
-    }
-
-    .photo {
+    .photos__photo {
         width: 100%;
         aspect-ratio: 1 / 1;
         height: auto;
         object-fit: cover;
-
         pointer-events: none;
         user-select: none;
         -webkit-user-drag: none;
         display: block;
+        border-radius: var(--radius-md);
     }
 </style>

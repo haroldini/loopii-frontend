@@ -8,6 +8,8 @@
 
 html {
     font-size: var(--font-size-root);
+    height: 100%;
+    overflow: hidden;
 }
 
 html,

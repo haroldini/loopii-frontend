@@ -114,6 +114,12 @@
     overflow: auto;
 }
 
+.page > .content,
+.gate {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
 .page__center {
     margin: auto;
     display: flex;
@@ -216,8 +222,10 @@
 
 /* Very small devices */
 @media (max-width: 280px) {
-    .grid-2,
     .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .grid-2 {
         grid-template-columns: 1fr;
     }
 }
@@ -226,5 +234,8 @@
 @media (min-width: 281px) and (max-width: 560px) {
     .grid-3 {
         grid-template-columns: repeat(2, 1fr);
+    }
+    .grid-2 {
+        grid-template-columns: 1fr;
     }
 }

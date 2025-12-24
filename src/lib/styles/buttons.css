@@ -41,6 +41,7 @@
     gap: var(--space-2);
     text-align: center;
     line-height: var(--line-height);
+    position: relative;
 
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);

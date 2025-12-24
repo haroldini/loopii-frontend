@@ -143,6 +143,8 @@ export const UI_ICONS = {
     "imageAdd": "mdi:image-plus-outline",
     "imageRemove": "mdi:image-remove-outline",
     "imageReplace": "mdi:image-refresh-outline",
+    "imagePfp": "mdi:account-star",
+    "imagePfpSet": "mdi:account-star-outline",
 
     "pinAdd": "mdi:map-marker",
     "pinRemove": "mdi:map-marker-remove",
