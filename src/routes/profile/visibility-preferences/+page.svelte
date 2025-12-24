@@ -2,6 +2,8 @@
 <script>
     import { goto } from "$app/navigation";
     import { get } from "svelte/store";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js"; 
 
     import PrefsForm from "$lib/components/PrefsForm.svelte";
     import { updateVisibilityPrefs } from "$lib/api/prefs.js";
@@ -140,8 +142,12 @@
             </div>
 
             <div class="bar__actions">
-                <button type="button" class="btn btn--ghost" on:click={confirmDiscardAndGoBack}>
-                    {hasChanges ? "Discard changes" : "Back"}
+                <button type="button" class="btn btn--ghost btn--icon" on:click={confirmDiscardAndGoBack}>
+                    {#if hasChanges}
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                    {:else}
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
+                    {/if}
                 </button>
             </div>
         </div>
@@ -169,7 +175,7 @@
             <div class="actionbar">
                 <button
                     type="button"
-                    class="btn btn--ghost"
+                    class="btn btn--ghost btn--round"
                     on:click={triggerClearAll}
                     disabled={status === "saving"}
                 >
@@ -178,11 +184,16 @@
 
                 <button
                     type="button"
-                    class="btn btn--primary"
+                    class="btn btn--primary btn--round"
                     on:click={save}
                     disabled={status === "saving" || !canSave || !hasChanges}
                 >
-                    {status === "saving" ? "Saving…" : "Save"}
+                    {#if status === "saving"}
+                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                    {:else}
+                        <Icon icon={UI_ICONS.check} class="btn__icon" />
+                        <span class="btn__label">Save</span>
+                    {/if}
                 </button>
             </div>
         </div>
