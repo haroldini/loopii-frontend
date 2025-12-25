@@ -142,12 +142,13 @@
     align-items: center;
     gap: 0.35rem;
 
-    padding: 0.15rem 0.7rem;
     border-radius: var(--radius-full);
+    height: 1.75rem;
+    padding: 0.3rem 0.7rem;
 
     background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 
     align-self: flex-start;
     width: fit-content;
@@ -157,9 +158,34 @@
     text-overflow: ellipsis;
 }
 
-.pill--success {
+.pill.pill--online {
     background: color-mix(in oklab, var(--success) 18%, var(--bg-surface));
     color: var(--success);
+}
+
+.pill__label {
+    display: inline-flex;
+    transform: translateY(-0.05rem);
+    line-height: var(--line-height);
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.tag {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    border: var(--border-width) solid var(--border-color);
+    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
+    color: var(--text-secondary);
 }
 
 /* ===== Toolbars / action rows ===== */

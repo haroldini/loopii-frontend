@@ -2,19 +2,6 @@
 
 /* ===== Shared profile primitives ===== */
 
-.profile-flag {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-    object-fit: contain;
-}
-
-.gender-icon {
-    width: 1.25em;
-    height: 1.25rem;
-    vertical-align: middle;
-}
 
 .gender-icon--male {
     color: var(--gender-male, #4A90E2);
@@ -26,47 +13,6 @@
 
 .gender-icon--other {
     color: var(--gender-other, #9B59B6);
-}
-
-/* Status dot for .pill */
-.status-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: var(--radius-full);
-    background: var(--text-muted);
-}
-
-.pill.pill--online {
-    background: color-mix(in oklab, var(--success) 18%, var(--bg-surface));
-    color: var(--success);
-}
-
-.pill.pill--online .status-dot {
-    background: var(--success);
-    box-shadow: 0 0 0.25rem color-mix(in oklab, var(--success) 75%, transparent);
-}
-
-/* Tags */
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.tag {
-    font-size: 0.85rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: var(--radius-full);
-    border: var(--border-width) solid var(--border-color);
-    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
-    color: var(--text-secondary);
-}
-
-.tag.more {
-    color: var(--text-muted);
-    opacity: 0.9;
 }
 
 /* Meta row */
@@ -93,28 +39,6 @@
     width: 0.6rem;
     font-size: 0.75rem;
     color: var(--border-color);
-}
-
-/* Line clamp helpers */
-.clamp {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.clamp-3 {
-    line-clamp: 3;
-    -webkit-line-clamp: 3;
-}
-
-.clamp-4 {
-    line-clamp: 4;
-    -webkit-line-clamp: 4;
-}
-
-.clamp-6 {
-    line-clamp: 6;
-    -webkit-line-clamp: 6;
 }
 
 /* ===== Profile media carousel ===== */
@@ -470,7 +394,7 @@
     color: var(--success);
 }
 
-/* ===== Regular profile card ===== */
+/* ===== Profile card parents ===== */
 
 .profile-card {
     display: flex;
@@ -482,71 +406,6 @@
     cursor: pointer;
     text-align: left;
 }
-
-.profile-card__body {
-    padding: 0.9rem 0 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    min-height: 0;
-}
-
-.profile-card__top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.profile-card__left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    min-width: 0;
-    flex: 1;
-}
-
-.profile-card__right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-    flex-shrink: 0;
-}
-
-.profile-card__right-main {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-}
-
-.profile-card__name {
-    font-size: 1.3rem;
-    line-height: 1.2;
-    color: var(--text-primary);
-    word-break: break-word;
-}
-
-.profile-card__username {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-}
-
-.profile-card__age {
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.profile-card__location {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: right;
-}
-
-/* ===== Expanded profile layout ===== */
 
 .profile-expanded {
     /* file-local tokens for controls over media */
@@ -567,7 +426,6 @@
     border-top: var(--border-width) solid var(--border-color);
 }
 
-/* keep the *content* capped while the scroll container stays full-width */
 .profile-expanded__media-wrap,
 .profile-expanded > .profile-block {
     width: 100%;
@@ -575,43 +433,17 @@
     margin-inline: auto;
 }
 
-/* media wrap */
 .profile-expanded__media-wrap {
     position: relative;
 }
 
-/* close button */
-.profile-expanded__close {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    z-index: 4;
+/* ===== Profile card structure ===== */
 
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: var(--radius-full);
-    border: var(--border-width) solid var(--control-border);
-    background: var(--control-bg);
-    color: var(--control-on);
-
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    backdrop-filter: blur(6px);
-}
-
-.profile-expanded__close:hover {
-    background: var(--control-bg-hover);
-}
-
-/* section padding: content already provides gutter */
 .profile-block {
     padding: var(--space-3) 0;
 }
 
-.profile-expanded__header-main {
+.profile__header-main {
     display: flex;
     align-items: stretch;
     justify-content: space-between;
@@ -619,43 +451,41 @@
     width: 100%;
 }
 
-.profile-expanded__header-left {
+.profile__header-left {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
-.profile-expanded__header-right {
+.profile__header-top-left {
+    display: flex;
+    align-items: left;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.profile__header-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.6rem;
+    gap: 0.8rem;
     flex-shrink: 0;
 }
 
-.profile-expanded__right-top {
+.profile__header-right-main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.profile__right-top {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.4rem;
-}
-
-.traits-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.35rem;
-}
-
-.trait-pill {
-    padding: 0.2rem 0.6rem;
-    border-radius: var(--radius-full);
-    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
-    border: var(--border-width) solid var(--border-color);
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    gap: 0.3rem;
 }
 
 .voice-intro-inline {
@@ -665,6 +495,8 @@
     margin-top: auto;
 }
 
+/* ===== Profile card sections ===== */
+
 .profile-section h3,
 .profile-section h4 {
     margin-bottom: 0.35rem;
@@ -673,36 +505,17 @@
 .profile-section .bio {
     color: var(--text-secondary);
     font-size: 0.95rem;
-    line-height: 1.45;
     text-align: left;
     width: 100%;
 }
 
-/* Expanded: increase spacing between text blocks */
 .profile-section h4 {
-    margin-top: 0.9rem;
-    margin-bottom: 0.45rem;
+    margin-top: 1rem;
+    margin-bottom: 0.6rem;
 }
 
 .profile-section h4:first-child {
     margin-top: 0;
-}
-
-.profile-section .bio {
-    margin: 0;
-    padding-bottom: 0.35rem;
-}
-
-.profile-section .bio + .bio {
-    margin-top: 0.65rem;
-}
-
-.profile-section .tags {
-    margin-top: 0.25rem;
-}
-
-.profile-section > * + h4 {
-    margin-top: 1rem;
 }
 
 /* ===== Socials (shared) ===== */
@@ -712,19 +525,21 @@
     flex-direction: column;
     gap: var(--space-2);
     align-items: center;
+    justify-content: center;
 }
 
 .social-row {
     display: flex;
     align-items: center;
+    align-self: center;
     gap: var(--space-2);
 
     background: var(--bg-secondary);
     border: var(--border-width) solid var(--border-color);
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-lg);
 
-    width: 40rem;
-    max-width: 100%;
+    width: 30rem;
+    max-width: min(100%, 30rem);
     padding: var(--space-2);
 
     transition: border-color 0.15s ease, background 0.15s ease;
@@ -863,24 +678,14 @@
 
 /* Responsive */
 @media (max-width: 320px) {
-    .profile-card__right {
-        align-items: flex-start;
-    }
-
-    .profile-card__location {
-        text-align: left;
-    }
-
-    .profile-expanded__header-main {
+    .profile__header-main {
         flex-direction: column;
         align-items: stretch;
     }
-
-    .profile-expanded__header-right,
-    .profile-expanded__right-top {
+    .profile__header-right,
+    .profile__right-top {
         align-items: flex-start;
     }
-
     .voice-intro-inline {
         justify-content: flex-start;
         margin-top: 0.35rem;

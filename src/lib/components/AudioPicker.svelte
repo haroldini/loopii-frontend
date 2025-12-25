@@ -682,7 +682,7 @@
         {#if effectiveUrl}
             <button
                 type="button"
-                class="btn btn--ghost btn--round audio-picker__preview"
+                class="btn btn--round audio-picker__preview"
                 on:click={togglePlay}
                 disabled={disabled}
                 aria-label="Play voice note"
@@ -863,5 +863,4 @@
         border-radius: var(--radius-full);
         transition: width 0.05s linear;
     }
-
 </style>

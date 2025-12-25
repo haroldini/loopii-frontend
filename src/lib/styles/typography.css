@@ -73,6 +73,10 @@ b {
     font-weight: var(--font-weight-bold);
 }
 
+.text-italic {
+    font-style: italic;
+}
+
 .text-no-select {
     user-select: none;
 }

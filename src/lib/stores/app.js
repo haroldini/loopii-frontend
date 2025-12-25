@@ -138,7 +138,10 @@ export const UI_ICONS = {
     "send": "mdi:send",
     "check": "mdi:check",
     "upload": "mdi:upload",
-    
+
+    "online": "mdi:checkbox-marked-circle",
+    "offline": "mdi:checkbox-blank-circle",
+
     "audioRecord": "mdi:circle",
     "audioPlay": "mdi:play",
     "audioStop": "mdi:stop",

@@ -2,15 +2,20 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
     import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
     import { interestMap, countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { profile as profileStore } from "$lib/stores/profile.js";
     import { getAvatarUrl } from "$lib/utils/profile.js";
     import {
         timeAgo,
+        distanceKm,
         formatLastSeenShort,
+        formatNumber,
+        formatStarSign,
         computeDistanceLabel
     } from "$lib/utils/misc.js";
     import ProfileMediaCarousel from "$lib/components/ProfileMediaCarousel.svelte";
+    import AudioPicker from "$lib/components/AudioPicker.svelte";
 
     export let profile;
 
@@ -79,12 +84,6 @@
     $: genderKey = profile?.gender?.toLowerCase?.() || "other";
     $: genderIcon = GENDER_ICONS[genderKey] || GENDER_ICONS.other;
 
-    $: visibleInterests = profile?.interests?.slice?.(0, 10) || [];
-    $: extraInterestCount = Math.max(
-        (profile?.interests?.length || 0) - visibleInterests.length,
-        0
-    );
-
     $: lastSeenDate = profile?.last_seen_at
         ? new Date(profile.last_seen_at)
         : null;
@@ -135,73 +134,83 @@
     {/key}
 
     <div class="gutter">
-        <div class="profile-card__body" bind:this={bodyEl}>
-            <div class="profile-card__top">
-                <div class="profile-card__left">
-                    <h2 class="profile-card__name">{displayName}</h2>
+        <div class="profile-block" bind:this={bodyEl}>
+            <div class="profile__header-main">
+                <div class="profile__header-left">
+                    <div class="profile__header-top-left">
+                        {#if profile.last_seen_at}
+                            <div class={"pill " + (isOnline ? "pill--online" : "")}>
+                                {#if isOnline}
+                                    <Icon icon={UI_ICONS.online} class="btn__icon" />
+                                    <span class="pill__label">Online</span>
+                                {:else}
+                                    <Icon icon={UI_ICONS.offline} class="btn__icon" />
+                                    <span class="pill__label">{formatLastSeenShort(lastSeenDate)}</span>
+                                {/if}
+                            </div>
+                        {/if}
+                        <h2>{displayName}</h2>
 
-                    {#if profile.last_seen_at}
-                        <div class={"pill " + (isOnline ? "pill--online" : "")}>
-                            <span class="status-dot"></span>
-                            {#if isOnline}
-                                <span>Online</span>
-                            {:else}
-                                <span>{formatLastSeenShort(lastSeenDate)}</span>
+                        {#if hasSeparateUsername}
+                            <p class="text-muted">@{profile.username}</p>
+                        {/if}
+                    </div>
+
+
+                    {#if profile.star_sign || profile.mbti}
+                        <div class="tags">
+                            {#if profile.star_sign}
+                                <span class="tag">{formatStarSign(profile.star_sign)}</span>
                             {/if}
+                            {#if profile.mbti}
+                                <span class="tag">{profile.mbti}</span>
+                            {/if}
+                        </div>
+                    {/if}
+
+                    {#if metaItems.length}
+                        <div class="meta-row">
+                            {#each metaItems as item, i}
+                                {#if i > 0}
+                                    <span class="meta-separator">•</span>
+                                {/if}
+                                <span class="meta-item">{item}</span>
+                            {/each}
                         </div>
                     {/if}
                 </div>
 
-                <div class="profile-card__right">
-                    <div class="profile-card__right-main">
-                        <span class="profile-card__age">{profile.age}</span>
-
-                        <Icon
-                            icon={genderIcon}
-                            class={"gender-icon gender-icon--" + genderKey}
-                        />
-
-                        {#if $countryMap[profile.country_id]?.flag_icon}
+                <div class="profile__header-right">
+                    <div class="profile__right-top">
+                        <div class="profile__header-right-main">
+                            <span class="text-fw-semibold">{profile.age}</span>
                             <Icon
-                                icon={$countryMap[profile.country_id].flag_icon}
-                                class="profile-flag"
+                                icon={genderIcon}
+                                class={"gender-icon--" + genderKey}
                             />
+                            {#if $countryMap[profile.country_id]?.flag_icon}
+                                <Icon icon={$countryMap[profile.country_id].flag_icon} />
+                            {/if}
+                        </div>
+
+                        {#if profile.location}
+                            <p class="text-muted text-italic">{profile.location}</p>
                         {/if}
                     </div>
 
-                    {#if profile.location}
-                        <p class="profile-card__location">{profile.location}</p>
+                    {#if profile.audio?.url}
+                        <div class="voice-intro-inline">
+                            <AudioPicker
+                                audio={profile.audio.url}
+                                maxDuration={30}
+                                recordable={false}
+                                disabled={false}
+                                previewLabel="Voice intro"
+                            />
+                        </div>
                     {/if}
                 </div>
             </div>
-
-            {#if hasSeparateUsername}
-                <p class="profile-card__username">@{profile.username}</p>
-            {/if}
-
-            {#if visibleInterests.length}
-                <div class="tags">
-                    {#each visibleInterests as interestId}
-                        <span class="tag">
-                            {$interestMap[interestId] || interestId}
-                        </span>
-                    {/each}
-                    {#if extraInterestCount > 0}
-                        <span class="tag more">+{extraInterestCount} more</span>
-                    {/if}
-                </div>
-            {/if}
-
-            {#if metaItems.length}
-                <div class="meta-row">
-                    {#each metaItems as item, i}
-                        {#if i > 0}
-                            <span class="meta-separator">•</span>
-                        {/if}
-                        <span class="meta-item">{item}</span>
-                    {/each}
-                </div>
-            {/if}
         </div>
     </div>
 </div>

@@ -2,6 +2,7 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
     import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
     import {
         interestMap,
         platformMap,
@@ -24,7 +25,6 @@
     } from "$lib/utils/misc.js";
 
     export let profile;
-    export let onAvatarClick = null;
     export let loop = null;
     export let request = null;
 
@@ -148,48 +148,39 @@
                 alt={`Photos of ${displayName}`}
             />
         {/key}
-        {#if onAvatarClick}
-            <button
-                type="button"
-                class="profile-expanded__close"
-                aria-label="Close expanded profile view"
-                on:click={onAvatarClick}
-            >
-                ✕
-            </button>
-        {/if}
     </div>
 
     <div class="gutter">
         <div class="profile-block">
-            <div class="profile-expanded__header-main">
-                <div class="profile-expanded__header-left">
-                    <div>
-                        <h2 class="profile-card__name">{displayName}</h2>
-
+            <div class="profile__header-main">
+                <div class="profile__header-left">
+                    <div class="profile__header-top-left">
                         {#if profile.last_seen_at}
                             <div class={"pill " + (isOnline ? "pill--online" : "")}>
-                                <span class="status-dot"></span>
                                 {#if isOnline}
-                                    <span>Online</span>
+                                    <Icon icon={UI_ICONS.online} class="btn__icon" />
+                                    <span class="pill__label">Online</span>
                                 {:else}
-                                    <span>{formatLastSeenShort(lastSeenDate)}</span>
+                                    <Icon icon={UI_ICONS.offline} class="btn__icon" />
+                                    <span class="pill__label">{formatLastSeenShort(lastSeenDate)}</span>
                                 {/if}
                             </div>
                         {/if}
+                        <h2>{displayName}</h2>
+
+                        {#if hasSeparateUsername}
+                            <p class="text-muted">@{profile.username}</p>
+                        {/if}
                     </div>
 
-                    {#if hasSeparateUsername}
-                        <p class="profile-card__username">@{profile.username}</p>
-                    {/if}
 
                     {#if profile.star_sign || profile.mbti}
-                        <div class="traits-row">
+                        <div class="tags">
                             {#if profile.star_sign}
-                                <span class="trait-pill">{formatStarSign(profile.star_sign)}</span>
+                                <span class="tag">{formatStarSign(profile.star_sign)}</span>
                             {/if}
                             {#if profile.mbti}
-                                <span class="trait-pill">{profile.mbti}</span>
+                                <span class="tag">{profile.mbti}</span>
                             {/if}
                         </div>
                     {/if}
@@ -206,26 +197,21 @@
                     {/if}
                 </div>
 
-                <div class="profile-expanded__header-right">
-                    <div class="profile-expanded__right-top">
-                        <div class="profile-card__right-main">
-                            <span class="profile-card__age">{profile.age}</span>
-
+                <div class="profile__header-right">
+                    <div class="profile__right-top">
+                        <div class="profile__header-right-main">
+                            <span class="text-fw-semibold">{profile.age}</span>
                             <Icon
                                 icon={genderIcon}
-                                class={"gender-icon gender-icon--" + genderKey}
+                                class={"gender-icon--" + genderKey}
                             />
-
                             {#if $countryMap[profile.country_id]?.flag_icon}
-                                <Icon
-                                    icon={$countryMap[profile.country_id].flag_icon}
-                                    class="profile-flag"
-                                />
+                                <Icon icon={$countryMap[profile.country_id].flag_icon} />
                             {/if}
                         </div>
 
                         {#if profile.location}
-                            <p class="profile-card__location">{profile.location}</p>
+                            <p class="text-muted text-italic">{profile.location}</p>
                         {/if}
                     </div>
 
@@ -248,12 +234,12 @@
             <div class="profile-block profile-section">
                 {#if profile.bio}
                     <h4>Bio</h4>
-                    <p class="bio">{profile.bio}</p>
+                    <p>{profile.bio}</p>
                 {/if}
 
                 {#if profile.looking_for}
                     <h4>Looking for</h4>
-                    <p class="bio">{profile.looking_for}</p>
+                    <p>{profile.looking_for}</p>
                 {/if}
 
                 {#if profile.interests?.length}
