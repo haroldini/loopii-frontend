@@ -346,7 +346,7 @@
                                             </button>
                                             <button
                                                 type="button"
-                                                class="btn btn--ghost"
+                                                class="btn btn--ghost btn--icon"
                                                 class:is-loading={$photosState === "settingAvatar"}
                                                 on:click={() => handleSetAvatar(img.id)}
                                                 disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}

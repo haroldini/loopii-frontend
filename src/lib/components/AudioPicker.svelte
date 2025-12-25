@@ -1,6 +1,9 @@
 
 <script>
     import { onDestroy, createEventDispatcher } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
+    import { addToast } from "$lib/stores/popups.js";
 
     // Props
     // - audio: existing audio (string URL OR object { url, duration_seconds, waveform, ... })
@@ -19,7 +22,7 @@
 
     $: if (resetToken !== lastResetToken) {
         lastResetToken = resetToken;
-        clearLocalRecording();
+        clearLocalRecording({ resetRemoteHidden: true });
     }
 
     const dispatch = createEventDispatcher();
@@ -28,6 +31,7 @@
 
     // Local URL for newly-recorded audio
     let localUrl = null;
+    let remoteHidden = false;
 
     // Playback state
     let isPlaying = false;
@@ -41,9 +45,6 @@
     let recordStream = null;
     let chunks = [];
     let recorderMimeType = null;
-
-    // Errors
-    let errorMessage = null;
 
     // RAF loops for smooth UI updates
     let playbackRaf = null;
@@ -61,28 +62,16 @@
               ? audio.url || null
               : null;
 
+    let lastAudioUrl = null;
+    $: if (audioUrl !== lastAudioUrl) {
+        lastAudioUrl = audioUrl;
+        remoteHidden = false;
+    }
+
     $: backendDuration =
         audio && typeof audio === "object"
             ? (Number.isFinite(audio.duration_seconds) ? audio.duration_seconds : null)
             : null;
-
-    $: backendWaveform =
-        audio && typeof audio === "object" && Array.isArray(audio.waveform)
-            ? audio.waveform
-            : null;
-
-    $: waveformBins = (() => {
-        if (!backendWaveform) return null;
-        const out = [];
-        for (const v of backendWaveform) {
-            if (!Number.isFinite(v)) continue;
-            const n = Math.max(0, Math.min(255, Math.round(v)));
-            out.push(n);
-        }
-        return out.length ? out : null;
-    })();
-
-    $: showWaveform = !!(!localUrl && waveformBins && waveformBins.length);
 
     // If we have a backend duration for a remote clip, prefer it.
     $: if (!localUrl && backendDuration && backendDuration > 0) {
@@ -103,26 +92,22 @@
 
         isPlaying = false;
         currentTime = 0;
-        // NOTE: do not blindly zero `duration` here; backendDuration may be providing it
         if (localUrl) duration = 0;
     }
 
-    // Track external audio changes. If parent changes `audio` while we don't
-    // have a local recording, reset playback state.
+    // Track external audio changes
     let lastAudioProp = null;
     $: if (audio !== lastAudioProp) {
         lastAudioProp = audio;
         if (!localUrl) {
             resetPlaybackState();
-            errorMessage = null;
         }
     }
 
-    // Effective URL: prefer local recording if present
-    $: effectiveUrl = localUrl || audioUrl || null;
+    // Prefer local recording if present
+    $: effectiveUrl = localUrl || (remoteHidden ? null : audioUrl) || null;
 
-    // Effective duration for UI / seeking: prefer backendDuration for remote clips,
-    // fall back to media metadata, otherwise fall back to maxDuration.
+    // Prefer backendDuration for remote clips
     $: effectiveDuration = (() => {
         const base =
             (!localUrl && backendDuration && Number.isFinite(backendDuration) && backendDuration > 0)
@@ -210,14 +195,8 @@
         if (!audioEl) return;
 
         stopPlaybackRaf();
-
         audioEl.pause();
         audioEl.currentTime = 0;
-
-        // force browser to acknowledge the seek
-        audioEl.src = audioEl.src;
-        audioEl.load();
-
         currentTime = 0;
         isPlaying = false;
     }
@@ -227,18 +206,17 @@
 
         // PREVIEW MODE (recordable = false)
         if (!recordable) {
-            // STOP → reset fully
             if (isPlaying) {
                 forceReset();
                 return;
             }
-
-            // PLAY → always start from zero
             forceReset();
-
             audioEl.play().catch((err) => {
                 console.error("Audio play failed:", err);
-                errorMessage = "Unable to play audio on this device.";
+                addToast({
+                    text: "Unable to play audio on this device.",
+                    autoHideMs: 3000,
+                });
             });
 
             return;
@@ -250,14 +228,16 @@
         } else {
             audioEl.play().catch((err) => {
                 console.error("Audio play failed:", err);
-                errorMessage = "Unable to play audio on this device.";
+                addToast({
+                    text: "Unable to play audio on this device.",
+                    autoHideMs: 3000,
+                });
             });
         }
     }
 
     function onAudioPlay() {
         isPlaying = true;
-        errorMessage = null;
         startPlaybackRaf();
     }
 
@@ -268,8 +248,6 @@
 
     function onLoadedMetadata() {
         if (!audioEl) return;
-
-        // If backend gave us duration for remote, keep that as the UI source of truth.
         if (!localUrl && backendDuration && backendDuration > 0) return;
 
         const d = audioEl.duration;
@@ -281,10 +259,9 @@
     function onTimeUpdate() {
         if (!audioEl) return;
 
-        // Keep as a fallback; RAF provides smooth updates.
         currentTime = audioEl.currentTime || 0;
 
-        // Capture duration lazily if it becomes available later
+        // Capture duration lazily
         if (!backendDuration && (!duration || !Number.isFinite(duration) || duration === Infinity)) {
             const d = audioEl.duration;
             if (Number.isFinite(d) && d > 0) {
@@ -306,31 +283,7 @@
     }
 
     function onAudioError() {
-        // Covers 404 / decode errors etc.
-        errorMessage = "Audio unavailable.";
         resetPlaybackState();
-    }
-
-    function seek(event) {
-        if (!audioEl || !effectiveUrl || !effectiveDuration || disabled) return;
-
-        const rect = event.currentTarget.getBoundingClientRect();
-        const ratio = (event.clientX - rect.left) / rect.width;
-        const target = Math.max(
-            0,
-            Math.min(effectiveDuration, ratio * effectiveDuration),
-        );
-
-        audioEl.currentTime = target;
-        currentTime = target;
-    }
-
-    function handleTrackKeydown(event) {
-        // Basic keyboard support: space / enter toggle playback
-        if (event.key === " " || event.key === "Enter") {
-            event.preventDefault();
-            togglePlay();
-        }
     }
 
     function formatTime(seconds) {
@@ -339,12 +292,6 @@
         const m = Math.floor(s / 60);
         const r = s % 60;
         return `${m}:${r.toString().padStart(2, "0")}`;
-    }
-
-    function ampPct(v) {
-        // keep a tiny minimum so it doesn't look “empty”
-        const p = Math.max(6, Math.min(100, (v / 255) * 100));
-        return `${p}%`;
     }
 
     // ------------- Recording -------------
@@ -389,11 +336,12 @@
             !navigator.mediaDevices ||
             !navigator.mediaDevices.getUserMedia
         ) {
-            errorMessage = "Recording not supported on this device.";
+            addToast({
+                text: "Unable to record audio on this device.",
+                autoHideMs: 3000,
+            });
             return;
         }
-
-        errorMessage = null;
 
         navigator.mediaDevices
             .getUserMedia({ audio: true })
@@ -409,7 +357,10 @@
                         : new MediaRecorder(stream);
                 } catch (err) {
                     console.error("MediaRecorder init failed:", err);
-                    errorMessage = "Unable to start recording.";
+                    addToast({
+                        text: "Failed to start audio recording.",
+                        autoHideMs: 3000,
+                    });
                     stopStream();
                     return;
                 }
@@ -429,13 +380,45 @@
                     isPlaying = false;
                 }
 
-                mediaRecorder.start(250); // collect chunks
+                mediaRecorder.start(250);
                 startRecordRaf();
             })
             .catch((err) => {
                 console.error("getUserMedia failed:", err);
-                errorMessage =
-                    "We couldn't access your microphone. Check browser permissions.";
+
+                let text = "Unable to access microphone.";
+                let description = "Please check your browser or device settings.";
+
+                switch (err?.name) {
+                    case "NotAllowedError":
+                    case "PermissionDeniedError":
+                        text = "Microphone permission denied.";
+                        description = "Allow microphone access in your browser settings.";
+                        break;
+
+                    case "NotFoundError":
+                    case "DevicesNotFoundError":
+                        text = "No microphone found.";
+                        description = "Connect a microphone or enable one in system settings.";
+                        break;
+
+                    case "NotReadableError":
+                    case "TrackStartError":
+                        text = "Microphone unavailable.";
+                        description = "It may be in use by another app.";
+                        break;
+
+                    case "SecurityError":
+                        text = "Microphone blocked by browser.";
+                        description = "Recording requires HTTPS and browser permission.";
+                        break;
+                }
+
+                addToast({
+                    text,
+                    description,
+                    autoHideMs: 5000,
+                });
             });
     }
 
@@ -459,20 +442,27 @@
     function handleRecordStop() {
         stopRecordRaf();
 
-        isRecording = false;
-        stopStream();
+        const mrMimeType = mediaRecorder && mediaRecorder.mimeType;
+        const pickedMimeType = recorderMimeType;
 
-        if (!chunks.length) return;
+        isRecording = false;
+
+        if (!chunks.length) {
+            stopStream();
+            return;
+        }
 
         // Prefer the recorder's actual mimeType
         const finalType =
-            (mediaRecorder && mediaRecorder.mimeType) ||
-            recorderMimeType ||
+            mrMimeType ||
+            pickedMimeType ||
             (chunks[0] && chunks[0].type) ||
             "";
 
         const blob = new Blob(chunks, { type: finalType });
         chunks = [];
+
+        stopStream();
 
         // Revoke any previous local URL
         if (localUrl) {
@@ -516,14 +506,26 @@
 
     function handleReplace() {
         if (isRecording || disabled) return;
-
         startRecording();
         dispatch("replacing");
     }
 
-    function clearLocalRecording() {
-        stopRecordRaf();
+    function handleRemove() {
+        if (disabled || isRecording) return;
+        if (localUrl) {
+            clearLocalRecording();
+            return;
+        }
+        if (!audioUrl) return;
 
+        remoteHidden = true;
+        resetPlaybackState();
+        dispatch("removed", { source: "remote" });
+    }
+
+    function clearLocalRecording(opts = {}) {
+        const { resetRemoteHidden = false } = opts;
+        stopRecordRaf();
         if (localUrl) {
             try {
                 URL.revokeObjectURL(localUrl);
@@ -533,9 +535,13 @@
         }
 
         localUrl = null;
+        if (resetRemoteHidden) {
+            remoteHidden = false;
+        }
+
         resetPlaybackState();
-        errorMessage = null;
         dispatch("cleared");
+        dispatch("removed", { source: "local" });
     }
 
     onDestroy(() => {
@@ -565,19 +571,15 @@
 
 
 <div class="audio-picker">
-    {#if errorMessage}
-        <p class="text-danger audio-picker__error">{errorMessage}</p>
-    {/if}
-
     {#if recordable}
         {#if !effectiveUrl && !isRecording}
             <button
                 type="button"
-                class="audio-picker__record-cta ui-pressable"
+                class="btn btn--ghost btn--round u-border-dashed"
                 on:click={startRecording}
                 disabled={disabled}
             >
-                <span class="audio-picker__dot" aria-hidden="true"></span>
+                <Icon icon={UI_ICONS.audioRecord} class="btn__icon text-danger" />
                 <span>
                     {#if maxDuration}
                         Record (max {maxDuration}s)
@@ -592,12 +594,12 @@
             <div class="audio-picker__shell audio-picker__shell--recording">
                 <button
                     type="button"
-                    class="btn btn--icon btn--danger audio-picker__icon"
+                    class="btn btn--danger btn--circle"
                     on:click={stopRecording}
                     disabled={disabled}
                     aria-label="Stop recording"
                 >
-                    ■
+                    <Icon icon={UI_ICONS.audioStop} class="btn__icon" />
                 </button>
 
                 <div class="audio-picker__track">
@@ -612,98 +614,67 @@
                         ></div>
                     </div>
 
-                    <div class="audio-picker__time">
+                    <p class="text-hint">
                         <span>{formatTime(recordSeconds)}</span>
                         {#if maxDuration}
-                            <span class="audio-picker__time-total">
+                            <span>
                                 / {formatTime(maxDuration)}
                             </span>
                         {/if}
-                    </div>
-                </div>
-
-                <div class="audio-picker__actions">
-                    <span class="audio-picker__recording-label">Recording…</span>
+                    </p>
                 </div>
             </div>
         {:else if effectiveUrl}
             <div class="audio-picker__shell">
                 <button
                     type="button"
-                    class="btn btn--icon btn--primary audio-picker__icon"
+                    class="btn btn--primary btn--circle"
                     on:click={togglePlay}
                     disabled={disabled}
                     aria-label={isPlaying ? "Pause" : "Play"}
                 >
                     {#if isPlaying}
-                        ❚❚
+                        <Icon icon={UI_ICONS.audioPause} class="btn__icon" />
                     {:else}
-                        ▶
+                        <Icon icon={UI_ICONS.audioPlay} class="btn__icon" />
                     {/if}
                 </button>
 
-                <button
-                    type="button"
-                    class="audio-picker__track audio-picker__track-button ui-pressable"
-                    on:click={seek}
-                    on:keydown={handleTrackKeydown}
-                    disabled={disabled}
-                    aria-label="Audio playback timeline"
-                >
+                <div class="audio-picker__track">
                     <div class="audio-picker__bar" aria-hidden="true">
-                        {#if showWaveform}
-                            <div class="audio-picker__waveform audio-picker__waveform--base">
-                                {#each waveformBins as amp (amp)}
-                                    <span class="audio-picker__wave-bar" style={`height:${ampPct(amp)};`}></span>
-                                {/each}
-                            </div>
-
-                            <div
-                                class="audio-picker__waveform audio-picker__waveform--fill"
-                                style={`width:${progress * 100}%;`}
-                            >
-                                {#each waveformBins as amp (amp)}
-                                    <span class="audio-picker__wave-bar" style={`height:${ampPct(amp)};`}></span>
-                                {/each}
-                            </div>
-                        {:else}
-                            <div
-                                class="audio-picker__bar-fill"
-                                style={`width: ${progress * 100}%;`}
-                            ></div>
-                        {/if}
+                        <div
+                            class="audio-picker__bar-fill"
+                            style={`width: ${progress * 100}%;`}
+                        ></div>
                     </div>
 
-                    <div class="audio-picker__time">
+                    <p class="text-hint">
                         <span>{formatTime(currentTime)}</span>
                         {#if effectiveDuration}
-                            <span class="audio-picker__time-total">
+                            <span>
                                 / {formatTime(effectiveDuration)}
                             </span>
                         {/if}
-                    </div>
-                </button>
+                    </p>
+                </div>
 
                 <div class="audio-picker__actions">
                     <button
                         type="button"
-                        class="audio-picker__text-action"
+                        class="btn btn--ghost btn--mini"
                         on:click={handleReplace}
                         disabled={disabled}
                     >
-                        Replace
+                        <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                     </button>
-
-                    {#if localUrl}
-                        <button
-                            type="button"
-                            class="audio-picker__text-action audio-picker__text-action--muted"
-                            on:click={clearLocalRecording}
-                            disabled={disabled}
-                        >
-                            Discard Changes
-                        </button>
-                    {/if}
+                    <button
+                        type="button"
+                        class="btn btn--danger btn--mini"
+                        on:click={handleRemove}
+                        disabled={disabled}
+                    >
+                        <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                    </button>
                 </div>
             </div>
         {/if}
@@ -711,22 +682,20 @@
         {#if effectiveUrl}
             <button
                 type="button"
-                class="audio-picker__preview ui-pressable"
+                class="btn btn--ghost btn--round audio-picker__preview"
                 on:click={togglePlay}
                 disabled={disabled}
                 aria-label="Play voice note"
             >
                 <div class="audio-picker__preview-icon" aria-hidden="true">
-                    <span class="audio-picker__preview-symbol">
-                        {#if isPlaying}
-                            ■
-                        {:else}
-                            ▶
-                        {/if}
-                    </span>
+                    {#if isPlaying}
+                        <Icon icon={UI_ICONS.audioStop} class="btn__icon"/>
+                    {:else}
+                        <Icon icon={UI_ICONS.audioPlay} class="btn__icon"/>
+                    {/if}
 
                     {#if isPlaying && remainingSeconds > 0}
-                        <span class="audio-picker__preview-remaining">
+                        <span class="audio-picker__preview-remaining text-fw-semibold">
                             {remainingSeconds}
                         </span>
                     {/if}
@@ -735,7 +704,7 @@
                 {#if previewLabel}
                     <div class="audio-picker__preview-body">
                         <span
-                            class="audio-picker__preview-text"
+                            class="text-hint"
                             style={`visibility: ${isPlaying ? "hidden" : "visible"};`}
                         >
                             {previewLabel}
@@ -783,30 +752,21 @@
         align-items: center;
     }
 
-    .audio-picker__error {
-        font-size: 0.9rem;
-    }
-
     .audio-picker__shell {
         display: flex;
         align-items: center;
         gap: var(--space-3);
 
         width: 100%;
-        padding: var(--space-2) var(--space-3);
+        padding: var(--space-2) var(--space-4);
 
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-full);
         background: var(--bg-surface);
         border: var(--border-width) solid var(--border-color);
     }
 
     .audio-picker__shell--recording {
         border-color: var(--danger);
-    }
-
-    .audio-picker__icon.btn--icon {
-        font-size: 0.9rem;
-        flex-shrink: 0;
     }
 
     .audio-picker__track {
@@ -816,15 +776,6 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
-    }
-
-    .audio-picker__track-button {
-        text-align: left;
-    }
-
-    .audio-picker__track-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
     }
 
     .audio-picker__bar {
@@ -842,145 +793,20 @@
         top: 0;
         bottom: 0;
         width: 0%;
-        border-radius: var(--radius-full);
+        border-radius: 0;
         background: var(--accent);
         transition: width 0.05s linear;
     }
 
-    .audio-picker__waveform {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        gap: 1px;
-        padding: 0 0.5rem;
-        overflow: hidden;
-    }
-
-    .audio-picker__waveform--base {
-        opacity: 0.55;
-    }
-
-    .audio-picker__waveform--fill {
-        overflow: hidden;
-        border-radius: var(--radius-full);
-    }
-
-    .audio-picker__wave-bar {
-        flex: 1 1 0;
-        min-width: 1px;
-        border-radius: var(--radius-full);
-        background: var(--bg-surface);
-        opacity: 0.9;
-    }
-
-    .audio-picker__waveform--fill .audio-picker__wave-bar {
-        background: var(--accent);
-        opacity: 1;
-    }
-
-    .audio-picker__time {
-        display: flex;
-        align-items: baseline;
-        gap: var(--space-1);
-        font-size: 0.9rem;
-        color: var(--text-muted);
-    }
-
-    .audio-picker__time-total {
-        opacity: 0.85;
-    }
-
     .audio-picker__actions {
         display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        align-items: flex-end;
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-    }
-
-    .audio-picker__recording-label {
-        color: var(--danger);
-    }
-
-    .audio-picker__text-action {
-        border: 0;
-        background: none;
-        padding: 0;
-
-        color: var(--accent);
-        cursor: pointer;
-        font: inherit;
-        font-size: 0.9rem;
-        text-align: right;
-    }
-
-    .audio-picker__text-action:hover {
-        color: var(--text-primary);
-    }
-
-    .audio-picker__text-action:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .audio-picker__text-action--muted {
-        color: var(--text-muted);
-    }
-
-    .audio-picker__text-action--muted:hover {
-        color: var(--text-secondary);
-    }
-
-    .audio-picker__record-cta {
-        display: inline-flex;
         align-items: center;
         gap: var(--space-2);
-
-        width: fit-content;
-        padding: var(--space-2) var(--space-3);
-
-        border-radius: var(--radius-full);
-        border: var(--border-width) dashed var(--border-color);
-        background: var(--bg-surface);
-
-        font-size: 1rem;
-        color: var(--text-primary);
-    }
-
-    .audio-picker__record-cta:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .audio-picker__dot {
-        width: 0.75rem;
-        height: 0.75rem;
-        border-radius: var(--radius-full);
-        background: var(--danger);
-        flex-shrink: 0;
     }
 
     .audio-picker__preview {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-
-        width: fit-content;
         padding: var(--space-2) var(--space-3);
-
-        border-radius: var(--radius-full);
-        border: var(--border-width) solid var(--border-color);
-        background: var(--bg-surface);
-
         overflow: hidden;
-    }
-
-    .audio-picker__preview:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
     }
 
     .audio-picker__preview-icon {
@@ -997,10 +823,6 @@
         position: relative;
         flex-shrink: 0;
         font-size: 0.8rem;
-    }
-
-    .audio-picker__preview-symbol {
-        line-height: 1;
     }
 
     .audio-picker__preview-remaining {
@@ -1031,6 +853,7 @@
         align-items: center;
         background: var(--border-color);
         border-radius: var(--radius-full);
+        overflow: hidden;
     }
 
     .audio-picker__preview-bar-fill {
@@ -1041,9 +864,4 @@
         transition: width 0.05s linear;
     }
 
-    .audio-picker__preview-text {
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        white-space: nowrap;
-    }
 </style>

@@ -249,7 +249,7 @@
         border-radius: var(--radius-lg);
 
         padding: calc(var(--space-2) + var(--space-1)) var(--space-3);
-        max-width: min(40rem, 90%, 50vh, 300px);
+        max-width: min(40rem, 90%, 50vh, 400px);
         width: 90%;
     }
 

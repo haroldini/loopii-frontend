@@ -627,22 +627,16 @@
                     on:recorded={(e) => {
                         setters.audio && setters.audio(e.detail);
                     }}
+                    on:removed={(e) => {
+                        if (e.detail && e.detail.source === "remote") {
+                            setters.audio && setters.audio({ delete: true });
+                            return;
+                        }
+                        if (e.detail && e.detail.source === "local") {
+                            setters.audio && setters.audio(null);
+                        }
+                    }}
                 />
-
-                {#if values.audioUrl}
-                    <div class="actions actions--end">
-                        <button
-                            type="button"
-                            class="btn btn--ghost"
-                            on:click={() => {
-                                setters.audio && setters.audio({ delete: true });
-                                audioResetToken += 1;
-                            }}
-                        >
-                            {field.clearLabel ?? "Remove Voice Intro"}
-                        </button>
-                    </div>
-                {/if}
 
                 {#if errorMap.audio}
                     <p class="field__error">{errorMap.audio.message}</p>

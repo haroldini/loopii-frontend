@@ -138,6 +138,13 @@ export const UI_ICONS = {
     "send": "mdi:send",
     "check": "mdi:check",
     "upload": "mdi:upload",
+    
+    "audioRecord": "mdi:circle",
+    "audioPlay": "mdi:play",
+    "audioStop": "mdi:stop",
+    "audioPause": "mdi:pause",
+    "audioRecordCircle": "mdi:record-circle",
+    "audioDeleteCircle": "mdi:delete-circle",
 
     "image": "mdi:image-outline",
     "imageAdd": "mdi:image-plus-outline",

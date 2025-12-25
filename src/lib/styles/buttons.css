@@ -83,6 +83,14 @@
     border-radius: var(--radius-full);
 }
 
+.btn--circle {
+    height: 2.5rem;
+    width: 2.5rem;
+    aspect-ratio: 1 / 1 !important;
+    padding: 0;
+    border-radius: var(--radius-circle);
+}
+
 .btn--danger {
     background: var(--danger);
     border-color: var(--danger);
