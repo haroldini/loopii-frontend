@@ -10,7 +10,7 @@
     import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
 
-    let expanded = false;
+    let expanded = true;
 
     function open() {
         expanded = true;
@@ -40,7 +40,7 @@
             </div>
 
             <div class="bar__actions">
-                {#if !expanded}
+                <!-- {#if !expanded} -->
                     <button
                         type="button"
                         class="btn btn--ghost btn--icon"
@@ -56,7 +56,7 @@
                     >
                         <Icon icon={UI_ICONS.settings} class="btn__icon" />
                     </button>
-                {:else}
+                <!-- {:else}
                     <button
                         type="button"
                         class="btn btn--ghost btn--icon"
@@ -64,17 +64,17 @@
                     >
                         <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                     </button>
-                {/if}
+                {/if} -->
             </div>
         </div>
     </header>
 
     <div class="content stack" class:content--scroll={expanded}>
-        {#if expanded}
+        <!-- {#if expanded} -->
             <ProfileCardExpanded profile={$profile} onAvatarClick={close} />
-        {:else}
+        <!-- {:else}
             <ProfileCard profile={$profile} on:expand={open} />
-        {/if}
+        {/if} -->
     </div>
 
     <div class="bar bar--actionbar">

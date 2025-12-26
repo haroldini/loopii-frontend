@@ -12,7 +12,7 @@
         initPeerStore();
     }
 
-    let expanded = false;
+    let expanded = true;
 
     function open() {
         expanded = true;
@@ -38,7 +38,7 @@
             </div>
 
             <div class="bar__actions">
-                {#if !expanded}
+                <!-- {#if !expanded} -->
                     <button
                         type="button"
                         class="btn btn--ghost btn--icon"
@@ -61,7 +61,7 @@
                             class="btn__icon"
                         />
                     </button>
-                {:else}
+                <!-- {:else}
                     <button
                         type="button"
                         class="btn btn--ghost btn--icon"
@@ -73,7 +73,7 @@
                             class="btn__icon"
                         />
                     </button>
-                {/if}
+                {/if} -->
             </div>
         </div>
     </header>
@@ -113,10 +113,11 @@
                     or try again later.
                 </p>
             </div>
-        {:else if expanded}
-            <ProfileCardExpanded profile={$peer} onAvatarClick={close} />
+        <!-- {:else if expanded}
+            <ProfileCardExpanded profile={$peer} onAvatarClick={close} /> -->
         {:else}
-            <ProfileCard profile={$peer} on:expand={open} />
+            <ProfileCardExpanded profile={$peer} onAvatarClick={open} />
+            <!-- <ProfileCard profile={$peer} on:expand={open} /> -->
         {/if}
     </div>
 

@@ -45,8 +45,6 @@
             if (profile.created_at) {
                 metaItems.push(`Joined ${timeAgo(profile.created_at)}`);
             }
-
-            if (distanceLabel) metaItems.push(distanceLabel);
         }
     }
 
@@ -114,6 +112,10 @@
 
             {#if profile.location}
                 <p class="text-muted text-italic">{profile.location}</p>
+            {/if}
+
+            {#if distanceLabel}
+                <p class="text-accent text-fw-semibold">{distanceLabel}</p>
             {/if}
         </div>
 
