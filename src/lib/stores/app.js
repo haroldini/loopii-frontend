@@ -85,14 +85,14 @@ if (browser) {
 // ---------------- Icons ---------------- //
 
 const PLATFORM_ICONS = {
-    "discord": "meteor-icons:discord",
-    "twitter / x": "meteor-icons:x",
-    "tiktok": "meteor-icons:tiktok",
-    "reddit": "meteor-icons:reddit",
-    "instagram": "meteor-icons:instagram",
-    "threads": "meteor-icons:threads",
-    "bluesky": "meteor-icons:bluesky",
-    "snapchat": "mingcute:snapchat-line",
+    "discord": "mingcute:discord-fill",
+    "twitter / x": "mingcute:social-x-fill",
+    "tiktok": "mingcute:tiktok-fill",
+    "reddit": "mingcute:reddit-fill",
+    "instagram": "mingcute:instagram-fill",
+    "threads": "mingcute:threads-fill",
+    "bluesky": "mingcute:bluesky-social-fill",
+    "snapchat": "mingcute:snapchat-fill",
 };
 
 export const GENDER_ICONS = {
@@ -121,8 +121,11 @@ export const UI_ICONS = {
     "editProfile": "mdi:account-edit",
     "resetPassword": "mdi:lock-open-check-outline",
     "accountAction": "mdi:account-cog",
+    "link": "mdi:link-variant",
+    "at": "mdi:at",
     
     "delete": "mdi:delete",
+    "minus": "mdi:minus",
     "chevronDown": "meteor-icons:chevron-down",
     "error": "mdi:alert-circle-outline",
     "alert": "mdi:alert-outline",

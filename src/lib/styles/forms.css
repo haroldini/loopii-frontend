@@ -7,7 +7,7 @@ select {
     padding: var(--space-2) var(--space-3);
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-md);
-    background: var(--bg-surface);
+    background: var(--bg-surface-alt);
     color: var(--text-secondary);
     font: inherit;
     line-height: var(--line-height);

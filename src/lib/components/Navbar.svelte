@@ -11,11 +11,15 @@
     const isActive = (path) => {
         const current = $page.url.pathname;
 
+		if (current === "/profile/search-preferences") {
+			return path === "/";
+		}
+
         if (path === "/profile") {
             return (
                 current === "/profile" ||
                 current.startsWith("/profile/") ||
-                current === "/account"
+                current === "/settings"
             );
         }
 

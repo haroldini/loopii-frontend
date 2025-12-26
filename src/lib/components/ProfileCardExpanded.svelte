@@ -2,31 +2,21 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
     import Icon from "@iconify/svelte";
-    import { UI_ICONS } from "$lib/stores/app.js";
-    import {
-        interestMap,
-        platformMap,
-        countryMap,
-        GENDER_ICONS
-    } from "$lib/stores/app.js";
-    import { profile as profileStore } from "$lib/stores/profile.js";
-
-    import AudioPicker from "$lib/components/AudioPicker.svelte";
-    import ProfileMediaCarousel from "$lib/components/ProfileMediaCarousel.svelte";
-    import { buildSocialLink } from "$lib/utils/urls.js";
+    import { UI_ICONS, platformMap, interestMap } from "$lib/stores/app.js";
     import { getAvatarUrl } from "$lib/utils/profile.js";
-    import {
-        timeAgo,
-        distanceKm,
-        formatLastSeenShort,
-        formatNumber,
-        formatStarSign,
-        computeDistanceLabel
-    } from "$lib/utils/misc.js";
 
+    import ProfileMediaCarousel from "$lib/components/ProfileMediaCarousel.svelte";
+    import ProfileHeader from "$lib/components/ProfileHeader.svelte";
+
+    import { buildSocialLink } from "$lib/utils/urls.js";
+    import { timeAgo } from "$lib/utils/misc.js";
+    import { addToast } from "$lib/stores/popups.js";
+    
     export let profile;
     export let loop = null;
     export let request = null;
+
+    // Event dispatcher
 
     const dispatch = createEventDispatcher();
 
@@ -38,43 +28,8 @@
         dispatch("unloop", { loopId: loop.id });
     }
 
-    $: genderKey = profile?.gender?.toLowerCase?.() || "other";
-    $: genderIcon = GENDER_ICONS[genderKey] || GENDER_ICONS.other;
-    $: displayName = profile?.name || profile?.username;
-    $: hasSeparateUsername =
-        profile?.name && profile?.username && profile.name !== profile.username;
-    $: socialPlatforms =
-        profile?.socials?.map((s) => ({
-            ...s,
-            platform: $platformMap[s.platform_id] || null,
-    })) || [];
+    // ===== Dynamic height adjustment for media carousel ======
 
-    $: lastSeenDate = profile?.last_seen_at
-        ? new Date(profile.last_seen_at)
-        : null;
-
-    $: isOnline =
-        lastSeenDate &&
-        Date.now() - lastSeenDate.getTime() <= 10 * 60 * 1000;
-
-    $: distanceLabel = computeDistanceLabel(profile, $profileStore);
-
-    $: metaItems = [];
-    $: {
-        metaItems = [];
-        if (profile) {
-            const countryName = $countryMap[profile.country_id]?.name;
-            if (countryName) metaItems.push(countryName);
-
-            if (profile.created_at) {
-                metaItems.push(`Joined ${timeAgo(profile.created_at)}`);
-            }
-
-            if (distanceLabel) metaItems.push(distanceLabel);
-        }
-    }
-
-    // Dynamic height adjustment for media carousel
     const MEDIA_MIN_REM = 5;
 
     let expandedEl;
@@ -132,6 +87,59 @@
         };
     });
 
+    // Derived data
+
+    $: socialPlatforms =
+        profile?.socials?.map((s) => ({
+            ...s,
+            platform: $platformMap[s.platform_id] || null,
+    })) || [];
+
+    $: displayName = profile?.name || profile?.username;
+
+    // UI Functions
+
+    let lastCopied = null;
+    let resetTimer = null;
+
+    function markCopied(key) {
+        lastCopied = key;
+
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+            lastCopied = null;
+        }, 2000);
+    }
+
+    async function copyUrl(event, social) {
+        event.stopPropagation();
+
+        const url = buildSocialLink(social, $platformMap);
+        if (!url) return;
+
+        await navigator.clipboard.writeText(url);
+        markCopied(url);
+
+        addToast({
+            text: "Profile URL copied to clipboard.",
+            autoHideMs: 2000
+        });
+    }
+
+    async function copyUsername(event, social) {
+        event.stopPropagation();
+
+        if (!social.handle) return;
+
+        await navigator.clipboard.writeText(social.handle);
+        markCopied(social.handle);
+
+        addToast({
+            text: "Username copied to clipboard.",
+            autoHideMs: 2000
+        });
+    }
+
 </script>
 
 
@@ -151,95 +159,23 @@
     </div>
 
     <div class="gutter">
+
+        <!-- Header section (same as unexpanded ProfileCard) -->
         <div class="profile-block">
-            <div class="profile__header-main">
-                <div class="profile__header-left">
-                    <div class="profile__header-top-left">
-                        {#if profile.last_seen_at}
-                            <div class={"pill " + (isOnline ? "pill--online" : "")}>
-                                {#if isOnline}
-                                    <Icon icon={UI_ICONS.online} class="btn__icon" />
-                                    <span class="pill__label">Online</span>
-                                {:else}
-                                    <Icon icon={UI_ICONS.offline} class="btn__icon" />
-                                    <span class="pill__label">{formatLastSeenShort(lastSeenDate)}</span>
-                                {/if}
-                            </div>
-                        {/if}
-                        <h2>{displayName}</h2>
-
-                        {#if hasSeparateUsername}
-                            <p class="text-muted">@{profile.username}</p>
-                        {/if}
-                    </div>
-
-
-                    {#if profile.star_sign || profile.mbti}
-                        <div class="tags">
-                            {#if profile.star_sign}
-                                <span class="tag">{formatStarSign(profile.star_sign)}</span>
-                            {/if}
-                            {#if profile.mbti}
-                                <span class="tag">{profile.mbti}</span>
-                            {/if}
-                        </div>
-                    {/if}
-
-                    {#if metaItems.length}
-                        <div class="meta-row">
-                            {#each metaItems as item, i}
-                                {#if i > 0}
-                                    <span class="meta-separator">•</span>
-                                {/if}
-                                <span class="meta-item">{item}</span>
-                            {/each}
-                        </div>
-                    {/if}
-                </div>
-
-                <div class="profile__header-right">
-                    <div class="profile__right-top">
-                        <div class="profile__header-right-main">
-                            <span class="text-fw-semibold">{profile.age}</span>
-                            <Icon
-                                icon={genderIcon}
-                                class={"gender-icon--" + genderKey}
-                            />
-                            {#if $countryMap[profile.country_id]?.flag_icon}
-                                <Icon icon={$countryMap[profile.country_id].flag_icon} />
-                            {/if}
-                        </div>
-
-                        {#if profile.location}
-                            <p class="text-muted text-italic">{profile.location}</p>
-                        {/if}
-                    </div>
-
-                    {#if profile.audio?.url}
-                        <div class="voice-intro-inline">
-                            <AudioPicker
-                                audio={profile.audio.url}
-                                maxDuration={30}
-                                recordable={false}
-                                disabled={false}
-                                previewLabel="Voice intro"
-                            />
-                        </div>
-                    {/if}
-                </div>
-            </div>
+            <ProfileHeader {profile} />
         </div>
 
+        <!-- Bio section -->
         {#if profile.audio?.url || profile.bio || profile.looking_for || profile.interests?.length}
             <div class="profile-block profile-section">
                 {#if profile.bio}
                     <h4>Bio</h4>
-                    <p>{profile.bio}</p>
+                    <p class="bio">{profile.bio}</p>
                 {/if}
 
                 {#if profile.looking_for}
                     <h4>Looking for</h4>
-                    <p>{profile.looking_for}</p>
+                    <p class="bio">{profile.looking_for}</p>
                 {/if}
 
                 {#if profile.interests?.length}
@@ -253,89 +189,97 @@
             </div>
         {/if}
 
-        {#if profile.loop_bio || profile.socials?.length}
+        <!-- Socials section -->
+        {#if profile.socials?.length}
             <div class="profile-block profile-section">
-                <h3>Loops-only</h3>
-
-                {#if profile.loop_bio}
-                    <h4>Loop bio</h4>
-                    <p class="bio">{profile.loop_bio}</p>
-                {/if}
-
-                {#if profile.socials?.length}
-                    <h4>Socials</h4>
-                    <div class="socials-list">
-                        {#each socialPlatforms as social}
-                            {#if buildSocialLink(social, $platformMap)}
-                                {#if $platformMap[social.platform_id]}
-                                    <div
-                                        class="social-row"
-                                        role="button"
-                                        tabindex="0"
-                                        on:click={() => {
+                <h3 class="text-accent text-center">Socials</h3>
+                <div class="socials-list">
+                    {#each socialPlatforms as social}
+                        {#if buildSocialLink(social, $platformMap)}
+                            {#if $platformMap[social.platform_id]}
+                                <div
+                                    class="btn social-row"
+                                    role="button"
+                                    tabindex="0"
+                                    on:click={() => {
+                                        const url = buildSocialLink(social, $platformMap);
+                                        if (url) window.open(url, "_blank", "noopener,noreferrer");
+                                    }}
+                                    on:keydown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault();
                                             const url = buildSocialLink(social, $platformMap);
                                             if (url) window.open(url, "_blank", "noopener,noreferrer");
-                                        }}
-                                        on:keydown={(event) => {
-                                            if (event.key === "Enter" || event.key === " ") {
-                                                event.preventDefault();
-                                                const url = buildSocialLink(social, $platformMap);
-                                                if (url) window.open(url, "_blank", "noopener,noreferrer");
-                                            }
-                                        }}
-                                    >
+                                        }
+                                    }}
+                                >
+                                        <Icon
+                                            icon={social.platform.icon_url}
+                                            class="btn__icon btn__icon--large social-icon--left"
+                                            aria-label={social.platform.name}
+                                        />
+
+                                    <div class="social-preview">
+                                        <span class="social-handle">@{social.handle}</span>
+                                    </div>
+
+                                    <div class="social-icons--right">
+                                        <button
+                                            type="button"
+                                            class="btn btn--circle"
+                                            title={lastCopied === buildSocialLink(social, $platformMap) ? "Copied" : "Copy profile URL"}
+                                            aria-label={lastCopied === buildSocialLink(social, $platformMap) ? "Copied" : "Copy profile URL"}
+                                            on:click={(event) => copyUrl(event, social)}
+                                        >
                                             <Icon
-                                                icon={social.platform.icon_url}
-                                                class="social-icon__icon"
-                                                aria-label={social.platform.name}
+                                                icon={
+                                                    lastCopied === buildSocialLink(social, $platformMap)
+                                                        ? UI_ICONS.check
+                                                        : UI_ICONS.link
+                                                }
+                                                class={
+                                                    "btn__icon " +
+                                                    (lastCopied === buildSocialLink(social, $platformMap)
+                                                        ? "text-success"
+                                                        : "")
+                                                }
                                             />
-
-                                        <div class="social-preview">
-                                            <span class="social-handle">@{social.handle}</span>
-                                        </div>
-
-                                        <div class="copy-buttons">
-                                            <button
-                                                type="button"
-                                                class="copy-btn"
-                                                title="Copy profile URL"
-                                                on:click={(event) => {
-                                                    event.stopPropagation();
-                                                    const url = buildSocialLink(social, $platformMap);
-                                                    navigator.clipboard.writeText(url);
-                                                }}
-                                            >
-                                                🌐
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                class="copy-btn"
-                                                title="Copy username"
-                                                on:click={(event) => {
-                                                    event.stopPropagation();
-                                                    navigator.clipboard.writeText(social.handle);
-                                                }}
-                                            >
-                                                @
-                                            </button>
-                                        </div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn--circle"
+                                            title={lastCopied === social.handle ? "Copied" : "Copy username"}
+                                            aria-label={lastCopied === social.handle ? "Copied" : "Copy username"}
+                                            on:click={(event) => copyUsername(event, social)}
+                                        >
+                                            <Icon
+                                                icon={
+                                                    lastCopied === social.handle
+                                                        ? UI_ICONS.check
+                                                        : UI_ICONS.at
+                                                }
+                                                class={
+                                                    "btn__icon " +
+                                                    (lastCopied === social.handle
+                                                        ? "text-success"
+                                                        : "")
+                                                }
+                                            />
+                                        </button>
                                     </div>
-                                {:else}
-                                    <div class="social-row">
-                                        <div class="social-icon">
-                                            <div class="social-icon-placeholder">?</div>
-                                        </div>
-
-                                        <div class="social-preview">
-                                            <span class="social-handle">Unknown Platform</span>
-                                        </div>
-                                    </div>
-                                {/if}
+                                </div>
                             {/if}
-                        {/each}
-                    </div>
-                {/if}
+                        {/if}
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
+       <!-- Loops section -->
+        {#if profile.loop_bio}
+            <div class="profile-block profile-section">            
+                <h4 class="text-accent">Loops-only Bio</h4>
+                <p class="bio">{profile.loop_bio}</p>
             </div>
         {/if}
 
@@ -367,5 +311,5 @@
                 <p class="text-muted text-center">Requested {timeAgo(request.created_at)}</p>
             </div>
         {/if}
-    </div>
+    </div>        
 </div>

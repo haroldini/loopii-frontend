@@ -488,16 +488,16 @@
                                 {@const before = parts[0] ?? ""}
                                 {@const after = parts[1] ?? ""}
 
-                                <div class="social-row">
+                                <div class="btn btn--no-pointer social-row">
                                     <Icon
                                         icon={platform.icon_url}
-                                        class="social-icon__icon"
+                                        class="btn__icon btn__icon--large social-icon--left"
                                         aria-label={platform.name}
                                     />
 
                                     <div class="social-preview">
                                         <span class="social-base">
-                                            {before.replace(/^https?:\/\//, "")}
+                                            {before.replace(/^(https?:\/\/)?(www\.)?/, "")}
                                         </span>
 
                                         <input
@@ -515,14 +515,14 @@
                                         <span class="social-base">{after}</span>
                                     </div>
 
-                                    <div class="social-remove">
+                                    <div class="social-icons--right">
                                         <button
                                             type="button"
-                                            class="btn btn--icon btn--ghost social-remove-btn"
+                                            class="btn btn--ghost btn--circle social-remove-btn"
                                             aria-label="Remove platform"
                                             on:click={() => onSocialRemove && onSocialRemove(i)}
                                         >
-                                            −
+                                            <Icon icon={UI_ICONS.minus} class="btn__icon" />
                                         </button>
                                     </div>
                                 </div>

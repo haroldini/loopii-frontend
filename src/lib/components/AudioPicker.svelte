@@ -761,7 +761,7 @@
         padding: var(--space-2) var(--space-4);
 
         border-radius: var(--radius-full);
-        background: var(--bg-surface);
+        background: var(--bg-surface-alt);
         border: var(--border-width) solid var(--border-color);
     }
 
