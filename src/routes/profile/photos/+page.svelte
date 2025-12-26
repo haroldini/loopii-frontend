@@ -82,8 +82,8 @@
     function handleDelete(imageId) {
         addToast({
             variant: "modal",
-            text: "Delete this photo?",
-            description: "This will permanently remove the photo from your profile.",
+            text: "Are you sure?",
+            description: "This will remove the photo from your profile.",
             autoHideMs: null,
             actions: [
                 {
@@ -159,7 +159,7 @@
             } else {
                 photosState.set("uploaded");
                 addToast({
-                    text: "Photo uploaded!",
+                    text: "New photo uploaded!",
                     autoHideMs: 3000,
                 });
             }
@@ -341,6 +341,7 @@
                                                 on:click={() => handleDelete(img.id)}
                                                 disabled={$photosState === "deleting" || $photosState === "settingAvatar" || $photosState === "uploading"}
                                                 aria-label="Delete photo"
+                                                title="Delete photo"
                                             >
                                                 <Icon icon={UI_ICONS.delete} class="btn__icon" />
                                             </button>
@@ -351,6 +352,7 @@
                                                 on:click={() => handleSetAvatar(img.id)}
                                                 disabled={$photosState === "settingAvatar" || $photosState === "deleting" || $photosState === "uploading"}
                                                 aria-label="Set as profile picture"
+                                                title="Set as profile picture"
                                             >
                                                 <Icon icon={UI_ICONS.imagePfpSet} class="btn__icon" />
                                                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />    
@@ -360,14 +362,15 @@
                                                 type="button"
                                                 class="btn btn--ghost btn--icon"
                                                 disabled
-                                                aria-label="Current profile picture">
+                                                aria-label="Current profile picture"
+                                                title="Current profile picture">
 
                                                 <Icon icon={UI_ICONS.imagePfp} class="btn__icon text-success" />
                                             </button>
                                         {/if}
                                     </div>
 
-                                    <p class="text-hint">{timeAgo(img.created_at)}</p>
+                                    <p class="text-hint" title="Photo uploaded {timeAgo(img.created_at)}">{timeAgo(img.created_at)}</p>
                                 </div>
                             </div>
                         </section>

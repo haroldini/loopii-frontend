@@ -91,10 +91,6 @@
 			if (!res || res.looped !== false) {
 				console.error("Unexpected response from evaluatePeer on decline:", res);
 			}
-			addToast({
-				text: "Loop request declined.",
-				autoHideMs: 3000,
-			});
 		} catch (err) {
 			console.error("Failed to decline request:", err);
 			// Revert on error
@@ -102,7 +98,7 @@
 			loopRequestsTotal.set(prevTotal);
 			adjustNewRequestsCount(1);
 			addToast({
-				text: "Failed to decline request.",
+				text: "Something went wrong while declining the request.",
 				autoHideMs: 5000,
 			});
 		}
@@ -197,7 +193,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--primary btn--mini btn--round"
+                        class="btn btn--success btn--mini btn--round"
                         on:click={acceptSelected}
                     >
                         <Icon 

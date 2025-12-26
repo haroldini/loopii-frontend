@@ -605,11 +605,12 @@
 }
 
 .social-remove-btn {
-    color: var(--danger);
+    color: var(--danger) !important;
 }
 
 .social-remove-btn:hover {
     background: color-mix(in oklab, var(--danger) 12%, transparent);
+    border: var(--border-width) solid var(--border-color);
 }
 
 .profile-expanded .social-handle {

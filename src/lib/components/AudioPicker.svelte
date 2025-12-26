@@ -514,7 +514,6 @@
         if (disabled || isRecording) return;
         if (localUrl) {
             clearLocalRecording();
-            return;
         }
         if (!audioUrl) return;
 
@@ -575,7 +574,7 @@
         {#if !effectiveUrl && !isRecording}
             <button
                 type="button"
-                class="btn btn--ghost btn--round u-border-dashed"
+                class="btn btn--round u-border-dashed"
                 on:click={startRecording}
                 disabled={disabled}
             >
@@ -664,6 +663,8 @@
                         class="btn btn--ghost btn--mini"
                         on:click={handleReplace}
                         disabled={disabled}
+                        aria-label="Re-record audio"
+                        title="Re-record audio"
                     >
                         <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                     </button>
@@ -672,6 +673,8 @@
                         class="btn btn--danger btn--mini"
                         on:click={handleRemove}
                         disabled={disabled}
+                        aria-label="Remove audio"
+                        title="Remove audio"
                     >
                         <Icon icon={UI_ICONS.delete} class="btn__icon" />
                     </button>
@@ -751,17 +754,17 @@
         justify-content: center;
         align-items: center;
     }
-
+    
     .audio-picker__shell {
         display: flex;
         align-items: center;
         gap: var(--space-3);
-
+        
         width: 100%;
         padding: var(--space-2) var(--space-4);
-
+        background: var(--bg-surface);
+        
         border-radius: var(--radius-full);
-        background: var(--bg-surface-alt);
         border: var(--border-width) solid var(--border-color);
     }
 

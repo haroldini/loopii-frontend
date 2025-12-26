@@ -103,10 +103,18 @@
     color: #fff;
 }
 
+.btn--danger:hover {
+    border-color: var(--danger);
+}
+
 .btn--success {
     background: var(--success);
     border-color: var(--success);
     color: #fff;
+}
+
+.btn--success:hover {
+    border-color: var(--success);
 }
 
 .btn--ghost {

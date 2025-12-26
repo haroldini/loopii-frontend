@@ -72,7 +72,7 @@
 
             status = "success";
             addToast({
-                text: "Visibility preferences updated.",
+                text: "Visibility preferences updated!",
                 autoHideMs: 3000,
             });
 

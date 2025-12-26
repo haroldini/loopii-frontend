@@ -30,7 +30,7 @@
     function confirmLocalSignOut() {
         addToast({
             variant: "modal",
-            text: "Log out?",
+            text: "Are you sure?",
             description: "You'll be logged out on this device. You can sign back in any time.",
             autoHideMs: null,
             actions: [

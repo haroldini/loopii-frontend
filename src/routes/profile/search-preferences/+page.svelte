@@ -72,7 +72,7 @@
 
             status = "success";
             addToast({
-                text: "Search preferences updated.",
+                text: "Search preferences updated!",
                 autoHideMs: 3000,
             });
 

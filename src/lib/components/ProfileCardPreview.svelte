@@ -91,7 +91,7 @@
 
         {#if loop}
             <div class="profile-preview__bottom">
-                <p class="profile-preview__date">{timeAgo(loop.created_at, true)}</p>
+                <p class="profile-preview__date">Looped {timeAgo(loop.created_at, true)}</p>
 
                 <div class="icon-btn-row">
                     <button
