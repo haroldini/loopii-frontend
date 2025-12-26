@@ -11,12 +11,15 @@ select {
     color: var(--text-secondary);
     font: inherit;
     line-height: var(--line-height);
+    transition: border-color 0.15s ease background 0.15s ease, color 0.15s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
     border-color: var(--accent);
+    color: var(--text-primary);
+    outline: none;
 }
 
 input:disabled,
@@ -31,6 +34,7 @@ select:disabled {
 textarea {
     resize: vertical;
     min-height: 4rem;
+    border-bottom-right-radius: 0;
 }
 
 /* Remove number input spinners */

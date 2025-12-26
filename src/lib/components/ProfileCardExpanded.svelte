@@ -34,6 +34,7 @@
 
     let expandedEl;
     let mediaWrapEl;
+    let headerEl;
     let isConstrained = false;
 
     function updateExpandedMediaConstraint() {
@@ -43,17 +44,18 @@
         if (!contentEl) return;
 
         const contentRect = contentEl.getBoundingClientRect();
-        const wrapRect = mediaWrapEl
-            ? mediaWrapEl.getBoundingClientRect()
-            : expandedEl.getBoundingClientRect();
 
+        const headerRect = headerEl ? headerEl.getBoundingClientRect() : { height: 0 };
+        const wrapRect = (mediaWrapEl ?? expandedEl).getBoundingClientRect();
+
+        const availableHeight = contentRect.height - headerRect.height;
         const availableWidth = wrapRect.width;
-        const availableHeight = contentRect.height;
 
         const shouldConstrain = availableHeight > 0 && availableHeight < availableWidth;
 
         if (shouldConstrain) {
-            const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const rootFontSize =
+                parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
             const minSize = MEDIA_MIN_REM * rootFontSize;
 
             const maxThatFits = Math.max(0, Math.min(availableWidth, availableHeight));
@@ -75,11 +77,10 @@
         const contentEl = expandedEl.closest(".content");
         if (!contentEl) return;
 
-        const ro = new ResizeObserver(() => {
-            updateExpandedMediaConstraint();
-        });
+        const ro = new ResizeObserver(updateExpandedMediaConstraint);
 
         ro.observe(contentEl);
+        if (headerEl) ro.observe(headerEl);
         if (mediaWrapEl) ro.observe(mediaWrapEl);
 
         return () => {
@@ -161,7 +162,7 @@
     <div class="gutter">
 
         <!-- Header section (same as unexpanded ProfileCard) -->
-        <div class="profile-block">
+        <div class="profile-block" bind:this={headerEl}>
             <ProfileHeader {profile} />
         </div>
 

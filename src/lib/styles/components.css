@@ -248,18 +248,21 @@
 
     color: var(--text-muted);
     background: transparent;
+
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .segmented > button:hover,
 .segmented > a:hover {
     background: var(--bg-hover);
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 .segmented > button[aria-current="page"],
 .segmented > a[aria-current="page"] {
     background: var(--bg-hover);
-    color: var(--text-primary);
+    color: var(--accent);
+    font-weight: var(--font-weight-semibold);
 }
 
 /* ===== Fullscreen overlay pattern ===== */
@@ -447,7 +450,7 @@
         top: 0;
         bottom: auto;
 
-        height: calc(var(--nav-height) + var(--safe-top));
+        height: calc(var(--nav-height) + var(--safe-top) + var(--border-width));
         padding-top: var(--safe-top);
         padding-bottom: 0;
 
@@ -549,4 +552,13 @@
     height: 32px;
     display: block;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+}
+
+
+/* ===== Logo ===== */
+
+.logo {
+    display: block;
+    height: 3.231rem;
+    width: auto;
 }

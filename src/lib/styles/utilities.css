@@ -22,6 +22,10 @@
     border-top: var(--border-width) solid var(--border-color);
 }
 
+.u-padding-above {
+    padding-top: var(--space-2);
+}
+
 .u-invisible {
     visibility: hidden !important;
 }

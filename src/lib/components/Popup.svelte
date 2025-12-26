@@ -1,6 +1,8 @@
 
 <script>
     import { onMount } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
 
     export let id;
     export let variant = "banner";     // "banner" | "popup" | "modal"
@@ -62,7 +64,6 @@
     }
 </script>
 
-
 {#if variant === "banner"}
     <div class="popup popup--banner" role="group">
         <div class="popup-header">
@@ -82,7 +83,7 @@
 
             <button
                 type="button"
-                class="dismiss ui-pressable"
+                class={"dismiss ui-pressable " + (autoHideMs ? "dismiss--progress" : "")}
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -90,7 +91,7 @@
                 aria-label="Dismiss banner"
             >
                 {#if autoHideMs}
-                    <svg viewBox="0 0 36 36" class="progress">
+                    <svg viewBox="0 0 36 36" class="dismiss-progress" aria-hidden="true">
                         <path
                             class="circle"
                             d="M18 2.0845
@@ -99,8 +100,13 @@
                             stroke-dasharray="{progress * 100}, 100"
                         />
                     </svg>
+
+                    <span class="dismiss-close" aria-hidden="true">
+                        <Icon icon={UI_ICONS["close"]} class="btn__icon" />
+                    </span>
+                {:else}
+                    <Icon icon={UI_ICONS["close"]} class="btn__icon" aria-hidden="true" />
                 {/if}
-                <span class="dismiss-icon" aria-hidden="true">✕</span>
             </button>
         </div>
     </div>
@@ -126,7 +132,7 @@
 
             <button
                 type="button"
-                class="dismiss ui-pressable"
+                class={"dismiss ui-pressable " + (autoHideMs ? "dismiss--progress" : "")}
                 on:click={(e) => {
                     e.stopPropagation();
                     dismiss();
@@ -134,7 +140,7 @@
                 aria-label="Dismiss popup"
             >
                 {#if autoHideMs}
-                    <svg viewBox="0 0 36 36" class="progress">
+                    <svg viewBox="0 0 36 36" class="dismiss-progress" aria-hidden="true">
                         <path
                             class="circle"
                             d="M18 2.0845
@@ -143,8 +149,13 @@
                             stroke-dasharray="{progress * 100}, 100"
                         />
                     </svg>
+
+                    <span class="dismiss-close" aria-hidden="true">
+                        <Icon icon={UI_ICONS["close"]} class="btn__icon" />
+                    </span>
+                {:else}
+                    <Icon icon={UI_ICONS["close"]} class="btn__icon" aria-hidden="true" />
                 {/if}
-                <span class="dismiss-icon" aria-hidden="true">✕</span>
             </button>
         </div>
 
@@ -194,7 +205,7 @@
                     }}
                     aria-label="Dismiss dialog"
                 >
-                    <span class="dismiss-icon" aria-hidden="true">✕</span>
+                    <Icon icon={UI_ICONS["close"]} class="btn__icon" aria-hidden="true" />
                 </button>
             </div>
 
@@ -236,7 +247,6 @@
     </div>
 {/if}
 
-
 <style>
     .popup {
         display: flex;
@@ -262,7 +272,7 @@
     }
 
     .popup--rich:hover {
-        background: var(--bg-secondary);
+        background: var(--bg-surface-alt);
     }
 
     .popup--rich:focus-visible {
@@ -334,6 +344,9 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
+        padding-top: var(--space-3);
+        margin-top: var(--space-2);
+        border-top: var(--border-width) solid var(--border-color);
     }
 
     :global(.popup-inner-no-hover .profile-preview:hover) {
@@ -358,13 +371,7 @@
         background: var(--bg-hover);
     }
 
-    .dismiss-icon {
-        font-size: 1rem;
-        line-height: 1;
-        color: var(--text-secondary);
-    }
-
-    .dismiss svg.progress {
+    .dismiss-progress {
         width: 1.5rem;
         height: 1.5rem;
         display: inline-block;
@@ -376,5 +383,21 @@
         stroke-width: 2.5;
         stroke-linecap: round;
         transition: stroke-dasharray 0.1s linear;
+    }
+
+    .dismiss--progress .dismiss-close {
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dismiss--progress:hover .dismiss-progress,
+    .dismiss--progress:focus-visible .dismiss-progress {
+        display: none;
+    }
+
+    .dismiss--progress:hover .dismiss-close,
+    .dismiss--progress:focus-visible .dismiss-close {
+        display: inline-flex;
     }
 </style>

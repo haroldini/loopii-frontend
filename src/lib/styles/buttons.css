@@ -17,13 +17,15 @@
 
     color: var(--accent);
     text-decoration: underline;
+    font-weight: var(--font-weight-semibold);
     text-underline-offset: 2px;
 
     cursor: pointer;
+    transition: color 0.15s ease;
 }
 
 .text-link:hover {
-    color: var(--text-primary);
+    color: var(--accent-secondary);
 }
 
 .text-link:focus-visible {
@@ -53,10 +55,14 @@
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .btn:hover {
     background: var(--bg-hover);
+    border-color: var(--accent);
+    color: var(--text-primary);
 }
 
 .btn:disabled,
