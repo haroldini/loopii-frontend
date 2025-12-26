@@ -285,26 +285,29 @@
 
         {#if loop}
             <div class="profile-block profile-section">
-                
-                <div class="actions actions--center">
+                <div class="actionbar">
                     <button
                     type="button"
-                    class="btn btn--toggle"
+                    class="btn btn--toggle btn--large"
                     aria-pressed={loop.is_favourite}
                     on:click={toggleFav}
                     >
-                        ★ {loop.is_favourite ? "Favourited" : "Favourite"}
+                        <Icon icon={loop.is_favourite ? UI_ICONS.starFilled : UI_ICONS.star} class="btn__icon" />
+                        <span>{loop.is_favourite ? "Unfavourite" : "Favourite"}</span>
                     </button>
                     
                     <button
                     type="button"
-                    class="btn btn--danger"
+                    class="btn btn--danger btn--large"
                     on:click={unloop}
                         >
-                        ✕ Remove Loop
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                        <span>Unloop</span>
                     </button>
                 </div>
-                <p class="text-muted text-center u-space-above">Looped {timeAgo(loop.created_at)}</p>
+            </div>
+            <div class="profile-block profile-section">
+                <p class="text-muted text-center">Looped {timeAgo(loop.created_at)}</p>
             </div>
         {:else if request}
             <div class="profile-block profile-section">

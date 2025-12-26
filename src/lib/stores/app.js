@@ -123,6 +123,9 @@ export const UI_ICONS = {
     "accountAction": "mdi:account-cog",
     "link": "mdi:link-variant",
     "at": "mdi:at",
+    "stars": "mdi:creation-outline",
+    "star": "mdi:star-outline",
+    "starFilled": "mdi:star",
     
     "delete": "mdi:delete",
     "minus": "mdi:minus",
@@ -136,7 +139,7 @@ export const UI_ICONS = {
     "login": "mdi:login",
     "swap": "mdi:swap-horizontal",
     "close": "meteor-icons:xmark",
-    "heart": "mdi:heart-outline",
+    "heart": "mdi:heart",
     "tune": "mdi:tune-variant",
     "signUp": "mdi:emoticon-plus-outline",
     "arrowLeft": "mdi:arrow-left",

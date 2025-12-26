@@ -1,25 +1,32 @@
 
-export function timeAgo(date) {
+export function timeAgo(date, short = false) {
     const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
 
-    const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-
     const divisions = [
-        { amount: 60, name: "seconds" },
-        { amount: 60, name: "minutes" },
-        { amount: 24, name: "hours" },
-        { amount: 7,  name: "days" },
-        { amount: 4.34524, name: "weeks" },
-        { amount: 12, name: "months" },
-        { amount: Infinity, name: "years" },
+        { amount: 60, name: "second", short: "s" },
+        { amount: 60, name: "minute", short: "m" },
+        { amount: 24, name: "hour",   short: "h" },
+        { amount: 7,  name: "day",    short: "d" },
+        { amount: 4.34524, name: "week",  short: "w" },
+        { amount: 12, name: "month",  short: "mo" },
+        { amount: Infinity, name: "year", short: "y" },
     ];
 
     let duration = seconds;
-    for (let i = 0; i < divisions.length; i++) {
-        if (Math.abs(duration) < divisions[i].amount) {
-            return rtf.format(-Math.round(duration), divisions[i].name.slice(0, -1));
+
+    for (const division of divisions) {
+        if (Math.abs(duration) < division.amount) {
+            const value = Math.round(duration);
+
+            if (short) {
+                return `${value}${division.short} ago`;
+            }
+
+            const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+            return rtf.format(-value, division.name);
         }
-        duration /= divisions[i].amount;
+
+        duration /= division.amount;
     }
 }
 

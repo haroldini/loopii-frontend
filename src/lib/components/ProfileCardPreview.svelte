@@ -3,7 +3,7 @@
     import { createEventDispatcher } from "svelte";
     import Icon from "@iconify/svelte";
     import { getAvatarUrl } from "$lib/utils/profile.js";
-    import { countryMap, GENDER_ICONS } from "$lib/stores/app.js";
+    import { countryMap, GENDER_ICONS, UI_ICONS } from "$lib/stores/app.js";
     import { timeAgo } from "$lib/utils/misc.js";
 
     export let profile;
@@ -64,18 +64,17 @@
 >
     <div class="profile-preview__media" style={`background-image: url('${getAvatarUrl(profile)}');`}>
         {#if loop && !loop.is_seen}
-            <span class="profile-preview__badge">New</span>
+            <span class="tag profile-preview__badge">New</span>
         {/if}
     </div>
 
     <div class="profile-preview__info">
         <div class="profile-preview__top">
             <span class="profile-preview__age">{profile.age}</span>
-            <p class="profile-preview__username">{username}</p>
-            <div class="profile-preview__meta">
+            <div class="profile__header-right-main">
                 <Icon
                     icon={genderIcon}
-                    class={"gender-icon gender-icon--" + genderKey}
+                    class={"gender-icon--" + genderKey}
                 />
     
                 {#if $countryMap[profile.country_id]?.flag_icon}
@@ -86,49 +85,55 @@
                 {/if}
             </div>
         </div>
+        
+
+        <h3 class="profile-preview__username">{username}</h3>
 
         {#if loop}
             <div class="profile-preview__bottom">
-                <p class="profile-preview__date">{timeAgo(loop.created_at)}</p>
+                <p class="profile-preview__date">{timeAgo(loop.created_at, true)}</p>
 
                 <div class="icon-btn-row">
                     <button
                         type="button"
-                        class={"icon-btn icon-btn--fav" + (loop.is_favourite ? " is-active" : "")}
+                        class={"btn btn--circle icon-btn--fav" + (loop.is_favourite ? " is-active" : "")}
                         aria-pressed={loop.is_favourite}
                         title={loop.is_favourite ? "Remove favourite" : "Mark favourite"}
                         on:click|stopPropagation={toggleFav}
                     >
-                        ★
+                        {#if loop.is_favourite}
+                            <Icon icon={UI_ICONS.starFilled} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.star} class="btn__icon" />
+                        {/if}
                     </button>
 
                     <button
                         type="button"
-                        class="icon-btn icon-btn--danger"
+                        class="btn btn--circle btn--ghost btn--danger"
                         title="Remove loop"
                         on:click|stopPropagation={unloop}
                     >
-                        ✕
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
                     </button>
                 </div>
             </div>
         {:else if decision}
-            <div class="profile-preview__bottom">
-                
-                <div class="actionbar u-space-above">
+            <div class="profile-preview__bottom u-space-above">
+                <div class="profile-preview__actions u-space-above">
                     <button
                         type="button"
-                        class="btn btn--danger btn--sm"
+                        class="btn btn--danger btn--round"
                         on:click|stopPropagation={declineRequest}
                         >
-                        Decline
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
                     </button>
                     <button
                         type="button"
-                        class="btn btn--success btn--sm"
+                        class="btn btn--success btn--round"
                         on:click|stopPropagation={acceptRequest}
                         >
-                        Accept
+                        <Icon icon={UI_ICONS.heart} class="btn__icon" />
                     </button>
                 </div>
             </div>

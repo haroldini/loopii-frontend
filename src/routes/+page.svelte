@@ -140,7 +140,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--primary btn--mini btn--round"
+                        class="btn btn--success btn--mini btn--round"
                         on:click={() => {
                             handleDecision(true);
                             if (expanded) close();

@@ -236,7 +236,7 @@
 				</div>
 			
             {:else if $loopRequestsStatus === "loaded" && $loopRequests.length > 0}
-                <div class="grid grid-2">
+                <div class="grid grid-3">
                     {#each $loopRequests as entry}
                         {#if entry?.profile}
                             <div class="stack u-aspect-square">
