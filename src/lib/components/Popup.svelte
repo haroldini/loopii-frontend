@@ -112,8 +112,10 @@
     </div>
 
 {:else if variant === "popup"}
+    <div class="popup-backdrop" aria-hidden="true"></div>
+
     <div
-        class="popup popup--rich ui-pressable"
+        class="popup popup--rich ui-pressable popup--rich-layer"
         role="button"
         tabindex="0"
         on:click={action}
@@ -254,9 +256,9 @@
         align-items: stretch;
         gap: var(--space-2);
 
-        background: var(--bg-surface);
+        background: var(--bg-app);
         border: var(--border-width) solid var(--border-color);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-xl);
 
         padding: calc(var(--space-2) + var(--space-1)) var(--space-3);
         max-width: min(40rem, 90%, 50vh, 400px);
@@ -279,6 +281,19 @@
         outline: var(--focus-ring-width) solid var(--focus-ring-color);
         outline-offset: var(--focus-ring-offset);
         border-radius: var(--radius-lg);
+    }
+
+    .popup-backdrop {
+        position: fixed;
+        inset: 0;
+        background: var(--scrim-1);
+        z-index: calc(var(--z-toast) - 1);
+        pointer-events: none;
+    }
+
+    .popup--rich-layer {
+        position: relative;
+        z-index: var(--z-toast);
     }
 
     .modal-backdrop {
