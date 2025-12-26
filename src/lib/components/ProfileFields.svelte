@@ -537,6 +537,7 @@
 
                 <select
                     id="socials"
+                    class="socials-add-select"
                     on:change={(e) => {
                         const platformId = e.target.value;
                         if (platformId && onSocialAdd) {

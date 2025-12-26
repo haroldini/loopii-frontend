@@ -1,6 +1,8 @@
 
 <script>
     import { onMount, onDestroy } from "svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js";
 
     export let images = [];
     export let fallbackUrl = "";
@@ -183,7 +185,7 @@
             disabled={!canPrev}
             on:click|stopPropagation={prev}
         >
-            <span class="profile-media__navIcon" aria-hidden="true">‹</span>
+            <Icon class="btn__icon btn__icon--large" icon={UI_ICONS.chevronLeft} aria-hidden="true" />
         </button>
 
         <button
@@ -193,7 +195,7 @@
             disabled={!canNext}
             on:click|stopPropagation={next}
         >
-            <span class="profile-media__navIcon" aria-hidden="true">›</span>
+            <Icon class="btn__icon btn__icon--large" icon={UI_ICONS.chevronRight} aria-hidden="true" />
         </button>
 
         <div class="profile-media__dots" aria-label="Photo progress">
