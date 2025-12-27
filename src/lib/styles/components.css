@@ -553,12 +553,3 @@
     display: block;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
 }
-
-
-/* ===== Logo ===== */
-
-.logo {
-    display: block;
-    height: 3.231rem;
-    width: auto;
-}

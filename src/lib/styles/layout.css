@@ -108,7 +108,26 @@
 
 .gate__brand {
     text-align: center;
+    font-size: 3rem;
+    font-weight: 600;
+    font-family: var(--font-logo);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
 }
+
+.text-logo {
+    color: var(--text-primary);
+    font-family: var(--font-logo);
+    font-weight: var(--font-weight-semibold);
+    font-size: 2rem;
+}
+
+
+.text-logo .logo--i,
+.gate__brand .logo--i {
+    color: var(--accent);
+}
+
 
 /* ===== Page layout ===== */
 

@@ -110,7 +110,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--circle btn--ghost btn--danger"
+                        class="btn btn--circle btn--danger"
                         title="Remove loop"
                         on:click|stopPropagation={unloop}
                     >

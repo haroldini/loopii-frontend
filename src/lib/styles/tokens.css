@@ -5,6 +5,7 @@
 :root {
     /* Global sizing */
     --font-size-root: 12px;
+    --font-logo: "Pixelify Sans", sans-serif;
 
     /* Global colors */
     --color-black: #121212;
@@ -137,29 +138,6 @@
 /* ===== Default theme ===== */
 
 :root {
-    --bg-app: #07070A;
-    --bg-surface: #0D0D12;
-    --bg-surface-alt: #12121A;
-    --bg-secondary: #191923;
-    --bg-hover: #21212D;
-
-    --text-primary: #F2F2F6;
-    --text-secondary: #D7D7E2;
-    --text-muted: #9A9AB0;
-
-    --border-color: #2A2A3A;
-
-    --accent: #6668e6;
-    --accent-secondary: #A5B4FC;
-
-    --success: #0fbe81;
-    --danger: #e43c5b;
-    --warning: #F59E0B;
-
-    --focus-ring-color: #6366F1;
-}
-
-:root[data-theme="moonmilk"] {
     --bg-app: #0B0912;
     --bg-surface: #120F1B;
     --bg-surface-alt: #161322;
@@ -180,6 +158,29 @@
     --warning: #F6C177;
 
     --focus-ring-color: #5DD7FF;
+}
+
+:root[data-theme="night"] {
+    --bg-app: #0b0b10;
+    --bg-surface: #0D0D12;
+    --bg-surface-alt: #12121A;
+    --bg-secondary: #191923;
+    --bg-hover: #21212D;
+
+    --text-primary: #F2F2F6;
+    --text-secondary: #D7D7E2;
+    --text-muted: #9A9AB0;
+
+    --border-color: #2A2A3A;
+
+    --accent: #5355e3;
+    --accent-secondary: #A5B4FC;
+
+    --success: #0fbe81;
+    --danger: #e43c5b;
+    --warning: #F59E0B;
+
+    --focus-ring-color: #6366F1;
 }
 
 :root[data-theme="tidepool"] {
@@ -278,6 +279,29 @@
 /* Light Themes */
 
 :root[data-theme="light"] {
+    --bg-app: #E4DCF2;
+    --bg-surface: #DAD1EE;
+    --bg-surface-alt: #CFC4E8;
+    --bg-secondary: #BFB2DE;
+    --bg-hover: #c4bbdd;
+
+    --text-primary: #171327;
+    --text-secondary: #2C2450;
+    --text-muted: #5B5482;
+
+    --border-color: #A79BC8;
+
+    --accent: #A855F7;
+    --accent-secondary: #22D3EE;
+
+    --success: #10B981;
+    --danger: #F43F5E;
+    --warning: #F59E0B;
+
+    --focus-ring-color: #A855F7;
+}
+
+:root[data-theme="periwinkle"] {
     --bg-app: #d3d6e8;
     --bg-surface: #D2D7EB;
     --bg-surface-alt: #C7CDE5;
@@ -344,29 +368,6 @@
     --warning: #D97706;
 
     --focus-ring-color: #2563EB;
-}
-
-:root[data-theme="orchidHaze"] {
-    --bg-app: #E4DCF2;
-    --bg-surface: #DAD1EE;
-    --bg-surface-alt: #CFC4E8;
-    --bg-secondary: #BFB2DE;
-    --bg-hover: #c4bbdd;
-
-    --text-primary: #171327;
-    --text-secondary: #2C2450;
-    --text-muted: #5B5482;
-
-    --border-color: #A79BC8;
-
-    --accent: #A855F7;
-    --accent-secondary: #22D3EE;
-
-    --success: #10B981;
-    --danger: #F43F5E;
-    --warning: #F59E0B;
-
-    --focus-ring-color: #A855F7;
 }
 
 :root[data-theme="peach"] {

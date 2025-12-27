@@ -147,7 +147,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h2 class="text-heading">Find Loops</h2>
+                <h2 class="text-heading text-logo">loop<span class="logo--i">ii</span></h2>
                 <!-- <img src="/logo/logo.png" alt="loopii" class="logo logo--long" /> -->
             </div>
 

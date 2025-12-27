@@ -1,6 +1,5 @@
 
 <script>
-    import favicon from "$lib/assets/favicon.svg";
     import Icon from "@iconify/svelte";
     import "$lib/styles/app.css";
 
@@ -114,7 +113,7 @@
 
 
 <svelte:head>
-    <link rel="icon" href={favicon} />
+    <link rel="icon" href="/favicon.svg" />
 </svelte:head>
 
 
@@ -157,7 +156,8 @@
 
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand text-heading">loopii</h1>
+
+            <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
             <Icon icon={UI_ICONS.animLoading} class="page__icon" />
 
             <!-- Loading // fetching resources -->
