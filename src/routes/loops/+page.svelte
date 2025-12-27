@@ -144,7 +144,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3 class="text-heading">Loops</h3>
+                <h2 class="text-heading">Loops</h2>
 
                 {#if $loopsStatus === "loaded" && $loops.length > 0 && !$selectedLoop}
                     <p class="text-hint">Showing {$loops.length} of {$loopsTotal}</p>

@@ -136,7 +136,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3 class="text-heading">Edit Profile</h3>
+                <h2 class="text-heading">Edit Profile</h2>
             </div>
 
             <div class="bar__actions">

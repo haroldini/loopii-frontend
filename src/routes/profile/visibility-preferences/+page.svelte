@@ -137,7 +137,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3 class="text-heading">Visibility Preferences</h3>
+                <h2 class="text-heading">Visibility Preferences</h2>
                 <p class="text-hint">Control who can see your profile.</p>
             </div>
 

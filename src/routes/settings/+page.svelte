@@ -176,9 +176,9 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3 class="text-heading">
+                <h2 class="text-heading">
                     Settings
-                </h3>
+                </h2>
             </div>
             <div class="bar__actions">
                 <button
