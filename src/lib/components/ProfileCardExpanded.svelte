@@ -302,6 +302,7 @@
             <div class="profile-block profile-section">
                 <p class="text-muted text-center">Looped {timeAgo(loop.created_at)}</p>
             </div>
+
         {:else if request}
             <div class="profile-block profile-section">
                 <p class="text-muted text-center">Requested {timeAgo(request.created_at)}</p>

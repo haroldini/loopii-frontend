@@ -97,23 +97,45 @@
     border-radius: var(--radius-circle);
 }
 
+.decision-buttons {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-evenly;
+    width: 100%;
+}
+
 .btn--decision {
+    flex: 1 1 0;
     color: var(--text-primary);
+    outline: 0 solid transparent;
+    outline-offset: 0;
+    transition: outline-offset 0.15s ease;
 }
 
-.btn--decision .btn--decision-accept {
-    background: color-mix(in oklab, var(--accept) 75%, var(--bg-surface));
+.btn--decision-accept {
+    background: color-mix(in oklab, var(--accept) 30%, var(--bg-surface));
     border-color: var(--accept);
 }
 
-.btn--decision .btn--decision-accept:hover {
+.btn--decision-accept:hover {
     background: color-mix(in oklab, var(--accept) 85%, var(--bg-surface));
-    border-color: var(--accept);
+    border-color: transparent;
+    outline: 2px solid var(--accept);
+    outline-offset: 4px;
+    color: var(--bg-app);
 }
 
-.btn--decision .btn--decision-decline {
-    background: color-mix(in oklab, var(--decline) 75%, var(--bg-surface));
+.btn--decision-decline {
+    background: color-mix(in oklab, var(--decline) 30%, var(--bg-surface));
     border-color: var(--decline);
+}
+
+.btn--decision-decline:hover {
+    background: color-mix(in oklab, var(--decline) 85%, var(--bg-surface));
+    border-color: var(--decline);
+    outline: 2px solid var(--decline);
+    outline-offset: 4px;
+    color: var(--bg-app);
 }
 
 .btn--danger {

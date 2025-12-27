@@ -249,7 +249,7 @@
     {#if $peerStatus !== "loading" && $peerStatus !== "error" && $peerStatus !== "hidden" && $peerStatus !== "empty"}
         <div class="bar bar--actionbar">
             <div class="bar__inner">
-                <div class="actionbar">
+                <div class="decision-buttons">
                     <button
                         type="button"
                         class="btn btn--mini btn--round btn--decision btn--decision-decline"

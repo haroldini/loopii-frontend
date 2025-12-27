@@ -179,10 +179,10 @@
 
         <div class="bar bar--actionbar">
             <div class="bar__inner">
-                <div class="actionbar">
+                <div class="decision-buttons">
                     <button
                         type="button"
-                        class="btn btn--danger btn--mini btn--round"
+                        class="btn btn--round btn--decision btn--decision-decline"
                         on:click={declineSelected}
                     >
                         <Icon 
@@ -193,7 +193,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--success btn--mini btn--round"
+                        class="btn btn--round btn--decision btn--decision-accept"
                         on:click={acceptSelected}
                     >
                         <Icon 

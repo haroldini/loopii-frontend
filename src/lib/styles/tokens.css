@@ -151,11 +151,14 @@
     --border-color: #342B3A;
 
     --accent: #EC4899;
-    --accent-secondary: #F9A8D4;
+    --accent-secondary: #F472B6;
 
-    --success: #17b070;
-    --danger: #cf2d45;
-    --warning: #F59E0B;
+    --success: #1FD07A;
+    --danger: #D61F45;
+    --warning: #FBBF24;
+
+    --accept: #22C55E;
+    --decline: #F43F5E;
 
     --focus-ring-color: #EC4899;
 }

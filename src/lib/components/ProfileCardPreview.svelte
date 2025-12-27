@@ -124,14 +124,14 @@
                 <div class="profile-preview__actions u-space-above">
                     <button
                         type="button"
-                        class="btn btn--danger btn--round"
+                        class="btn btn--round btn--decision btn--decision-decline"
                         on:click|stopPropagation={declineRequest}
                         >
                         <Icon icon={UI_ICONS.close} class="btn__icon" />
                     </button>
                     <button
                         type="button"
-                        class="btn btn--success btn--round"
+                        class="btn btn--round btn--decision btn--decision-accept"
                         on:click|stopPropagation={acceptRequest}
                         >
                         <Icon icon={UI_ICONS.heart} class="btn__icon" />
