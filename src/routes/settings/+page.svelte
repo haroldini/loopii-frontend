@@ -5,7 +5,10 @@
     import { UI_ICONS } from "$lib/stores/app.js"; 
     import { addToast } from "$lib/stores/popups.js";
     
-    import { theme, themeOptions, setTheme } from "$lib/stores/app.js";
+    import { 
+        theme, themeOptions, setTheme,
+        style, styleOptions, setStyle
+    } from "$lib/stores/app.js";
     import {
         user, signOut, updatePassword, updateEmail,
         deleteAccount, requestPasswordReset, expectedPhrase
@@ -173,7 +176,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>
+                <h3 class="text-heading">
                     Settings
                 </h3>
             </div>
@@ -194,16 +197,20 @@
         <div class="section stack">
             <h3>Appearance</h3>
             <div class="card card--panel" role="region" aria-label="Visual settings">
-                <div class="section stack">
+                <div class="section stack appearance-grid">
                     <div class="row row--between">
                         <label for="theme-select">Theme</label>
-
-                        <select
-                            id="theme-select"
-                            value={$theme}
-                            on:change={(e) => setTheme(e.target.value)}
-                        >
+                        <select id="theme-select" value={$theme} on:change={(e) => setTheme(e.target.value)}>
                             {#each themeOptions as opt}
+                                <option value={opt.value}>{opt.label}</option>
+                            {/each}
+                        </select>
+                    </div>
+
+                    <div class="row row--between">
+                        <label for="style-select">Style</label>
+                        <select id="style-select" value={$style} on:change={(e) => setStyle(e.target.value)}>
+                            {#each styleOptions as opt}
                                 <option value={opt.value}>{opt.label}</option>
                             {/each}
                         </select>

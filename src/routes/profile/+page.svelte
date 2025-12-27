@@ -32,10 +32,10 @@
         <div class="bar__inner">
             <div class="bar__title">
                 {#if $profile?.name}
-                    <h3>{$profile.name}</h3>
+                    <h3 class="text-heading">{$profile.name}</h3>
                     <p class="text-hint">@{$profile.username}</p>
                 {:else if $profile?.username}
-                    <h3>@{$profile.username}</h3>
+                    <h3 class="text-heading">{$profile.username}</h3>
                 {/if}
             </div>
 

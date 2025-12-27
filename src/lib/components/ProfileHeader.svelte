@@ -66,7 +66,7 @@
                     {/if}
                 </div>
             {/if}
-            <h2>{displayName}</h2>
+            <h2 class="text-heading">{displayName}</h2>
 
             {#if hasSeparateUsername}
                 <p class="text-muted">@{profile.username}</p>

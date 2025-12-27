@@ -219,7 +219,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>Manage Photos</h3>
+                <h3 class="text-heading">Manage Photos</h3>
             </div>
 
             <div class="bar__actions">

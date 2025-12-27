@@ -126,7 +126,7 @@
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             
-            <h1 class="gate__brand">loopii</h1>
+            <h1 class="gate__brand text-heading">loopii</h1>
             <section class="card">
                 <div class="section stack">
                     <Icon icon={UI_ICONS.animFailed} class="icon--large" />
@@ -157,7 +157,7 @@
 
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
+            <h1 class="gate__brand text-heading">loopii</h1>
             <Icon icon={UI_ICONS.animLoading} class="page__icon" />
 
             <!-- Loading // fetching resources -->
@@ -174,7 +174,7 @@
 {:else if $authState === "timeout" || $profileState === "timeout"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
+            <h1 class="gate__brand text-heading">loopii</h1>
 
             <section class="card">
                 <div class="section stack">
@@ -197,7 +197,7 @@
 {:else if $authState === "unauthenticated" || $authState === "recovery"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
+            <h1 class="gate__brand text-heading">loopii</h1>
 
             <section class="card">
                 <div class="section stack">
@@ -212,7 +212,7 @@
     {#if $profileFormState === "submitting"}
         <div class="gate">
             <div class="gate__inner content content--narrow stack">
-                <h1 class="gate__brand">loopii</h1>
+                <h1 class="gate__brand text-heading">loopii</h1>
                 <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
                 <p class="text-center text-fw-semibold">{$submissionProgress}...</p>
             </div>
@@ -220,7 +220,7 @@
     {:else }
         <div class="gate">
             <div class="gate__inner content content--narrow stack">
-                <h1 class="gate__brand">loopii</h1>
+                <h1 class="gate__brand text-heading">loopii</h1>
 
                 <section class="card">
                     <div class="section stack">
@@ -254,7 +254,7 @@
 {:else}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
-            <h1 class="gate__brand">loopii</h1>
+            <h1 class="gate__brand text-heading">loopii</h1>
 
             <section class="card">
                 <div class="section stack">

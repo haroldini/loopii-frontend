@@ -6,6 +6,13 @@ h1,
 h2,
 h3,
 h4 {
+    font-family: var(--font-subheading);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.text-heading {
+    font-family: var(--font-heading);
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
 }

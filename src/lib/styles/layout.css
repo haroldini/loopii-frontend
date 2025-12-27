@@ -32,6 +32,30 @@
     grid-template-columns: repeat(3, 1fr);
 }
 
+.appearance-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--space-3);
+    row-gap: var(--space-3);
+    align-items: center;
+}
+
+.appearance-grid > .row {
+    display: contents;
+}
+
+.appearance-grid label {
+    white-space: nowrap;
+}
+
+.appearance-grid select {
+    width: 100%;
+}
+
+.appearance-grid .text-hint {
+    grid-column: 1 / -1;
+}
+
 /* ===== App shell ===== */
 
 .app {
@@ -195,6 +219,17 @@
 
 .page--viewport > .bar--header {
     grid-row: 1;
+}
+
+.bar--header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bar__inner {
+    width: 100%;
 }
 
 .page--viewport > .content {

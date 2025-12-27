@@ -136,7 +136,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>Edit Profile</h3>
+                <h3 class="text-heading">Edit Profile</h3>
             </div>
 
             <div class="bar__actions">
@@ -159,7 +159,7 @@
     <div class="content stack gutter">
         <section class="card">
             <div class="section stack">
-                <h3>About You</h3>
+                <h3>About you</h3>
 
                 <ProfileFields
                     fields={[
@@ -179,7 +179,7 @@
 
         <section class="card">
             <div class="section stack">
-                <h3>Help Others Discover You</h3>
+                <h3>Help others discover you</h3>
 
                 <ProfileFields
                     fields={[
@@ -200,7 +200,7 @@
 
         <section class="card">
             <div class="section stack">
-                <h3>Your Interests</h3>
+                <h3>Your interests</h3>
                 <p class="text-hint">You can select up to 20 interests.</p>
 
                 <ProfileFields
@@ -215,7 +215,7 @@
 
         <section class="card">
             <div class="section stack">
-                <h3>What Your Loops See</h3>
+                <h3>What your loops see</h3>
 
                 <ProfileFields
                     fields={[
@@ -236,7 +236,7 @@
 
         <section class="card">
             <div class="section stack">
-                <h3>Your Essential Info</h3>
+                <h3>Your essential info</h3>
                 <p class="text-hint">These fields cannot be frequently changed.</p>
 
                 {#key JSON.stringify(profileCooldowns)}

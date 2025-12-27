@@ -12,73 +12,123 @@ import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
 // ---------------- Theme ---------------- //
 
-const THEME_STORAGE_KEY = "theme";
+// ---------------- Appearance prefs (theme + style) ---------------- //
 
-function normalizeTheme(value) {
-    const allowed = new Set(themeOptions.map((t) => t.value));
-    const fallback = themeOptions[0]?.value || "dark";
+function createSelectPreference({
+    storageKey,
+    options,
+    defaultValue,
+    datasetKey,       // e.g. "theme" -> documentElement.dataset.theme
+}) {
+    const allowed = new Set((options || []).map((o) => o.value));
+    const fallback = allowed.has(defaultValue) ? defaultValue : (options?.[0]?.value ?? "");
 
-    if (typeof value !== "string") return fallback;
+    function normalize(value) {
+        if (typeof value !== "string") return fallback;
+        const cleaned = value.trim();
+        return allowed.has(cleaned) ? cleaned : fallback;
+    }
 
-    const cleaned = value.trim();
-    return allowed.has(cleaned) ? cleaned : fallback;
+    function readFromDom() {
+        if (!browser) return fallback;
+        const raw = document.documentElement.dataset?.[datasetKey];
+        return normalize(raw || fallback);
+    }
+
+    function applyToDom(value) {
+        if (!browser) return;
+
+        // Keep DOM clean: omit dataset when using default
+        if (value === fallback) {
+            delete document.documentElement.dataset[datasetKey];
+        } else {
+            document.documentElement.dataset[datasetKey] = value;
+        }
+    }
+
+    const store = writable(fallback);
+
+    function init() {
+        if (!browser) return;
+
+        let initial = fallback;
+
+        try {
+            const saved = localStorage.getItem(storageKey);
+            if (saved != null) {
+                initial = saved;
+            } else {
+                initial = readFromDom();
+            }
+        } catch (e) {
+            initial = readFromDom();
+        }
+
+        initial = normalize(initial);
+        store.set(initial);
+        applyToDom(initial);
+    }
+
+    function setValue(value) {
+        const next = normalize(value);
+        store.set(next);
+        applyToDom(next);
+
+        try {
+            localStorage.setItem(storageKey, next);
+        } catch (e) {}
+    }
+
+    if (browser) init();
+
+    return { store, init, setValue };
 }
 
-export const theme = writable("dark");
+
+// ---------------- Theme ---------------- //
 
 export const themeOptions = [
     { value: "dark", label: "Dark (Default)" },
     { value: "light", label: "Light" },
 ];
 
-function applyThemeToDom(value) {
-    if (!browser) return;
+const themePref = createSelectPreference({
+    storageKey: "theme",
+    options: themeOptions,
+    defaultValue: "dark",
+    datasetKey: "theme",
+});
 
-    if (value === "light") {
-        document.documentElement.dataset.theme = "light";
-    } else {
-        delete document.documentElement.dataset.theme;
-    }
-}
+export const theme = themePref.store;
+export function initTheme() { return themePref.init(); }
+export function setTheme(value) { return themePref.setValue(value); }
 
-export function initTheme() {
-    if (!browser) return;
 
-    let initial = "dark";
+// ---------------- Style ---------------- //
+//
+// IMPORTANT: set these values to whatever your CSS actually supports via:
+//   html[data-style="..."] { ... }
+// If you already have specific style names, replace these.
 
-    try {
-        const saved = localStorage.getItem(THEME_STORAGE_KEY);
-        if (saved === "light" || saved === "dark") {
-            initial = saved;
-        } else if (document.documentElement.dataset.theme === "light") {
-            initial = "light";
-        }
-    } catch (e) {
-        if (document.documentElement.dataset.theme === "light") {
-            initial = "light";
-        }
-    }
+export const styleOptions = [
+    { value: "pixel", label: "Pixel (Default)" },
+    { value: "flat", label: "Flat" },
+];
 
-    initial = normalizeTheme(initial);
+const stylePref = createSelectPreference({
+    storageKey: "style",
+    options: styleOptions,
+    defaultValue: "default",
+    datasetKey: "style",
+});
 
-    theme.set(initial);
-    applyThemeToDom(initial);
-}
-
-export function setTheme(value) {
-    const next = normalizeTheme(value);
-
-    theme.set(next);
-    applyThemeToDom(next);
-
-    try {
-        localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch (e) {
-    }
-}
+export const style = stylePref.store;
+export function initStyle() { return stylePref.init(); }
+export function setStyle(value) { return stylePref.setValue(value); }
 
 if (browser) {
     initTheme();
+    initStyle();
 }
 
 

@@ -127,7 +127,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h3>Requests</h3>
+                <h3 class="text-heading">Requests</h3>
                 {#if $loopRequestsStatus === "loaded" && $loopRequests.length > 0 && !$selectedRequest}
                     <p class="text-hint">Showing {$loopRequests.length} of {$loopRequestsTotal}</p>
                 {:else if $selectedRequest}
