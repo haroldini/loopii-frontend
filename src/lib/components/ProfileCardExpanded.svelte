@@ -202,6 +202,8 @@
                                     class="btn social-row"
                                     role="button"
                                     tabindex="0"
+                                    aria-label={`${buildSocialLink(social, $platformMap)}`}
+                                    title={`${buildSocialLink(social, $platformMap)}`}
                                     on:click={() => {
                                         const url = buildSocialLink(social, $platformMap);
                                         if (url) window.open(url, "_blank", "noopener,noreferrer");
