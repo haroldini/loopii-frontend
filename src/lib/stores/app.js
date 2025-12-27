@@ -88,18 +88,14 @@ function createSelectPreference({
 // ---------------- Theme ---------------- //
 
 export const themeOptions = [
-    { value: "dark", label: "Moonmilk (Default)" },
-    { value: "night", label: "Night" },
-    { value: "tidepool", label: "Tidepool" },
-    { value: "ember", label: "Ember" },
-    { value: "raspberry", label: "Raspberry" },
+    { value: "dark", label: "Raspberry (Default)" },
     { value: "arcade", label: "Arcade" },
-    { value: "light", label: "Orchid (Light)" },
-    { value: "periwinkle", label: "Periwinkle" },
-    { value: "skyIce", label: "Sky Ice" },
+    { value: "moonmilk", label: "Moonmilk" },
+    { value: "ember", label: "Ember" },
+    { value: "light", label: "Light" },
+    { value: "orchid", label: "Orchid" },
     { value: "roseQuartz", label: "Rose Quartz" },
     { value: "peach", label: "Peach" },
-    { value: "bubblegum", label: "Bubblegum" },
 ];
 
 const themePref = createSelectPreference({

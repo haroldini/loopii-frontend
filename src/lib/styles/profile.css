@@ -57,7 +57,7 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
-    background: color-mix(in oklab, var(--bg-surface) 88%, var(--border-color));
+    background: var(--bg-surface-alt);
 }
 
 .profile-card--constrained .profile-media {
@@ -270,6 +270,7 @@
     width: 100%;
     cursor: pointer;
     text-align: left;
+    background: var(--bg-surface);
     transition: background 0.15s ease transform 0.15s ease;
 
     border-radius: var(--radius-lg);
@@ -277,7 +278,7 @@
 }
 
 .profile-preview:hover {
-    background: color-mix(in oklab, var(--bg-hover) 40%, transparent);
+    background: var(--bg-surface-alt);
 }
 
 .profile-preview__media {
@@ -390,14 +391,6 @@
 
 .icon-btn--fav.is-active {
     color: var(--warning);
-}
-
-.icon-btn--danger {
-    color: color-mix(in oklab, var(--danger) 70%, var(--text-muted));
-}
-
-.icon-btn--accept {
-    color: var(--success);
 }
 
 /* ===== Profile card parents ===== */
@@ -602,15 +595,6 @@
 .social-username-input:focus {
     outline: none;
     border-bottom-color: var(--accent);
-}
-
-.social-remove-btn {
-    color: var(--danger) !important;
-}
-
-.social-remove-btn:hover {
-    background: color-mix(in oklab, var(--danger) 12%, transparent);
-    border: var(--border-width) solid var(--border-color);
 }
 
 .profile-expanded .social-handle {

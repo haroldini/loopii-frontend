@@ -518,7 +518,7 @@
                                     <div class="social-icons--right">
                                         <button
                                             type="button"
-                                            class="btn btn--ghost btn--circle social-remove-btn"
+                                            class="btn btn--danger btn--ghost btn--circle"
                                             aria-label="Remove platform"
                                             on:click={() => onSocialRemove && onSocialRemove(i)}
                                         >

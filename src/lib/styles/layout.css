@@ -103,7 +103,7 @@
 
 .gate__inner {
     width: 100%;
-    margin: auto; /* centers when short; collapses when tall (scrollable) */
+    margin: auto;
 }
 
 .gate__brand {
@@ -227,9 +227,7 @@
     padding-bottom: var(--gutter);
 }
 
-/* ===== Viewport pages =====
-   These pages normally DO NOT scroll in .content (feed/profile).
-   But we allow opt-in scrolling via .content--scroll. */
+/* ===== Viewport pages ===== */
 
 .page--viewport {
     display: grid;

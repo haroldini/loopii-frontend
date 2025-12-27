@@ -19,6 +19,7 @@ export function addToast({
     actions = null,
 } = {}) {
     const id = `toast-${++nextId}`;
+    console.log("Adding toast:", id, text, props);
     const toast = {
         id,
         variant,

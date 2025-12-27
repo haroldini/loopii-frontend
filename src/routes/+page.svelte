@@ -136,8 +136,6 @@
 </script>
 
 
-
-
 <svelte:head>
     <title>loopii • Find Loops</title>
 </svelte:head>
@@ -254,7 +252,7 @@
                 <div class="actionbar">
                     <button
                         type="button"
-                        class="btn btn--danger btn--mini btn--round"
+                        class="btn btn--mini btn--round btn--decision btn--decision-decline"
                         disabled={isAnimating}
                         on:click={() => decide(false)}
                     >
@@ -266,7 +264,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--success btn--mini btn--round"
+                        class="btn btn--mini btn--round btn--decision btn--decision-accept"
                         disabled={isAnimating}
                         on:click={() => decide(true)}
                     >

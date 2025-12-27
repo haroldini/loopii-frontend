@@ -8,7 +8,8 @@
 
     export let profile;
     export let loop = null;
-    export let decision = null; // NEW
+    export let decision = null;
+    export let showActions = true;
 
     const dispatch = createEventDispatcher();
 
@@ -89,7 +90,7 @@
 
         <h3 class="profile-preview__username">{username}</h3>
 
-        {#if loop}
+        {#if loop && showActions}
             <div class="profile-preview__bottom">
                 <p class="profile-preview__date">Looped {timeAgo(loop.created_at, true)}</p>
 
@@ -118,7 +119,7 @@
                     </button>
                 </div>
             </div>
-        {:else if decision}
+        {:else if decision && showActions}
             <div class="profile-preview__bottom u-space-above">
                 <div class="profile-preview__actions u-space-above">
                     <button

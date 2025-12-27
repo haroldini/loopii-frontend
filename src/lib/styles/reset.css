@@ -22,8 +22,6 @@ body {
     min-height: 100vh;
 }
 
-/* Make interactive elements inherit typography by default.
-   Visual styling is class-driven (e.g. .btn, .ui-pressable). */
 button,
 input,
 textarea,
@@ -32,8 +30,6 @@ select {
     color: inherit;
 }
 
-/* Remove default button chrome so wrapper-buttons (images, cards) behave predictably.
-   Use .btn when you want a styled button. */
 button {
     background: transparent;
     border: 0;
@@ -41,7 +37,6 @@ button {
     text-align: inherit;
 }
 
-/* Links default to inherit; style with classes where needed. */
 a {
     color: inherit;
     text-decoration: none;
@@ -74,4 +69,42 @@ html.overlay-open .app {
 }
 html.overlay-open .page > .content {
     scrollbar-gutter: auto;
+}
+
+
+/* Text selection (most browsers) */
+::selection {
+    background-color: var(--accent-secondary);
+    color: var(--bg-app);
+}
+::-moz-selection {
+    background-color: var(--accent-secondary);
+    color: var(--bg-app);
+}
+
+
+/* All scrollbars (Firefox) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-app);
+}
+
+/* All scrollbars (Chrome / Edge / Safari) */
+*::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--bg-app);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 999px;
+    border: 3px solid var(--bg-app);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

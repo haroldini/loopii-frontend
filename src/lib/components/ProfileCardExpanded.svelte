@@ -230,6 +230,7 @@
                                         <button
                                             type="button"
                                             class="btn btn--circle"
+                                            class:btn--success={lastCopied === buildSocialLink(social, $platformMap)}
                                             title={lastCopied === buildSocialLink(social, $platformMap) ? "Copied" : "Copy profile URL"}
                                             aria-label={lastCopied === buildSocialLink(social, $platformMap) ? "Copied" : "Copy profile URL"}
                                             on:click={(event) => copyUrl(event, social)}
@@ -240,17 +241,12 @@
                                                         ? UI_ICONS.check
                                                         : UI_ICONS.link
                                                 }
-                                                class={
-                                                    "btn__icon " +
-                                                    (lastCopied === buildSocialLink(social, $platformMap)
-                                                        ? "text-success"
-                                                        : "")
-                                                }
                                             />
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn--circle"
+                                            class:btn--success={lastCopied === social.handle}
                                             title={lastCopied === social.handle ? "Copied" : "Copy username"}
                                             aria-label={lastCopied === social.handle ? "Copied" : "Copy username"}
                                             on:click={(event) => copyUsername(event, social)}
@@ -260,12 +256,6 @@
                                                     lastCopied === social.handle
                                                         ? UI_ICONS.check
                                                         : UI_ICONS.at
-                                                }
-                                                class={
-                                                    "btn__icon " +
-                                                    (lastCopied === social.handle
-                                                        ? "text-success"
-                                                        : "")
                                                 }
                                             />
                                         </button>

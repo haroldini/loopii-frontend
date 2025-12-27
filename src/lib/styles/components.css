@@ -98,7 +98,7 @@
     height: 1.125rem;
     border-radius: var(--radius-full);
 
-    background: color-mix(in oklab, var(--bg-surface) 70%, var(--text-primary));
+    background: color-mix(in oklab, var(--bg-surface) 90%, var(--text-primary));
     box-shadow: var(--shadow-ui-1);
 
     transition: transform 0.15s ease;
@@ -146,7 +146,7 @@
     height: 1.75rem;
     padding: 0.3rem 0.7rem;
 
-    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
+    background: var(--bg-secondary);
     color: var(--text-muted);
     font-size: 0.75rem;
 
@@ -159,7 +159,7 @@
 }
 
 .pill.pill--online {
-    background: color-mix(in oklab, var(--success) 18%, var(--bg-surface));
+    background: color-mix(in oklab, var(--success) 20%, var(--bg-secondary));
     color: var(--success);
 }
 
@@ -184,7 +184,7 @@
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-full);
     border: var(--border-width) solid var(--border-color);
-    background: color-mix(in oklab, var(--bg-surface) 86%, var(--border-color));
+    background: var(--bg-surface-alt);
     color: var(--text-secondary);
 }
 
@@ -519,7 +519,7 @@
     padding: 0;
 
     border-radius: var(--radius-full);
-    background: var(--danger);
+    background: var(--accent-secondary);
     color: var(--bg-app);
 
     font-size: 0.75rem;

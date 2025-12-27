@@ -35,7 +35,7 @@ function buildNotificationConfig(n, profile = null, loop = null, decision = null
             description: "Click to view their profile.",
             autoHideMs: null,
             component: ProfileCardPreview,
-            props: profile ? { profile, loop } : {},
+            props: profile ? { profile, loop, showActions: false } : {},
         };
     }
 
@@ -49,7 +49,7 @@ function buildNotificationConfig(n, profile = null, loop = null, decision = null
 			description: "Click to view.",
 			autoHideMs: null,
 			component: ProfileCardPreview,
-			props: profile ? { profile, decision } : {},
+			props: profile ? { profile, decision, showActions: false } : {},
 		};
 	}
 

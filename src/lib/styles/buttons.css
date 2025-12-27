@@ -15,7 +15,7 @@
     border: 0;
     background: none;
 
-    color: var(--accent);
+    color: var(--accent-secondary);
     text-decoration: underline;
     font-weight: var(--font-weight-semibold);
     text-underline-offset: 2px;
@@ -25,7 +25,7 @@
 }
 
 .text-link:hover {
-    color: var(--accent-secondary);
+    color: var(--accent);
 }
 
 .text-link:focus-visible {
@@ -97,23 +97,44 @@
     border-radius: var(--radius-circle);
 }
 
+.btn--decision {
+    color: var(--text-primary);
+}
+
+.btn--decision .btn--decision-accept {
+    background: color-mix(in oklab, var(--accept) 75%, var(--bg-surface));
+    border-color: var(--accept);
+}
+
+.btn--decision .btn--decision-accept:hover {
+    background: color-mix(in oklab, var(--accept) 85%, var(--bg-surface));
+    border-color: var(--accept);
+}
+
+.btn--decision .btn--decision-decline {
+    background: color-mix(in oklab, var(--decline) 75%, var(--bg-surface));
+    border-color: var(--decline);
+}
+
 .btn--danger {
-    background: var(--danger);
+    background: color-mix(in oklab, var(--danger) 10%, var(--bg-surface));
     border-color: var(--danger);
     color: var(--text-primary);
 }
 
 .btn--danger:hover {
+    background: color-mix(in oklab, var(--danger) 25%, var(--bg-surface));
     border-color: var(--danger);
 }
 
 .btn--success {
-    background: var(--success);
+    background: color-mix(in oklab, var(--success) 10%, var(--bg-surface));
     border-color: var(--success);
     color: var(--text-primary);
 }
 
 .btn--success:hover {
+    background: color-mix(in oklab, var(--success) 25%, var(--bg-surface));
     border-color: var(--success);
 }
 
@@ -143,7 +164,7 @@
 
 .btn__label {
     display: inline-flex;
-    /* transform: translateY(-0.075rem); */
+    transform: translateY(-0.075rem);
     line-height: var(--line-height);
 }
 
@@ -185,11 +206,11 @@
 }
 
 .btn--toggle[aria-pressed="true"] {
-    background: color-mix(in oklab, var(--accent) 18%, var(--bg-surface));
+    background: color-mix(in oklab, var(--accent) 20%, var(--bg-surface));
     border-color: color-mix(in oklab, var(--accent) 35%, var(--border-color));
     color: var(--text-primary);
 }
 
 .btn--toggle[aria-pressed="true"]:hover {
-    background: color-mix(in oklab, var(--accent) 22%, var(--bg-surface));
+    background: color-mix(in oklab, var(--accent) 25%, var(--bg-surface));
 }

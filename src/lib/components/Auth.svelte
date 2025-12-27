@@ -151,13 +151,13 @@
         {#if $subPage !== "requestReset"}
             <div class="field">
                 <label class="field__label" for="auth-password">
-                    {$subPage === "signup" ? "New password" : "Password"}
+                    {$subPage === "reset" ? "New password" : "Password"}
                 </label>
                 <input
                     id="auth-password"
                     type="password"
-                    autocomplete={$subPage === "signup" ? "new-password" : "current-password"}
-                    placeholder={$subPage === "signup" ? "new-password" : "password"}
+                    autocomplete={$subPage === "reset" ? "New password" : "Password"}
+                    placeholder={$subPage === "reset" ? "New password" : "Password"}
                     value={$password}
                     on:input={(e) => {
                         password.set(e.target.value);

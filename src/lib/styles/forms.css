@@ -14,21 +14,13 @@ select {
     transition: border-color 0.15s ease background 0.15s ease, color 0.15s ease;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-    border-color: var(--accent);
-    color: var(--text-primary);
-    outline: none;
-}
-
 input:disabled,
 textarea:disabled,
 select:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     color: var(--text-muted);
-    background: color-mix(in oklab, var(--bg-surface) 92%, var(--border-color));
+    background: color-mix(in oklab, var(--bg-surface-alt) 90%, var(--bg-app));
 }
 
 textarea {
@@ -66,4 +58,27 @@ select:not([multiple]) {
 
 select:not([multiple]):hover:not(:focus):not(:active) {
     background-color: var(--bg-hover);
+}
+
+select:disabled,
+select[disabled] {
+    cursor: not-allowed;
+}
+
+/* Date inputs */
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+input[type="time"] {
+    cursor: pointer;
+}
+
+input[type="date"]:disabled,
+input[type="datetime-local"]:disabled,
+input[type="month"]:disabled,
+input[type="week"]:disabled,
+input[type="time"]:disabled {
+    cursor: not-allowed;
 }
