@@ -2,7 +2,7 @@
 import request from "$lib/utils/request.js";
 
 // Fetch feed profiles
-export function getFeedProfiles({ exclude_ids = [], limit = 1 } = {}) {
+export function getFeedProfiles({ exclude_ids = [], limit = 20 } = {}) {
     return request("/feed/get-feed", {
         method: "POST",
         data: { exclude_ids, limit }

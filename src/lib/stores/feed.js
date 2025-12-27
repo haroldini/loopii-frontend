@@ -7,43 +7,45 @@ export const peerQueue = writable([]);               // queue[0] is the current 
 export const peerStatus = writable("unloaded");      // "loading" | "loaded" | "empty" | "error" | "unloaded" | "hidden"
 export const ongoingEvaluations = writable([]);
 
-const QUEUE_BATCH_SIZE = 10;
-const QUEUE_MIN = 5;
+const QUEUE_BATCH_SIZE = 20;
+const QUEUE_REFILL_AT = [QUEUE_BATCH_SIZE-5, 5];     // also refills when 0 remaining after decision made (handleDecision)
 
-let isFetching = false;
+let fetchInFlight = null;
 
 
 // Fetch a batch of feed profiles, excluding those in the queue or currently being evaluated.
 export async function fetchPeerBatch() {
-    if (isFetching) return { ok: true, added: 0, skipped: true };
-    isFetching = true;
+    if (fetchInFlight) return fetchInFlight;
 
-    try {
-        const exclude_ids = [...get(peerQueue).map(p => p.id), ...get(ongoingEvaluations)];
-        const peers = await getFeedProfiles({ exclude_ids, limit: QUEUE_BATCH_SIZE });
+    fetchInFlight = (async () => {
+        try {
+            const exclude_ids = [...get(peerQueue).map(p => p.id), ...get(ongoingEvaluations)];
+            const peers = await getFeedProfiles({ exclude_ids, limit: QUEUE_BATCH_SIZE });
 
-        const added = Array.isArray(peers) ? peers.length : 0;
-        if (added > 0) {
-            peerQueue.update(q => [...q, ...peers]);
+            const added = Array.isArray(peers) ? peers.length : 0;
+            if (added > 0) {
+                peerQueue.update(q => [...q, ...peers]);
+            }
+
+            return { ok: true, added };
+        } catch (err) {
+            console.error("fetchPeerBatch error:", err);
+            const status = err?.status;
+            if (status === 403) {
+                peerStatus.set("hidden");
+            }
+            return {
+                ok: false,
+                added: 0,
+                error: err?.message || String(err),
+                status,
+            };
+        } finally {
+            fetchInFlight = null;
         }
-        return { ok: true, added };
+    })();
 
-    } catch (err) {
-        console.error("fetchPeerBatch error:", err);
-        const status = err?.status;
-        if (status === 403) {
-            // Profile is hidden
-            peerStatus.set("hidden");
-        }
-        return {
-            ok: false,
-            added: 0,
-            error: err?.message || String(err),
-            status,
-        };
-    } finally {
-        isFetching = false;
-    }
+    return fetchInFlight;
 }
 
 
@@ -52,15 +54,14 @@ export function setNextPeer() {
     const queue = get(peerQueue);
     if (queue.length === 0) {
         peer.set(null);
-        peerStatus.set("empty");   // only mark empty if no current and no queue
+        peerStatus.set("empty");
         return null;
     }
     
     peer.set(queue[0]);
     peerStatus.set("loaded");
     
-    const remainingAfterCurrent = queue.length - 1;
-    if (remainingAfterCurrent < QUEUE_MIN) {
+    if (QUEUE_REFILL_AT.includes(queue.length)) {
         void fetchPeerBatch();
     }
     
@@ -72,7 +73,7 @@ export function setNextPeer() {
 export async function initPeerStore() {
     peerStatus.set("loading");
 
-    const { ok, added, status, skipped } = await fetchPeerBatch();
+    const { ok, added, status } = await fetchPeerBatch();
     if (!ok) {
         peer.set(null);
         if (status === 403) {
@@ -80,10 +81,6 @@ export async function initPeerStore() {
         } else {
             peerStatus.set("error");
         }
-        return;
-    }
-
-    if (skipped) {
         return;
     }
 
@@ -128,7 +125,7 @@ export function handleDecision(connect) {
         peer.set(null);
         peerStatus.set("loading");
         void (async () => {
-            const { ok, added, status, skipped } = await fetchPeerBatch();
+            const { ok, added, status } = await fetchPeerBatch();
 
             if (!ok) {
                 if (status === 403) {
@@ -137,9 +134,6 @@ export function handleDecision(connect) {
                 } else {
                     peerStatus.set("error");
                 }
-                return;
-            }
-            if (skipped) {
                 return;
             }
             if ((added === 0) && get(peerQueue).length === 0) {
@@ -156,7 +150,7 @@ export function handleDecision(connect) {
 
 // Reset the peer queue and force a fresh fetch
 export async function refreshPeerStore() {
-    isFetching = false;
+    fetchInFlight = null;
     peer.set(null);
     peerQueue.set([]);
     peerStatus.set("loading");

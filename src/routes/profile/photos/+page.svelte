@@ -110,10 +110,6 @@
                         try {
                             await deleteProfileImage(imageId);
                             photosState.set("deleted");
-                            addToast({
-                                text: "Image successfully deleted.",
-                                autoHideMs: 3000,
-                            });
                         } catch (err) {
                             console.error("Error deleting image:", err);
                             photosState.set("errorDeleting");
@@ -313,9 +309,9 @@
                     class:is-loading={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                     disabled={$photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                 >
-                    {#if $photosState === "uploading" || $photosState === "settingAvatar"}
+                    {#if $photosState === "uploading" || $photosState === "settingAvatar" || $photosState === "deleting"}
                         <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
-                        <span class="btn__label">Saving...</span>
+                        <span class="btn__label">Loading...</span>
                     {:else}
                         <Icon icon={UI_ICONS.imageAdd} class="btn__icon" />
                         <span class="btn__label">Add photo</span>
