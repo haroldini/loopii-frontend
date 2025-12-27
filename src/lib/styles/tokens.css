@@ -135,10 +135,11 @@
 }
 
 
-/* ===== Default theme ===== */
+/* ===== Dark themes ===== */
 
+/* Raspberry (default) */
 :root {
-    --bg-app: #0C0B0D;
+    --bg-app: #0e0d10;
     --bg-surface: #121116;
     --bg-surface-alt: #17161E;
     --bg-secondary: #1F1D28;
@@ -179,9 +180,12 @@
     --accent: #00E5FF;
     --accent-secondary: #FFEA00;
 
-    --success: #00d560;
+    --success: #00F5A0;
     --danger: #FF2D55;
-    --warning: #FFD000;
+    --warning: #FFC400;
+
+    --accept: #00F5A0;
+    --decline: #FF4D7A;
 
     --focus-ring-color: #00E5FF;
 }
@@ -200,13 +204,16 @@
     --border-color: #3A3357;
 
     --accent: #B084FF;
-    --accent-secondary: #5DD7FF;
+    --accent-secondary: #6EE7FF;
 
-    --success: #19c191;
-    --danger: #e43c5b;
-    --warning: #F6C177;
+    --success: #2AD9A8;
+    --danger: #E43C5B;
+    --warning: #FFD166;
 
-    --focus-ring-color: #5DD7FF;
+    --accept: #2AD9A8;
+    --decline: #FF5C8A;
+
+    --focus-ring-color: #6EE7FF;
 }
 
 :root[data-theme="ember"] {
@@ -223,39 +230,45 @@
     --border-color: #3B3127;
 
     --accent: #FF8A3D;
-    --accent-secondary: #FFC857;
+    --accent-secondary: #FFD166;
 
-    --success: #16c889;
-    --danger: #e93757;
-    --warning: #FFC857;
+    --success: #2AD38A;
+    --danger: #E93757;
+    --warning: #FFD166;
 
-    --focus-ring-color: #FFC857;
+    --accept: #34D399;
+    --decline: #FF5A6E;
+
+    --focus-ring-color: #FFD166;
 }
 
 
 /* Light Themes */
 
 :root[data-theme="light"] {
-  --bg-app: #FCF5FA;
-  --bg-surface: #FFF9FC;
-  --bg-surface-alt: #F6EAF3;
-  --bg-secondary: #EAD4E6;
-  --bg-hover: #DDBCD6;
+    --bg-app: #FCF5FA;
+    --bg-surface: #FFF9FC;
+    --bg-surface-alt: #F6EAF3;
+    --bg-secondary: #EAD4E6;
+    --bg-hover: #DDBCD6;
 
-  --text-primary: #160D15;
-  --text-secondary: #271626;
-  --text-muted: #6E586E;
+    --text-primary: #160D15;
+    --text-secondary: #271626;
+    --text-muted: #6E586E;
 
-  --border-color: #D2B2CB;
+    --border-color: #D2B2CB;
 
-  --accent: #EC4899;
-  --accent-secondary: #F9A8D4;
+    --accent: #EC4899;
+    --accent-secondary: #F472B6;
 
-  --success: #17b070;
-  --danger: #cf2d45;
-  --warning: #F59E0B;
+    --success: #16A34A;
+    --danger: #E11D48;
+    --warning: #F59E0B;
 
-  --focus-ring-color: #EC4899;
+    --accept: #22C55E;
+    --decline: #F43F5E;
+
+    --focus-ring-color: #EC4899;
 }
 
 :root[data-theme="orchid"] {
@@ -263,7 +276,7 @@
     --bg-surface: #DAD1EE;
     --bg-surface-alt: #CFC4E8;
     --bg-secondary: #BFB2DE;
-    --bg-hover: #c4bbdd;
+    --bg-hover: #C4BBDD;
 
     --text-primary: #171327;
     --text-secondary: #2C2450;
@@ -272,11 +285,14 @@
     --border-color: #A79BC8;
 
     --accent: #A855F7;
-    --accent-secondary: #22D3EE;
+    --accent-secondary: #06B6D4;
 
-    --success: #10B981;
+    --success: #14B8A6;
     --danger: #F43F5E;
     --warning: #F59E0B;
+
+    --accept: #14B8A6;
+    --decline: #F43F5E;
 
     --focus-ring-color: #A855F7;
 }
@@ -286,7 +302,7 @@
     --bg-surface: #FFECF4;
     --bg-surface-alt: #FFE0ED;
     --bg-secondary: #FFCBE1;
-    --bg-hover: #FFB6D6;
+    --bg-hover: rgb(255, 213, 231);
 
     --text-primary: #24101B;
     --text-secondary: #3E1D2F;
@@ -295,11 +311,14 @@
     --border-color: #E8AFCB;
 
     --accent: #DB2777;
-    --accent-secondary: #0EA5E9;
+    --accent-secondary: #0284C7;
 
-    --success: #22C55E;
+    --success: #16A34A;
     --danger: #E11D48;
     --warning: #F59E0B;
+
+    --accept: #22C55E;
+    --decline: #F43F5E;
 
     --focus-ring-color: #DB2777;
 }
@@ -309,7 +328,7 @@
     --bg-surface: #E8D6CC;
     --bg-surface-alt: #DFCCC1;
     --bg-secondary: #D3BEAF;
-    --bg-hover: #C7B19F;
+    --bg-hover: #d3bba6;
 
     --text-primary: #22140F;
     --text-secondary: #3A241D;
@@ -317,12 +336,15 @@
 
     --border-color: #BFA595;
 
-    --accent: #e76101;
-    --accent-secondary: #00E5FF;
+    --accent: #f45303;
+    --accent-secondary: #22D3EE;
 
-    --success: #11b24c;
-    --danger: #f54242;
+    --success: #22C55E;
+    --danger: #F43F5E;
     --warning: #F59E0B;
 
-    --focus-ring-color: #00E5FF;
+    --accept: #22C55E;
+    --decline: #F43F5E;
+
+    --focus-ring-color: #22D3EE;
 }

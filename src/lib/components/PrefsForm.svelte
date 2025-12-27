@@ -375,7 +375,7 @@
 
                     <button
                         type="button"
-                        class="btn btn--ghost"
+                        class="btn btn--danger"
                         on:click={clearLocationFilter}
                     >
                         <Icon icon={UI_ICONS.pinRemove} class="btn__icon" />
