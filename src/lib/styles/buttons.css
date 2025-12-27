@@ -100,7 +100,7 @@
 .btn--danger {
     background: var(--danger);
     border-color: var(--danger);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .btn--danger:hover {
@@ -110,7 +110,7 @@
 .btn--success {
     background: var(--success);
     border-color: var(--success);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .btn--success:hover {
