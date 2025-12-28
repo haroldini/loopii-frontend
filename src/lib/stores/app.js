@@ -116,7 +116,6 @@ export function setTheme(value) { return themePref.setValue(value); }
 
 export const styleOptions = [
     { value: "pixel", label: "Pixel (Default)" },
-    { value: "round", label: "Round" },
     { value: "clean", label: "Clean" },
 ];
 

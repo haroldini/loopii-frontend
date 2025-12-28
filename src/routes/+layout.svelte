@@ -113,7 +113,7 @@
 
 
 <svelte:head>
-    <link rel="icon" href="/icon-short.svg" />
+    <link rel="icon" href="/icon-bg-short.svg" />
 </svelte:head>
 
 

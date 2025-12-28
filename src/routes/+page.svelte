@@ -146,7 +146,6 @@
         <div class="bar__inner">
             <div class="bar__title">
                 <h2 class="text-heading text-logo">loop<span class="logo--i">ii</span></h2>
-                <!-- <img src="/logo/logo.png" alt="loopii" class="logo logo--long" /> -->
             </div>
 
             <div class="bar__actions">
@@ -300,6 +299,10 @@
     .feed-deck__slide {
         height: 100%;
         min-height: 0;
+    }
+
+    .feed-deck:not(.is-animating) .feed-deck__slide:not(:first-child) {
+        display: none;
     }
 
     .feed-slide__scroll {
