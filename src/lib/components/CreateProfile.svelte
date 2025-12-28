@@ -8,7 +8,7 @@
 	import { 
 		username, name, dob, gender, country, bio, loop_bio, looking_for,
 		latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
-		error, readyToSubmit, validationErrors, currentPage, prefsState, 
+		error, readyToSubmit, validationErrors, currentPage, prefsState, resetAllCreateProfile, 
 		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
 		updateHandle, removeSocial, usernameAvailability, ensureUsernameAvailable
 	} from "$lib/stores/createProfile.js";
@@ -19,15 +19,6 @@
     import { goto } from "$app/navigation";
 
 	let avatarPicker;
-
-	onMount(() => {
-		const unsubscribe = profileFormState.subscribe((state) => {
-			if (state === "success" || state === "exists" || state === "partial") {
-				goto("/");
-			}
-		});
-		return unsubscribe;
-	});
 
 	// fallback message timer for loading app after profile creation
     let showFallback = false;
@@ -115,7 +106,7 @@
 
 {#if ["success", "partial", "exists"].includes($profileFormState)}
     <Icon icon={UI_ICONS.animLoading} class="icon--large" />
-    <p class="text-center text-success">Loading app...</p>
+    <p class="text-center">Loading app...</p>
 
     {#if showFallback}
         <p class="text-hint text-center">

@@ -1,5 +1,6 @@
 
 <script>
+    import { onMount, onDestroy } from "svelte";
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
@@ -17,8 +18,11 @@
         toggleMode, resetAuthForm, toggleForm, resetSensitive
     } from "$lib/stores/authForm.js";
 
-    import { onMount } from "svelte";
-
+    // Unmounting logic
+    onDestroy(() => {
+        resetAuthForm();
+        resetToken.set(null);
+    });
 
     // <-- REACTIVE RECOVERY CHECK
     $: if ($authState === "recovery" && $resetToken) {

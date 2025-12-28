@@ -452,7 +452,7 @@
                 <MultiSelect
                     title="Your interests"
                     hint="Select up to 20 interests that describe you."
-                    placeholder="Any"
+                    placeholder="None selected"
                     searchPlaceholder="Search interests..."
                     items={allInterests}
                     valueKey="id"

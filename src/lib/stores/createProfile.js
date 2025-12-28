@@ -272,7 +272,7 @@ export async function submitProfile() {
 		let socialsError = false;
 		if (normalized.socials && normalized.socials.length > 0) {
 			try {
-				submissionProgress.set("Adding yoursocials");
+				submissionProgress.set("Adding your socials");
 				await createProfileSocials({ socials: normalized.socials });
 			} catch {
 				socialsError = true;
@@ -449,4 +449,9 @@ export function resetState() {
 	validationErrors.set([]);
 	currentPage.set(0);
 	profileFormState.set("idle");
+}
+
+export function resetAllCreateProfile() {
+    resetFields();
+    resetState();
 }
