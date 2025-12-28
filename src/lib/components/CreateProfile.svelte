@@ -114,7 +114,7 @@
 
 
 {#if ["success", "partial", "exists"].includes($profileFormState)}
-    <Icon icon={UI_ICONS.animSpinner} class="page__icon" />
+    <Icon icon={UI_ICONS.animLoading} class="icon--large" />
     <p class="text-center text-success">Loading app...</p>
 
     {#if showFallback}
