@@ -71,6 +71,7 @@
             hasChanges = false;
 
             status = "success";
+            goto("/");
             addToast({
                 text: "Search preferences updated!",
                 autoHideMs: 3000,

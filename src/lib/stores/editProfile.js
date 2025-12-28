@@ -1,4 +1,5 @@
 
+import { goto } from "$app/navigation";
 import { writable, get, derived } from "svelte/store";
 import { profile } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
@@ -330,6 +331,7 @@ export async function saveEdits() {
     // Nothing changed at all
     if (Object.keys(changed).length === 0 && !audioPayload) {
         profileEditState.set("editing");
+        error.set("No changes to save");
         return;
     }
 
@@ -367,10 +369,12 @@ export async function saveEdits() {
             ],
         });
 
+        goto("/profile");
         return;
     }
 
     await performProfileUpdate(changed, audioPayload);
+    goto("/profile");
 }
 
 

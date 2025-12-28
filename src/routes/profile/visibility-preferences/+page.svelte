@@ -71,6 +71,7 @@
             hasChanges = false;
 
             status = "success";
+            goto("/profile");
             addToast({
                 text: "Visibility preferences updated!",
                 autoHideMs: 3000,
