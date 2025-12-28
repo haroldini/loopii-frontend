@@ -146,7 +146,7 @@
     height: 1.75rem;
     padding: 0.3rem 0.7rem;
 
-    background: var(--bg-secondary);
+    background: var(--bg-app);
     color: var(--text-muted);
     font-size: 0.75rem;
 
@@ -159,7 +159,7 @@
 }
 
 .pill.pill--online {
-    background: color-mix(in oklab, var(--success) 20%, var(--bg-secondary));
+    background: color-mix(in oklab, var(--success) 25%, var(--bg-app));
     color: var(--success);
 }
 

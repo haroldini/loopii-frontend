@@ -127,17 +127,24 @@
 }
 
 
-/* ===== Flat style ===== */
-:root[data-style="flat"] {
-    --font-heading: "Poppins", sans-serif;
-    --font-subheading: "Manrope", sans-serif;
-    --font-ui: "Manrope", sans-serif;
+/* ===== Clean style ===== */
+:root[data-style="clean"] {
+    --font-heading: "Comfortaa", sans-serif;
+    --font-subheading: "Nunito", sans-serif;
+    --font-ui: "Nunito", sans-serif;
 }
 
 
+/* ===== Round style ===== */
+:root[data-style="round"] {
+    --font-heading: "Comfortaa", sans-serif;
+    --font-subheading: "Nunito", sans-serif;
+    --font-ui: "Nunito", sans-serif;
+}
+
 /* ===== Dark themes ===== */
 
-/* Raspberry (default) */
+/* Nightbloom (default) */
 :root {
     --bg-app: #0e0d10;
     --bg-surface: #121116;
@@ -145,14 +152,14 @@
     --bg-secondary: #1F1D28;
     --bg-hover: #272433;
 
-    --text-primary: #FFF7FB;
-    --text-secondary: #EAD6E3;
-    --text-muted: #A996A7;
+    --text-primary: #FFF9FC;
+    --text-secondary: #F1DDEA;
+    --text-muted: #AE9BAE;
 
     --border-color: #342B3A;
 
     --accent: #EC4899;
-    --accent-secondary: #F472B6;
+    --accent-secondary: #34D399;
 
     --success: #1FD07A;
     --danger: #D61F45;
@@ -164,6 +171,32 @@
     --focus-ring-color: #EC4899;
 }
 
+:root[data-theme="midnight"] {
+    --bg-app: #0F1115;
+    --bg-surface: #141821;
+    --bg-surface-alt: #171C26;
+    --bg-secondary: #1D2430;
+    --bg-hover: #242C3A;
+
+    --text-primary: #F3F6FF;
+    --text-secondary: #D7DEEF;
+    --text-muted: #9AA6C1;
+
+    --border-color: #2D3748;
+
+    --accent: #3B82F6;
+    --accent-secondary: #EF4444;
+
+    --success: #22C55E;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+
+    --accept: #22C55E;
+    --decline: #EF4444;
+
+    --focus-ring-color: #3B82F6;
+}
+
 :root[data-theme="arcade"] {
     --bg-app: #070A12;
     --bg-surface: #0A0E1A;
@@ -171,9 +204,9 @@
     --bg-secondary: #131B33;
     --bg-hover: #192247;
 
-    --text-primary: #F4F7FF;
-    --text-secondary: #D4DDF7;
-    --text-muted: #8B99C7;
+    --text-primary: #FAFCFF;
+    --text-secondary: #E2E9FF;
+    --text-muted: #93A3D4;
 
     --border-color: #27315A;
 
@@ -197,14 +230,14 @@
     --bg-secondary: #1C1827;
     --bg-hover: #242036;
 
-    --text-primary: #F3F0FF;
-    --text-secondary: #C9C4E6;
-    --text-muted: #8C86A8;
+    --text-primary: #F7F4FF;
+    --text-secondary: #D8D3F0;
+    --text-muted: #928CAA;
 
     --border-color: #3A3357;
 
-    --accent: #B084FF;
-    --accent-secondary: #6EE7FF;
+    --accent: #A855F7;
+    --accent-secondary: #2563EB;
 
     --success: #2AD9A8;
     --danger: #E43C5B;
@@ -213,7 +246,7 @@
     --accept: #2AD9A8;
     --decline: #FF5C8A;
 
-    --focus-ring-color: #6EE7FF;
+    --focus-ring-color: #A855F7;
 }
 
 :root[data-theme="ember"] {
@@ -221,11 +254,11 @@
     --bg-surface: #14110D;
     --bg-surface-alt: #191510;
     --bg-secondary: #241E17;
-    --bg-hover: #2E2720;
+    --bg-hover: #2A231B;
 
-    --text-primary: #FFF7ED;
-    --text-secondary: #E7D6C4;
-    --text-muted: #A7907C;
+    --text-primary: #FFF3E6;
+    --text-secondary: #EED8C6;
+    --text-muted: #B79A82;
 
     --border-color: #3B3127;
 
@@ -234,32 +267,32 @@
 
     --success: #2AD38A;
     --danger: #E93757;
-    --warning: #FFD166;
+    --warning: #FFC857;
 
     --accept: #34D399;
     --decline: #FF5A6E;
 
-    --focus-ring-color: #FFD166;
+    --focus-ring-color: #FF8A3D;
 }
 
 
 /* Light Themes */
 
-:root[data-theme="light"] {
-    --bg-app: #FCF5FA;
-    --bg-surface: #FFF9FC;
-    --bg-surface-alt: #F6EAF3;
-    --bg-secondary: #EAD4E6;
-    --bg-hover: #DDBCD6;
+:root[data-theme="raspberry"] {
+    --bg-app: #FFF6FB;
+    --bg-surface: #FFFAFD;
+    --bg-surface-alt: #F8ECF4;
+    --bg-secondary: #EED3E3;
+    --bg-hover: #E4C0D6;
 
-    --text-primary: #160D15;
-    --text-secondary: #271626;
-    --text-muted: #6E586E;
+    --text-primary: #180E18;
+    --text-secondary: #2A1830;
+    --text-muted: #6B4E66;
 
-    --border-color: #D2B2CB;
+    --border-color: #D9B3CF;
 
     --accent: #EC4899;
-    --accent-secondary: #F472B6;
+    --accent-secondary: #10B981;
 
     --success: #16A34A;
     --danger: #E11D48;
@@ -271,7 +304,33 @@
     --focus-ring-color: #EC4899;
 }
 
-:root[data-theme="orchid"] {
+:root[data-theme="cloud"] {
+    --bg-app: #F6F7FA;
+    --bg-surface: #FFFFFF;
+    --bg-surface-alt: #F0F2F7;
+    --bg-secondary: #E6EAF2;
+    --bg-hover: #DCE2EE;
+
+    --text-primary: #0F172A;
+    --text-secondary: #1F2A44;
+    --text-muted: #5B6B86;
+
+    --border-color: #CBD5E1;
+
+    --accent: #2563EB;
+    --accent-secondary: #DC2626;
+
+    --success: #16A34A;
+    --danger: #DC2626;
+    --warning: #D97706;
+
+    --accept: #16A34A;
+    --decline: #DC2626;
+
+    --focus-ring-color: #2563EB;
+}
+
+:root[data-theme="amethyst"] {
     --bg-app: #E4DCF2;
     --bg-surface: #DAD1EE;
     --bg-surface-alt: #CFC4E8;
@@ -284,7 +343,7 @@
 
     --border-color: #A79BC8;
 
-    --accent: #A855F7;
+    --accent: #9333EA;
     --accent-secondary: #06B6D4;
 
     --success: #14B8A6;
@@ -294,7 +353,7 @@
     --accept: #14B8A6;
     --decline: #F43F5E;
 
-    --focus-ring-color: #A855F7;
+    --focus-ring-color: #9333EA;
 }
 
 :root[data-theme="roseQuartz"] {
@@ -302,7 +361,7 @@
     --bg-surface: #FFECF4;
     --bg-surface-alt: #FFE0ED;
     --bg-secondary: #FFCBE1;
-    --bg-hover: rgb(255, 213, 231);
+    --bg-hover: #FFD5E7;
 
     --text-primary: #24101B;
     --text-secondary: #3E1D2F;
@@ -311,7 +370,7 @@
     --border-color: #E8AFCB;
 
     --accent: #DB2777;
-    --accent-secondary: #0284C7;
+    --accent-secondary: #F59E0B;
 
     --success: #16A34A;
     --danger: #E11D48;
@@ -328,16 +387,16 @@
     --bg-surface: #E8D6CC;
     --bg-surface-alt: #DFCCC1;
     --bg-secondary: #D3BEAF;
-    --bg-hover: #d3bba6;
+    --bg-hover: #C9B19E;
 
-    --text-primary: #22140F;
-    --text-secondary: #3A241D;
-    --text-muted: #6E564D;
+    --text-primary: #1F120D;
+    --text-secondary: #321F18;
+    --text-muted: #6A534A;
 
     --border-color: #BFA595;
 
-    --accent: #f45303;
-    --accent-secondary: #22D3EE;
+    --accent: #FF4D00;
+    --accent-secondary: #A855F7;
 
     --success: #22C55E;
     --danger: #F43F5E;
@@ -346,5 +405,5 @@
     --accept: #22C55E;
     --decline: #F43F5E;
 
-    --focus-ring-color: #22D3EE;
+    --focus-ring-color: #FF4D00;
 }

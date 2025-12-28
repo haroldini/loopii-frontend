@@ -18,7 +18,7 @@ function createSelectPreference({
     storageKey,
     options,
     defaultValue,
-    datasetKey,       // e.g. "theme" -> documentElement.dataset.theme
+    datasetKey,
 }) {
     const allowed = new Set((options || []).map((o) => o.value));
     const fallback = allowed.has(defaultValue) ? defaultValue : (options?.[0]?.value ?? "");
@@ -88,12 +88,14 @@ function createSelectPreference({
 // ---------------- Theme ---------------- //
 
 export const themeOptions = [
-    { value: "dark", label: "Raspberry (Default)" },
+    { value: "dark", label: "Nightbloom (Default)" },
+    { value: "midnight", label: "Midnight" },
     { value: "arcade", label: "Arcade" },
     { value: "moonmilk", label: "Moonmilk" },
     { value: "ember", label: "Ember" },
-    { value: "light", label: "Light" },
-    { value: "orchid", label: "Orchid" },
+    { value: "cloud", label: "Cloud" },
+    { value: "raspberry", label: "Raspberry" },
+    { value: "amethyst", label: "Amethyst" },
     { value: "roseQuartz", label: "Rose Quartz" },
     { value: "peach", label: "Peach" },
 ];
@@ -111,14 +113,11 @@ export function setTheme(value) { return themePref.setValue(value); }
 
 
 // ---------------- Style ---------------- //
-//
-// IMPORTANT: set these values to whatever your CSS actually supports via:
-//   html[data-style="..."] { ... }
-// If you already have specific style names, replace these.
 
 export const styleOptions = [
     { value: "pixel", label: "Pixel (Default)" },
-    { value: "flat", label: "Flat" },
+    { value: "round", label: "Round" },
+    { value: "clean", label: "Clean" },
 ];
 
 const stylePref = createSelectPreference({

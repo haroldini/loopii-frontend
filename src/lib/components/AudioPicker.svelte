@@ -593,7 +593,7 @@
             <div class="audio-picker__shell audio-picker__shell--recording">
                 <button
                     type="button"
-                    class="btn btn--danger btn--circle"
+                    class="btn btn--primary btn--circle"
                     on:click={stopRecording}
                     disabled={disabled}
                     aria-label="Stop recording"
@@ -797,7 +797,7 @@
         bottom: 0;
         width: 0%;
         border-radius: 0;
-        background: var(--accent);
+        background: var(--accent-secondary);
         transition: width 0.05s linear;
     }
 
@@ -862,7 +862,7 @@
     .audio-picker__preview-bar-fill {
         height: 100%;
         width: 0%;
-        background: var(--accent);
+        background: var(--accent-secondary);
         border-radius: var(--radius-full);
         transition: width 0.05s linear;
     }
