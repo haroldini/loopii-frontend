@@ -229,15 +229,6 @@
     margin-right: var(--space-3);
 }
 
-/* Hover effects */
-.profile-media__nav:hover::before {
-    opacity: 1;
-}
-
-.profile-media__nav:hover .btn__icon {
-    color: var(--accent);
-}
-
 /* Focus */
 .profile-media__nav:focus-visible {
     outline: var(--focus-ring-width) solid var(--focus-ring-color);
@@ -250,17 +241,6 @@
     pointer-events: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .profile-media:hover .profile-media__nav {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .profile-media:hover .profile-media__count {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 /* ===== Preview card ===== */
 
@@ -275,10 +255,6 @@
 
     border-radius: var(--radius-lg);
     overflow: hidden;
-}
-
-.profile-preview:hover {
-    background: var(--bg-surface-alt);
 }
 
 .profile-preview__media {
@@ -622,5 +598,55 @@
     .voice-intro-inline {
         justify-content: flex-start;
         margin-top: 0.35rem;
+    }
+}
+
+
+/* NON-TOUCH DEVICES: HOVER */
+@media (hover: hover) and (pointer: fine) {
+    /* Profile media: reveal nav + counter on hover */
+    .profile-media:hover .profile-media__nav {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .profile-media:hover .profile-media__count {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Profile media: nav visual hover */
+    .profile-media__nav:hover::before {
+        opacity: 1;
+    }
+
+    .profile-media__nav:hover .btn__icon {
+        color: var(--accent);
+    }
+
+    /* Profile preview card hover */
+    .profile-preview:hover {
+        background: var(--bg-surface-alt);
+    }
+}
+
+/* TOUCH / STYLUS DEVICES */
+@media (hover: none) and (pointer: coarse), (hover: none) and (pointer: fine) {
+
+    /* Navigation buttons NEVER show */
+    .profile-media .profile-media__nav {
+        display: none;
+    }
+
+    /* Dots already always visible; counter always visible on touch */
+    .profile-media .profile-media__count {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: none;
+    }
+
+    /* Optional: tap feedback on preview cards */
+    .profile-preview:active {
+        background: var(--bg-surface-alt);
     }
 }

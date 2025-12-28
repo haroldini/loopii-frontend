@@ -252,12 +252,6 @@
     transition: background 0.15s ease, color 0.15s ease;
 }
 
-.segmented > button:hover,
-.segmented > a:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-}
-
 .segmented > button[aria-current="page"],
 .segmented > a[aria-current="page"] {
     background: var(--bg-hover);
@@ -481,11 +475,6 @@
     line-height: 1;
 }
 
-.app-nav__link:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-}
-
 .app-nav__link.active {
     color: var(--accent);
 }
@@ -552,4 +541,33 @@
     height: 32px;
     display: block;
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+}
+
+
+/* NON-TOUCH DEVICES: HOVER */
+@media (hover: hover) and (pointer: fine) {
+    .segmented > button:hover,
+    .segmented > a:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .app-nav__link:hover {
+        color: var(--text-primary);
+        background: var(--bg-hover);
+    }
+}
+
+/* TOUCH / STYLUS DEVICES: ACTIVE */
+@media (hover: none) and (pointer: coarse), (hover: none) and (pointer: fine) {
+    .segmented > button:active,
+    .segmented > a:active {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .app-nav__link:active {
+        color: var(--text-primary);
+        background: var(--bg-hover);
+    }
 }

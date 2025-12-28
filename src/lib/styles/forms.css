@@ -56,10 +56,6 @@ select:not([multiple]) {
     cursor: pointer;
 }
 
-select:not([multiple]):hover:not(:focus):not(:active) {
-    background-color: var(--bg-hover);
-}
-
 select:disabled,
 select[disabled] {
     cursor: not-allowed;
@@ -81,4 +77,19 @@ input[type="month"]:disabled,
 input[type="week"]:disabled,
 input[type="time"]:disabled {
     cursor: not-allowed;
+}
+
+
+/* NON-TOUCH DEVICES: HOVER */
+@media (hover: hover) and (pointer: fine) {
+    select:not([multiple]):hover:not(:focus):not(:active) {
+        background-color: var(--bg-hover);
+    }
+}
+
+/* TOUCH / STYLUS DEVICES: ACTIVE */
+@media (hover: none) and (pointer: coarse), (hover: none) and (pointer: fine) {
+    select:not([multiple]):active:not(:focus) {
+        background-color: var(--bg-hover);
+    }
 }
