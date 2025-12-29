@@ -1,6 +1,7 @@
 
 <script>
-	import { onDestroy } from "svelte";
+	import { onDestroy, tick } from "svelte";
+    import { get } from "svelte/store";
     import Icon from "@iconify/svelte";
 	import { allCountries, allInterests, allPlatforms, UI_ICONS } from "$lib/stores/app.js";
 	import { 
@@ -16,6 +17,103 @@
 	import PrefsForm from "$lib/components/PrefsForm.svelte";
 
 	let avatarPicker;
+
+
+    // ----- Does page have changes? For "skip" button -----
+
+    let lastSnapshotPage = null;
+    let pageSnapshots = {
+        1: null,
+        2: null,
+    };
+
+    function cloneValue(v) {
+        try {
+            return structuredClone(v);
+        } catch {
+            if (Array.isArray(v)) return v.slice();
+            if (v && typeof v === "object") return { ...v };
+            return v;
+        }
+    }
+
+    function valuesEqual(a, b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+
+        if (typeof a === "number" && typeof b === "number") {
+            return Math.abs(a - b) < 1e-6;
+        }
+
+        if (Array.isArray(a) && Array.isArray(b)) {
+            if (a.length !== b.length) return false;
+            return a.every((x, i) => valuesEqual(x, b[i]));
+        }
+
+        if (typeof a === "object" && typeof b === "object") {
+            try {
+                return JSON.stringify(a) === JSON.stringify(b);
+            } catch {
+                return false;
+            }
+        }
+
+        return a === b;
+    }
+
+    function snapshotForPage(page) {
+        if (page === 1) {
+            return {
+                latitude: cloneValue($latitude),
+                longitude: cloneValue($longitude),
+                location: cloneValue($location),
+                bio: cloneValue($bio),
+                looking_for: cloneValue($looking_for),
+                interests: cloneValue($selectedInterests),
+            };
+        }
+
+        if (page === 2) {
+            return {
+                socials: cloneValue($socials),
+                loop_bio: cloneValue($loop_bio),
+            };
+        }
+
+        return null;
+    }
+
+    function pageHasChanges(page) {
+        const snap = pageSnapshots[page];
+        if (!snap) return true;
+
+        const now = snapshotForPage(page);
+        if (!now) return true;
+
+        return Object.keys(snap).some((k) => !valuesEqual(now[k], snap[k]));
+    }
+
+    $: if (($currentPage === 1 || $currentPage === 2) && $currentPage !== lastSnapshotPage) {
+        lastSnapshotPage = $currentPage;
+
+        void (async () => {
+            await tick();
+            pageSnapshots[$currentPage] = snapshotForPage($currentPage);
+        })();
+    }
+
+    $: page1CtaLabel =
+        $currentPage === 1 && $readyToSubmit && !pageHasChanges(1)
+            ? "Skip"
+            : "Continue";
+
+    $: page2CtaLabel =
+        $currentPage === 2 && $readyToSubmit && !pageHasChanges(2)
+            ? "Skip"
+            : "Continue";
+
+
+    // ----- Other logic -----
 
 	// fallback message timer for loading app after profile creation
     let showFallback = false;
@@ -258,7 +356,7 @@
                 </button>
                 
                 <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 2)} disabled={!$readyToSubmit}>
-                    <span class="btn__label">Continue</span> <Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
+                    <span class="btn__label">{page1CtaLabel}</span> <Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
                 </button>
             </div>
         {/if}
@@ -284,7 +382,7 @@
                 </button>
 
                 <button type="button" class="btn btn--primary btn--block" on:click={() => ($currentPage = 3)} disabled={!$readyToSubmit}>
-                    <span class="btn__label">Continue</span><Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
+                    <span class="btn__label">{page2CtaLabel}</span><Icon icon={UI_ICONS.arrowRight} class="btn__icon"/>
                 </button>
             </div>
         {/if}
@@ -306,7 +404,7 @@
 
             <div class="row row--between">
                 <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 2)}>
-                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label"> Back</span>
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label">Back</span>
                 </button>
 
                 <button
