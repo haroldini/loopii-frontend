@@ -5,8 +5,9 @@
 
     import { get } from "svelte/store";
     import { onMount } from "svelte";
+    import { page } from "$app/stores";
 
-    import { initReferences, retryReferences, referencesStatus, UI_ICONS } from "$lib/stores/app.js";
+    import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
@@ -14,6 +15,7 @@
     import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
     import { initPeerStore } from "$lib/stores/feed.js";
     import { profileFormState, submissionProgress } from "$lib/stores/createProfile.js";
+    import { subPage } from "$lib/stores/authForm.js";
     import { addToast } from "$lib/stores/popups.js";
 
     import Auth from "$lib/components/Auth.svelte";
@@ -25,10 +27,64 @@
 
     let { children } = $props();
 
+    // ---------------- Page metadata ---------------- //
+    const pageTitle = $derived.by(() => {
+        if ($referencesStatus === "error" || $authState === "error" || $profileState === "error") {
+            return "loopii • couldn't connect";
+        }
+
+        if (
+            $referencesStatus === "loading" ||
+            $referencesStatus === "unloaded" ||
+            $authState === "loading" ||
+            $profileState === "loading"
+        ) {
+            return "loopii • Loading";
+        }
+
+        if ($authState === "unauthenticated" && $subPage === "login") {
+            return "loopii • Log In";
+        }
+
+        if ($authState === "unauthenticated" && $subPage === "signup") {
+            return "loopii • Sign Up";
+        }
+
+        if (
+            $authState === "recovery" || 
+            $authState === "unauthenticated" && ["requestReset", "reset"].includes($subPage)
+        ) {
+            return "loopii • Reset Password";
+        }
+
+        if ($authState === "authenticated" && $profileState === "missing") {
+            return "loopii • Create Profile";
+        }
+
+        return "loopii";
+    });
+
+    export const updateThemeColor = () => {
+        const color = getComputedStyle(document.documentElement)
+            .getPropertyValue("--bg-app")
+            .trim();
+
+        document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", color);
+    };
+
     // ---------------- Initial setup ---------------- //
     onMount(() => {
         initReferences();
         initAuth();
+
+        updateThemeColor();
+
+        const unsubscribeTheme = theme.subscribe(() => {
+            updateThemeColor();
+        });
+
         setTimeout(() => {
             if ($referencesStatus === "loading") {
                 console.warn("References loading timeout.");
@@ -40,6 +96,10 @@
                 authState.set("timeout");
             }
         }, LOADING_TIMEOUT);
+
+        return () => {
+            unsubscribeTheme();
+        };
     });
 
     // ---------------- Profile load ---------------- //
@@ -113,7 +173,16 @@
 
 
 <svelte:head>
-    <link rel="icon" href="/icon-bg-short.svg" />
+    
+    <title>{pageTitle}</title>
+
+    <!-- Only index and follow on the homepage -->
+    {#if $page.url.pathname === "/"}
+        <meta name="robots" content="index, follow" />
+    {:else}
+        <meta name="robots" content="noindex, nofollow" />
+    {/if}
+
 </svelte:head>
 
 

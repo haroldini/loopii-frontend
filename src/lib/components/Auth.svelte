@@ -1,5 +1,6 @@
 
 <script>
+    import { onMount, onDestroy } from "svelte";
     import { get } from "svelte/store";
     import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
@@ -17,8 +18,11 @@
         toggleMode, resetAuthForm, toggleForm, resetSensitive
     } from "$lib/stores/authForm.js";
 
-    import { onMount } from "svelte";
-
+    // Unmounting logic
+    onDestroy(() => {
+        resetAuthForm();
+        resetToken.set(null);
+    });
 
     // <-- REACTIVE RECOVERY CHECK
     $: if ($authState === "recovery" && $resetToken) {
@@ -274,9 +278,9 @@
 <!-- TERMINAL / RESULT STATES -->
 {:else}
     {#if $authFormStatus === "signedUp"}
-        <Icon icon={UI_ICONS.animEmailSent} class="page__icon" />
+        <Icon icon={UI_ICONS.animEmailSent} class="icon--large" />
         <p>
-            <span class="text-success">Confirmation email sent.</span> Check your inbox to verify your account.
+            <span class="text-success text-fw-semibold">Confirmation email sent.</span> Check your inbox to verify your account.
         </p>
         <p>
             Didn't receive it? Your email may already be in use. Try 
@@ -292,9 +296,9 @@
         </p>
 
     {:else if $authFormStatus === "resetEmailSent"}
-        <Icon icon={UI_ICONS.animEmailSent} class="page__icon" />
+        <Icon icon={UI_ICONS.animEmailSent} class="icon--large" />
         <p>
-            <span class="text-success">Password reset email sent.</span> Check your inbox to continue.
+            <span class="text-success text-fw-semibold">Password reset email sent.</span> Check your inbox to continue.
         </p>
 
         <p>
@@ -305,8 +309,8 @@
         </p>
 
     {:else if $authFormStatus === "passwordReset"}
-        <Icon icon={UI_ICONS.animSuccess} class="page__icon" />
-        <p class="text-success">
+        <Icon icon={UI_ICONS.animSuccess} class="icon--large" />
+        <p class="text-success text-fw-semibold">
             Your password has been reset successfully.
         </p>
 
@@ -321,7 +325,7 @@
     
     <!-- Escape hatch -->
     {:else}
-        <Icon icon={UI_ICONS.animFailed} class="page__icon" />
+        <Icon icon={UI_ICONS.animFailed} class="icon--large" />
         <p class="text-danger">
             An unexpected error occurred. Please try again.
         </p>

@@ -177,7 +177,7 @@
             </div>
         </div>
 
-        <div class="bar bar--actionbar">
+        <div class="bar bar--actionbar bar--decision-buttons">
             <div class="bar__inner">
                 <div class="decision-buttons">
                     <button

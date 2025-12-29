@@ -1,5 +1,6 @@
 
 <script>
+    import { tick } from "svelte";
     import MapPicker from "$lib/components/MapPicker.svelte";
     import AudioPicker from "$lib/components/AudioPicker.svelte";
     import MultiSelect from "$lib/components/MultiSelect.svelte";
@@ -123,6 +124,8 @@
     function firstErrorFor(fieldName) {
         return errors?.find((e) => e.field === fieldName && e.display);
     }
+
+    let mapPicker;
 
     function mapError() {
         return (
@@ -397,6 +400,7 @@
 
                 {#if values.latitude != null && values.longitude != null}
                     <MapPicker
+                        bind:this={mapPicker}
                         title={field.title ?? "Your location"}
                         hint={field.hint ?? "Select your approximate location."}
                         lat={values.latitude}
@@ -404,6 +408,7 @@
                         radius={1000}
                         mode="preview"
                         defaultZoom={11}
+                        overlayHash="#select-your-location"
                         on:confirm={(e) => {
                             setters.latitude && setters.latitude(e.detail.lat);
                             setters.longitude && setters.longitude(e.detail.lng);
@@ -427,11 +432,13 @@
                     <button
                         type="button"
                         class="btn btn--block"
-                        on:click={() => {
+                        on:click={async () => {
                             const lat = field.defaultLat ?? 51.505;
                             const lng = field.defaultLng ?? -0.09;
                             setters.latitude && setters.latitude(lat);
                             setters.longitude && setters.longitude(lng);
+                            await tick();
+                            mapPicker?.open();
                         }}
                     >
                         <Icon icon={UI_ICONS.pinAdd} class="btn__icon" />
@@ -452,8 +459,9 @@
                 <MultiSelect
                     title="Your interests"
                     hint="Select up to 20 interests that describe you."
-                    placeholder="Any"
+                    placeholder="None selected"
                     searchPlaceholder="Search interests..."
+                    overlayHash="#select-interests"
                     items={allInterests}
                     valueKey="id"
                     labelKey="name"

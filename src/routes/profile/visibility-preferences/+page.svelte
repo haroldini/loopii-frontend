@@ -71,6 +71,7 @@
             hasChanges = false;
 
             status = "success";
+            goto("/profile");
             addToast({
                 text: "Visibility preferences updated!",
                 autoHideMs: 3000,
@@ -129,7 +130,7 @@
 
 
 <svelte:head>
-    <title>loopii • Visibility Preferences</title>
+    <title>loopii • Visibility</title>
 </svelte:head>
 
 

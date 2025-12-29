@@ -5,19 +5,16 @@
     import "cropperjs/dist/cropper.css";
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js";
+    import Overlay from "$lib/components/Overlay.svelte";
 
     const dispatch = createEventDispatcher();
 
-    // Scroll locking
-    function lockScroll() {
-        document.documentElement.classList.add("overlay-open");
-        document.body.classList.add("overlay-open");
-    }
+    // ===== Overlay Management =====
 
-    function unlockScroll() {
-        document.documentElement.classList.remove("overlay-open");
-        document.body.classList.remove("overlay-open");
-    }
+    export let overlayHash = "#select-image";
+    let overlay;
+
+    // ===== Image Picker Logic =====
 
     // --- Props from parent ---
     export let initialOriginalUrl = null;
@@ -92,7 +89,7 @@
 
     // --- Core Logic ---
     async function enterFullscreen() {
-        lockScroll();
+        overlay?.openOverlay();
         internalMode = "fullscreen";
         if (!originalUrl && !workingUrl) {
             if (fileInput) fileInput.value = "";
@@ -101,7 +98,7 @@
         await tick();
     }
 
-    async function exitToPreview(confirm = false) {
+    async function exitToPreview(confirm = false, fromHash = false) {
         const srcKey = currentSourceKey();
 
         if (confirm && cropper) {
@@ -114,7 +111,7 @@
                 imageSmoothingQuality: "high"
             });
 
-            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", imageQuality));
+            const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", imageQuality));
             if (blob) {
                 const file = new File([blob], "upload.jpg", { type: "image/jpeg" });
                 revokeUrl(editedUrl);
@@ -128,11 +125,11 @@
                 }
 
                 saveCropStateFor(originalUrl);
-                dispatch("confirm", { 
-                    editedUrl, 
-                    editedFile: file, 
-                    originalUrl, 
-                    cropState: lastStates.get(originalUrl) 
+                dispatch("confirm", {
+                    editedUrl,
+                    editedFile: file,
+                    originalUrl,
+                    cropState: lastStates.get(originalUrl)
                 });
             }
         } else {
@@ -149,8 +146,9 @@
             try { cropper.destroy(); } catch {}
             cropper = null;
         }
+
         internalMode = "preview";
-        unlockScroll();
+        overlay?.closeOverlay({ fromHash });
     }
 
     function handleFileSelect(e) {
@@ -215,7 +213,7 @@
         });
     }
 
-    // --- Init from parent ---
+    // --- Lifecycle ---
     onMount(() => {
         if (initialOriginalUrl) {
             originalUrl = initialOriginalUrl;
@@ -241,8 +239,17 @@
 </script>
 
 
-{#if internalMode === "fullscreen"}
-    <div class="overlay" role="dialog" aria-modal="true" aria-label="Upload image">
+<Overlay
+    bind:this={overlay}
+    open={internalMode === "fullscreen"}
+    hash={overlayHash}
+    openClass="overlay"
+    closedClass="u-hidden"
+    renderOpenOnly={false}
+    ariaLabel="Upload image"
+    on:requestClose={() => exitToPreview(false, true)}
+>
+    {#if internalMode === "fullscreen"}
         <div class="overlay__scrim"></div>
 
         <div class="overlay__panel">
@@ -319,8 +326,11 @@
                 </div>
             </div>
         </div>
-    </div>
-{:else}
+    {/if}
+</Overlay>
+
+
+{#if internalMode !== "fullscreen"}
     {#if editedUrl}
         <button
             type="button"
@@ -333,6 +343,7 @@
     {/if}
 {/if}
 
+
 <!-- Always rendered file input -->
 <input
     type="file"
@@ -341,6 +352,7 @@
     on:change={handleFileSelect}
     class="u-hidden"
 />
+
 
 <style>
     .imagepicker__preview {

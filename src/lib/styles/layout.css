@@ -90,15 +90,18 @@
 /* ===== Gate screens (auth / create profile / loading) ===== */
 
 .gate {
-    min-height: 100svh;
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
     display: flex;
+    overflow-y: auto;
+    overflow-x: clip;
 
     padding:
         calc(var(--space-5) + var(--safe-top))
         var(--gutter)
         calc(var(--space-5) + var(--safe-bottom));
 
-    overflow: auto;
 }
 
 .gate__inner {
@@ -122,6 +125,12 @@
     font-size: 2rem;
 }
 
+.gate__brand,
+.text-logo {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
 .text-logo .logo--i,
 .gate__brand .logo--i {

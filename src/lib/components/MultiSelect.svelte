@@ -3,23 +3,15 @@
     import { createEventDispatcher, onDestroy, tick } from "svelte";
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js";
-
-    // Scroll locking
-    function lockScroll() {
-        document.documentElement.classList.add("overlay-open");
-        document.body.classList.add("overlay-open");
-    }
-
-    function unlockScroll() {
-        document.documentElement.classList.remove("overlay-open");
-        document.body.classList.remove("overlay-open");
-    }
+    import Overlay from "$lib/components/Overlay.svelte";
 
     export let title = "Select";
     export let hint = "You can select multiple options.";
     export let placeholder = "Any";
     export let searchPlaceholder = "Search...";
     export let items = [];
+
+    export let overlayHash = "#select-multiple";
 
     // keys (works for countries, interests, languages)
     export let valueKey = "id";
@@ -41,6 +33,8 @@
     export let disabled = false;
 
     const dispatch = createEventDispatcher();
+
+    let overlay;
 
     let isOpen = false;
     let query = "";
@@ -137,7 +131,7 @@
 
         draft = clampDraftToMax([...valueArr]);
         query = "";
-        lockScroll();
+        overlay?.openOverlay();
         isOpen = true;
 
         tick().then(() => {
@@ -145,7 +139,7 @@
         });
     }
 
-    function closeOverlay(confirm = false) {
+    function closeOverlay(confirm = false, fromHash = false) {
         if (confirm) {
             value = [...draft];
             dispatch("change", { value });
@@ -155,7 +149,7 @@
         }
 
         isOpen = false;
-        unlockScroll();
+        overlay?.closeOverlay({ fromHash });
         groupCheckboxEls = {};
     }
 
@@ -353,8 +347,17 @@
         </span>
     </button>
 
-    {#if isOpen}
-        <div class="overlay" role="dialog" aria-modal="true" aria-label={title}>
+    <Overlay
+        bind:this={overlay}
+        open={isOpen}
+        hash={overlayHash}
+        openClass="overlay"
+        closedClass="u-hidden"
+        renderOpenOnly={false}
+        ariaLabel={title}
+        on:requestClose={() => closeOverlay(false, true)}
+    >
+        {#if isOpen}
             <div class="overlay__scrim"></div>
 
             <div class="overlay__panel">
@@ -496,8 +499,8 @@
                     </div>
                 </div>
             </div>
-        </div>
-    {/if}
+        {/if}
+    </Overlay>
 </div>
 
 
@@ -648,5 +651,4 @@
         height: 1.5rem;
         display: block;
     }
-
 </style>

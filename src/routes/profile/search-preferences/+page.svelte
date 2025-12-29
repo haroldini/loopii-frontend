@@ -71,6 +71,7 @@
             hasChanges = false;
 
             status = "success";
+            goto("/");
             addToast({
                 text: "Search preferences updated!",
                 autoHideMs: 3000,
@@ -129,7 +130,7 @@
 
 
 <svelte:head>
-    <title>loopii • Search Preferences</title>
+    <title>loopii • Preferences</title>
 </svelte:head>
 
 

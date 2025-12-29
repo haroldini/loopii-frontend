@@ -1,22 +1,16 @@
 
 <script>
-    import { onMount, tick, onDestroy } from "svelte";
+    import { onMount, tick } from "svelte";
     import { createEventDispatcher } from "svelte";
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js";
+    import { on } from "svelte/events";
+    import Overlay from "$lib/components/Overlay.svelte";
 
     const ACCENT = "var(--color-black)";
 
-    // Scroll locking
-    function lockScroll() {
-        document.documentElement.classList.add("overlay-open");
-        document.body.classList.add("overlay-open");
-    }
-
-    function unlockScroll() {
-        document.documentElement.classList.remove("overlay-open");
-        document.body.classList.remove("overlay-open");
-    }
+    export let overlayHash = "#select-location";
+    let overlay;
 
     // ─── Props passed into the component ─────────────────────────────────────────
     export let mode = "preview";   // "preview" (small static view) or "fullscreen"
@@ -82,7 +76,7 @@
 
     // Enter fullscreen mode, set interactable
     async function enterFullscreen() {
-        lockScroll();
+        overlay?.openOverlay(); // Overlay logic: scroll lock + hash
         mode = "fullscreen";
         interactable = true;
         ignoreNextMapClick = true; // Avoid triggering immediately on open
@@ -101,8 +95,12 @@
         }
     }
 
+    export async function open() {
+        await enterFullscreen();
+    }
+
     // Exit fullscreen mode (confirm / back)
-    async function exitToPreview(confirm = false) {
+    async function exitToPreview(confirm = false, fromHash = false) {
         if (confirm) {
             confLat = pinLat;
             confLng = pinLng;
@@ -113,8 +111,9 @@
         }
 
         mode = "preview";
-        unlockScroll();
+        overlay?.closeOverlay({ fromHash }); // Overlay logic: unlock + optional hash close
         interactable = false;
+
         await tick();
         setInteractivity(false);
 
@@ -240,69 +239,82 @@
 </script>
 
 
-<div
-    class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}
-    role={mode === "fullscreen" ? "dialog" : undefined}
-    aria-modal={mode === "fullscreen" ? "true" : undefined}
-    aria-label={mode === "fullscreen" ? title : "Map picker"}
+<Overlay
+    bind:this={overlay}
+    open={mode === "fullscreen"}
+    hash={overlayHash}
+    openClass=""
+    closedClass=""
+    renderOpenOnly={false}
+    role="presentation"
+    ariaModal={false}
+    ariaLabel=""
+    on:requestClose={() => exitToPreview(false, true)}
 >
-    {#if mode === "fullscreen"}
-        <div class="overlay__scrim"></div>
-    {/if}
-
-
-    <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
+    <div
+        class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}
+        role={mode === "fullscreen" ? "dialog" : undefined}
+        aria-modal={mode === "fullscreen" ? "true" : undefined}
+        aria-label={mode === "fullscreen" ? title : "Map picker"}
+    >
         {#if mode === "fullscreen"}
-            <header class="overlay__header">
-                <div class="bar__title">
-                    {#if title}<h3>{title}</h3>{/if}
-                    {#if hint}<p class="text-hint">{hint}</p>{/if}
-                </div>
-            </header>
+            <div class="overlay__scrim"></div>
         {/if}
 
-        <main class={mode === "fullscreen"
-            ? "overlay__body overlay__body--no-scroll mappicker__body"
-            : "mappicker__body"}
-        >
-            <div class="mappicker__stage">
-                <div class="mappicker__map-wrapper">
-                    <button
-                        type="button"
-                        bind:this={mapContainer}
-                        class="mappicker__map ui-pressable"
-                        on:click={mode === "preview" ? enterFullscreen : null}
-                        aria-label="Open map in fullscreen"
-                    ></button>
-                </div>
-            </div>
-        </main>
+        <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
+            {#if mode === "fullscreen"}
+                <header class="overlay__header">
+                    <div class="bar__title">
+                        {#if title}<h3>{title}</h3>{/if}
+                        {#if hint}<p class="text-hint">{hint}</p>{/if}
+                    </div>
+                </header>
+            {/if}
 
-        {#if mode === "fullscreen"}
-            <div class="overlay__actionbar">
-                <div class="overlay__actions">
-                    <button
-                        type="button"
-                        class="btn btn--ghost"
-                        on:click={() => exitToPreview(false)}
-                    >
-                        <Icon icon={UI_ICONS.close} class="btn__icon" />
-                        <span class="btn__label">Cancel</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn--primary"
-                        on:click={() => exitToPreview(true)}
-                    >
-                        <Icon icon={UI_ICONS.check} class="btn__icon" />
-                        <span class="btn__label">Confirm</span>
-                    </button>
+            <main class={mode === "fullscreen"
+                ? "overlay__body overlay__body--no-scroll mappicker__body"
+                : "mappicker__body"}
+            >
+                <div class="mappicker__stage">
+                    <div class="mappicker__map-wrapper">
+                        <button
+                            type="button"
+                            bind:this={mapContainer}
+                            class="mappicker__map ui-pressable"
+                            on:click={mode === "preview" ? enterFullscreen : null}
+                            aria-label="Open map in fullscreen"
+                        ></button>
+                    </div>
                 </div>
-            </div>
-        {/if}
+            </main>
+
+            {#if mode === "fullscreen"}
+                <div class="overlay__actionbar">
+                    <div class="overlay__actions">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={() => exitToPreview(false)}
+                        >
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
+                            <span class="btn__label">Cancel</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={() => exitToPreview(true)}
+                        >
+                            <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <span class="btn__label">Confirm</span>
+                        </button>
+                    </div>
+                </div>
+            {/if}
+        </div>
     </div>
-</div>
+</Overlay>
+
 
 <style>
     .mappicker__preview {
