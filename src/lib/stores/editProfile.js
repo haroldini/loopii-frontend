@@ -276,6 +276,7 @@ async function performProfileUpdate(changed, audioPayload) {
             text: "Profile updated.",
             autoHideMs: 3000,
         });
+        goto("/profile")
     } catch (err) {
         profileEditState.set("error");
         error.set(err.message || "Unexpected error saving profile");
@@ -364,7 +365,6 @@ export async function saveEdits() {
                     variant: "danger",
                     onClick: () => {
                         confirmCooldownSave();
-                        goto("/profile");
                     },
                 },
             ],
@@ -374,7 +374,6 @@ export async function saveEdits() {
     }
 
     await performProfileUpdate(changed, audioPayload);
-    goto("/profile");
 }
 
 
