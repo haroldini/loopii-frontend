@@ -6,6 +6,7 @@
     import { get } from "svelte/store";
     import { onMount } from "svelte";
     import { page } from "$app/stores";
+    import { preloadData } from "$app/navigation";
 
     import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
@@ -23,7 +24,8 @@
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
 
-    const LOADING_TIMEOUT = 8000; // 8 seconds
+    const LOADING_TIMEOUT = 5000; // 5 seconds
+    let didPreloadRoutes = false;
 
     let { children } = $props();
 
@@ -122,12 +124,28 @@
             $profileState === "loaded" &&
             $referencesStatus === "loaded"
         ) {
+            // Initialise stores that need auth + profile
             initPeerStore();
             initLoopsStore();
             initLoopRequestsStore();
             initNotificationSub();
+
+            // Preload main routes after auth + profile load
+            if (!didPreloadRoutes) {
+                didPreloadRoutes = true;
+                preloadData("/requests");
+                preloadData("/loops");
+                preloadData("/profile");
+                preloadData("/settings");
+                preloadData("/profile/edit");
+                preloadData("/profile/photos");
+                preloadData("/profile/visibility-preferences");
+                preloadData("/profile/search-preferences");
+            }
+
         } else if ($authState === "unauthenticated") {
             clearNotificationSub();
+            didPreloadRoutes = false;
         }
     });
 
