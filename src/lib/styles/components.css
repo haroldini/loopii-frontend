@@ -105,7 +105,7 @@
 }
 
 .switch__input:checked ~ .switch__track {
-    background: var(--accent);
+    background: var(--accent-secondary);
 }
 
 .switch__input:checked ~ .switch__thumb {

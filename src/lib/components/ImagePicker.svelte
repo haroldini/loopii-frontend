@@ -383,12 +383,15 @@
         border: var(--border-width) solid var(--border-color);
         background: var(--bg-surface);
 
-        transition: box-shadow 0.15s ease, background 0.15s ease;
+        outline: 0 solid transparent;
+        outline-offset: 0;
+        transition: outline-offset 0.15s ease;
     }
 
     .imagepicker__preview:hover {
-        box-shadow: var(--shadow-1);
-        background: var(--bg-hover);
+        border-color: transparent;
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
     }
 
     .imagepicker__preview-img {

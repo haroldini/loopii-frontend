@@ -141,6 +141,7 @@
 
 .btn--icon {
     width: 4.5rem;
+    border-radius: var(--radius-xl);
     justify-content: center;
 }
 
