@@ -1,10 +1,13 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ENVIRONMENT } from "$lib/utils/env.js";
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
 import { addToast } from "$lib/stores/popups.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -15,6 +18,7 @@ export const session = writable(null);
 export const resetToken = writable(null);
 export const authState = writable("loading"); 
 // "loading" | "unauthenticated" | "authenticated" | "recovery" | "error"
+
 
 // For dangerous actions that require confirmation phrase
 export const expectedPhrase = derived(user, ($user) => {
@@ -58,7 +62,7 @@ export async function initAuth() {
                 refresh_token: hashParams.get("refresh_token")
             });
             if (error) {
-                console.error("Error setting recovery session:", error.message);
+                if (isDev) console.error("Error setting recovery session:", error?.message || error);
                 authState.set("error");
                 return;
             }
@@ -71,7 +75,7 @@ export async function initAuth() {
         // Normal session lookup
         const { data, error } = await supabase.auth.getSession();
         if (error) {
-            console.error("Error getting session:", error.message);
+            if (isDev) console.error("Error getting session:", error?.message || error);
             authState.set("error");
             return;
         }
@@ -82,7 +86,6 @@ export async function initAuth() {
         // Subscribe to auth state changes once
         if (!authSub) {
             const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-                // console.log("auth event:", _event, newSession);
                 session.set(newSession);
                 user.set(newSession?.user ?? null);
                 authState.set(newSession?.user ? "authenticated" : "unauthenticated");
@@ -91,7 +94,6 @@ export async function initAuth() {
         }
 
     } catch (err) {
-        console.error("Unexpected error during auth init:", err);
         authState.set("error");
         addToast({
             variant: "banner",
@@ -101,7 +103,6 @@ export async function initAuth() {
         });
     } finally {
         if (get(authState) === "loading") {
-            console.warn("Auth finished without setting state. Defaulting to unauthenticated");
             authState.set("unauthenticated");
         }
     }
@@ -129,7 +130,7 @@ export function forceUnauth() {
         const key = `sb-${SUPABASE_URL}-auth-token`;
         localStorage.removeItem(key);
     } catch (err) {
-        console.warn("Failed to clear Supabase cache:", err);
+        if (isDev) console.warn("Failed to clear Supabase cache:", err);
     }
     authState.set("unauthenticated");
     user.set(null);
@@ -143,7 +144,7 @@ async function safeAuthCall(fn) {
         const { data, error } = await fn();
         if (error) {
             // If auth error, deauth user
-            if (error.status === 401 || error.status === 403) {
+            if (error?.status === 401 || error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
@@ -156,7 +157,6 @@ async function safeAuthCall(fn) {
         }
         return { data, error: null };
     } catch (err) {
-        console.error("Auth call failed:", err);
         return { data: null, error: normalizeError(err) };
     }
 }
@@ -193,14 +193,12 @@ export async function resetPasswordWithToken(newPassword) {
         supabase.auth.updateUser({ password: newPassword })
     );
     if (error) {
-        console.error("Error resetting password with token:", error);
         return { data: null, error };
     } 
 
     // Revoke all sessions if password was reset successfully
     const { error: signOutError } = await supabase.auth.signOut({ scope: "global" });
     if (signOutError) {
-        console.error("Error during global sign out:", signOutError);
         addToast({
             variant: "banner",
             text: "Password reset.",
@@ -216,7 +214,6 @@ export async function signOut(scope = "local") {
     try {
         const { error } = await supabase.auth.signOut({ scope });
         if (error && error.code !== "session_not_found") {
-            console.error(`Error signing out (${scope}):`, error);
             return { data: null, error: normalizeError(error) };
         }
         if (scope === "global") {
@@ -227,7 +224,6 @@ export async function signOut(scope = "local") {
             });
         }
     } catch (err) {
-        console.error(`Unexpected error during signOut (${scope}):`, err);
         if (scope === "global") {
             addToast({
                 variant: "banner",
@@ -259,7 +255,7 @@ export async function updatePassword(currentPassword, newPassword) {
                 description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session expired after password update" };
+            return { data: null, error: "Please sign in again to update your password" };
         }
 
         // Update client with new session
@@ -275,7 +271,7 @@ export async function updatePassword(currentPassword, newPassword) {
                 description: "Please sign in to continue.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session expired after password update" };
+            return { data: null, error: "Please sign in again to continue" };
         }
 
         session.set(newSession.session);
@@ -289,7 +285,7 @@ export async function updatePassword(currentPassword, newPassword) {
 
     } catch (err) {
         // If auth error, deauth user
-        if (err.status === 401 || err.status === 403) {
+        if (err?.status === 401 || err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",
@@ -315,13 +311,13 @@ export async function updateEmail(newEmail) {
                 description: "Please sign in again to update your email.",
                 autoHideMs: null,
             });
-            return { data: null, error: "No active user" };
+            return { data: null, error: "Please sign in again to update your email" };
         }
 
         // Attempt update
         const { data, error } = await supabase.auth.updateUser({ email: newEmail });
         if (error) {
-            if (error.status === 401 || error.status === 403) {
+            if (error?.status === 401 || error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
@@ -343,7 +339,7 @@ export async function updateEmail(newEmail) {
                 description: "Please sign in to continue.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session invalid after email update" };
+            return { data: null, error: "Please sign in to continue" };
         }
 
         session.set(refreshed.session);
@@ -383,7 +379,7 @@ export async function deleteAccount(currentPassword, confirmPhrase) {
 
     } catch (err) {
         // If auth error, deauth user
-        if (err.status === 401 || err.status === 403) {
+        if (err?.status === 401 || err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",

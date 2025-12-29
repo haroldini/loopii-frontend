@@ -13,6 +13,7 @@
 
     export let overlayHash = "#select-multiple";
 
+
     // keys (works for countries, interests, languages)
     export let valueKey = "id";
     export let labelKey = "name";
@@ -32,6 +33,7 @@
     export let value = []; // bind:value from parent
     export let disabled = false;
 
+
     const dispatch = createEventDispatcher();
 
     let overlay;
@@ -42,6 +44,7 @@
 
     let searchEl;
     let groupCheckboxEls = {};
+
 
     function normArray(v) {
         return Array.isArray(v) ? v : [];

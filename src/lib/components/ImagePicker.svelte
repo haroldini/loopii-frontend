@@ -9,10 +9,12 @@
 
     const dispatch = createEventDispatcher();
 
+
     // ===== Overlay Management =====
 
     export let overlayHash = "#select-image";
     let overlay;
+
 
     // ===== Image Picker Logic =====
 
@@ -37,6 +39,7 @@
 
     // Persisted crop states per source URL
     const lastStates = new Map();
+
 
     // --- Helpers ---
     function revokeUrl(u) {
@@ -70,6 +73,7 @@
             if (saved.data) cropper.setData(saved.data);
         } catch {}
     }
+
 
     // --- Public API ---
     export async function open() {
@@ -213,6 +217,7 @@
         });
     }
 
+
     // --- Lifecycle ---
     onMount(() => {
         if (initialOriginalUrl) {
@@ -226,6 +231,7 @@
         }
     });
 
+    
     // --- Cleanup ---
     onDestroy(() => {
         revokeUrl(originalUrl);

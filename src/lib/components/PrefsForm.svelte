@@ -96,7 +96,7 @@
         }
 
         if (hasMin && hasMax && minVal > maxVal) {
-            return "Minimum age cannot be greater than maximum age.";
+            return "Minimum age can't be greater than maximum age.";
         }
 
         return null;

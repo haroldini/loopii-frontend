@@ -3,11 +3,15 @@ import { goto } from "$app/navigation";
 import { writable, get, derived } from "svelte/store";
 import { profile } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
-import { normalizeProfile } from "$lib/utils/normalizers.js";
+import { normalizeProfile, ensureFullStop } from "$lib/utils/normalizers.js";
 import { updateProfile } from "$lib/api/profile.js";
 import { uploadProfileAudio, deleteProfileAudio } from "$lib/api/audio.js";
-import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
+import { allPlatforms } from "$lib/stores/app.js";
 import { addToast } from "$lib/stores/popups.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 
 // For user confirmation on changing certain fields
@@ -234,15 +238,18 @@ async function performProfileUpdate(changed, audioPayload) {
         // Handle audio delete / upload
         const wantDelete = !!(audioPayload && audioPayload.delete);
         const hasExistingAudio = !!currentProfile?.audio?.id;
+        let deletedAudioOk = false;
+        let uploadedAudioOk = false;
 
         if (wantDelete && hasExistingAudio) {
             try {
                 await deleteProfileAudio(currentProfile.audio.id);
+                deletedAudioOk = true;
             } catch (err) {
-                console.error("Error deleting profile audio:", err);
+                if (isDev) console.error("Error deleting profile audio:", err);
                 addToast({
                     text: "Failed to delete voice intro.",
-                    description: err.message || "You can try again later.",
+                    description: err.message ? ensureFullStop(err.message) : "Please try again later.",
                     autoHideMs: 5000,
                 });
             }
@@ -250,18 +257,28 @@ async function performProfileUpdate(changed, audioPayload) {
 
         let newAudio = null;
         if (audioPayload && audioPayload.blob) {
-            newAudio = await uploadProfileAudio(audioPayload.blob);
+            try {
+                newAudio = await uploadProfileAudio(audioPayload.blob);
+                uploadedAudioOk = true;
+            } catch (err) {
+                if (isDev) console.error("Error uploading profile audio:", err);
+                addToast({
+                    text: "Failed to upload voice intro.",
+                    description: err?.message ? ensureFullStop(err.message) : "Please try again later.",
+                    autoHideMs: 5000,
+                });
+            }
         }
 
         let mergedProfile = {
             ...updatedProfile,
         };
 
-        if (wantDelete) {
+        if (wantDelete && (!hasExistingAudio || deletedAudioOk)) {
             mergedProfile.audio = null;
         }
 
-        if (newAudio) {
+        if (uploadedAudioOk && newAudio) {
             mergedProfile.audio = newAudio;
         }
 
@@ -277,13 +294,14 @@ async function performProfileUpdate(changed, audioPayload) {
             autoHideMs: 3000,
         });
         goto("/profile")
+
     } catch (err) {
         profileEditState.set("error");
-        error.set(err.message || "Unexpected error saving profile");
-        console.error("Error updating profile:", err);
+        error.set(err.message || "Couldn't update profile");
+        if (isDev) console.error("Error updating profile:", err);
         addToast({
             text: "Profile update failed.",
-            description: err.message || "We couldn't save your changes. Please try again later.",
+            description: err.message ? ensureFullStop(err.message) : "Please try again later.",
             autoHideMs: 5000,
         });
     }

@@ -1,5 +1,9 @@
 
 import { writable, derived } from "svelte/store";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 
 // Local toasts
@@ -19,7 +23,6 @@ export function addToast({
     actions = null,
 } = {}) {
     const id = `toast-${++nextId}`;
-    console.log("Adding toast:", id, text, props);
     const toast = {
         id,
         variant,
@@ -45,43 +48,38 @@ export function dismissToast(id) {
 export const allPopups = derived(toasts, ($t) =>
     $t.map((t) => ({
         ...t,
-        // Close the toast and call onDismiss if provided
-        onDismiss: () => {
+
+        onDismiss: (id) => {
             try {
-                if (typeof t.onDismiss === "function") t.onDismiss();
+                if (typeof t.onDismiss === "function") t.onDismiss(id);
             } catch (err) {
-                console.error("Toast onDismiss handler threw:", err);
+                if (isDev) console.error("Toast onDismiss handler threw:", err);
             }
-            dismissToast(t.id);
+            dismissToast(id);
         },
-        // Close the toast and call onAction if provided
+
         onAction: t.onAction
-            ? () => {
+            ? (id) => {
                   try {
-                      t.onAction(t.id);
+                      t.onAction(id);
                   } catch (err) {
-                      console.error("Toast onAction handler threw:", err);
+                      if (isDev) console.error("Toast onAction handler threw:", err);
                   }
-                  dismissToast(t.id);
+                  dismissToast(id);
               }
             : null,
-        
-        // Modal actions: each button gets a wrapped onClick
+
         actions: Array.isArray(t.actions)
             ? t.actions.map((a) => ({
                   ...a,
-                  onClick: a.onClick
-                      ? (id) => {
-                            try {
-                                a.onClick(t.id);
-                            } catch (err) {
-                                console.error("Toast action handler threw:", err);
-                            }
-                            dismissToast(t.id);
-                        }
-                      : () => {
-                            dismissToast(t.id);
-                        },
+                  onClick: (id) => {
+                      try {
+                          if (typeof a.onClick === "function") a.onClick(id);
+                      } catch (err) {
+                          if (isDev) console.error("Toast action handler threw:", err);
+                      }
+                      dismissToast(id);
+                  },
               }))
             : null,
     }))

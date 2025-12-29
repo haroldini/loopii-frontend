@@ -1,13 +1,12 @@
 
 <script>
-    import { onMount, onDestroy } from "svelte";
-    import { get } from "svelte/store";
+    import { onDestroy } from "svelte";
     import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
 
     import { UI_ICONS } from "$lib/stores/app.js";
     import { 
-        user, signInWithEmail, signUpWithEmail, requestPasswordReset, 
+        signInWithEmail, signUpWithEmail, requestPasswordReset, 
         resetPasswordWithToken, resetToken, authState
     } from "$lib/stores/auth.js";
 
@@ -82,7 +81,7 @@
 
             // Show error if exists
             if (result.error) {
-                error.set(result.error || "Something went wrong");
+                error.set(result.error || "Something went wrong. Please try again later");
                 showForm.set(true);
             }
         } finally {
@@ -160,7 +159,7 @@
                 <input
                     id="auth-password"
                     type="password"
-                    autocomplete={$subPage === "reset" ? "New password" : "Password"}
+                    autocomplete={$subPage === "reset" ? "new-password" : "current-password"}
                     placeholder={$subPage === "reset" ? "New password" : "Password"}
                     value={$password}
                     on:input={(e) => {

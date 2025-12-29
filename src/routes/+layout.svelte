@@ -267,10 +267,10 @@
                 <div class="section stack">
                     <Icon icon={UI_ICONS.animFailed} class="icon--large" />
                     <p class="text-center">Sorry, loopii is taking longer than expected to load.</p>
-                    <p class="text-center text-hint">Try refreshing, or log out and log back in.</p>
+                    <p class="text-center text-hint">Try again, or log out and log back in.</p>
                     <div class="actionbar">
                         <button type="button" class="btn btn--primary btn--block" onclick={refreshPage}>
-                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Refresh
+                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Try again
                         </button>
                         <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                             <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out

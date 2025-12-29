@@ -12,6 +12,7 @@
     export let overlayHash = "#select-location";
     let overlay;
 
+
     // ─── Props passed into the component ─────────────────────────────────────────
     export let mode = "preview";   // "preview" (small static view) or "fullscreen"
     export let lat = 51.505;       // initial latitude (default: London)
@@ -21,10 +22,12 @@
     export let title = "Select location";                       // fullscreen title
     export let hint = "Pin the location on the map";            // fullscreen hint text
 
+
     // ─── Constants and utility functions ────────────────────────────────────────
     const FALLBACK_LAT = 51.505;
     const FALLBACK_LNG = -0.09;
     const finiteOr = (v, fb) => (typeof v === "number" && Number.isFinite(v) ? v : fb);
+
 
     // ─── Local state ─────────────────────────────────────────────────────────────
     let interactable = mode === "fullscreen";  // interactive only in fullscreen
@@ -228,7 +231,7 @@
                 map.removeLayer(circle);
                 circle = null;
             }
-            // No radius → just center on confirmed point at default zoom
+            // No radius -> just center on confirmed point at default zoom
             centerOnConfirmed();
         }
     }

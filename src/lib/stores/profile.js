@@ -1,8 +1,12 @@
 
-import { get, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 import { getProfile } from "$lib/api/profile.js";
 import { authState, forceUnauth } from "$lib/stores/auth.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 
 // For profile data and state
@@ -49,7 +53,7 @@ export async function initProfile() {
         }
 
         // Other errors
-        console.error("initProfile failed:", err);
+        if (isDev) console.error("initProfile failed:", err);
         profile.set(null);
         profileState.set("error");
     }
