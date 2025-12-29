@@ -1,7 +1,8 @@
 
 <script>
     import { createEventDispatcher, onDestroy, onMount } from "svelte";
-
+    import { browser } from "$app/environment";
+    
     export let open = false;
     export let hash = null;
 
@@ -17,8 +18,6 @@
 
     // ===== Overlay Management =====
 
-    let suppressNextHash = false;
-
     export function lockScroll() {
         document.documentElement.classList.add("overlay-open");
         document.body.classList.add("overlay-open");
@@ -29,30 +28,25 @@
         document.body.classList.remove("overlay-open");
     }
 
-    export function openOverlayHash() {
-        if (!hash) return;
-        if (window.location.hash === hash) return;
-        suppressNextHash = true;
-        window.location.hash = hash;
-    }
-
-    export function closeOverlayHash() {
-        if (!hash) return;
-        if (window.location.hash !== hash) return;
-        suppressNextHash = true;
-        history.back();
-    }
-
     export function openOverlay() {
+        if (typeof window === "undefined") return;
+
         lockScroll();
-        openOverlayHash();
+
+        if (hash && window.location.hash !== hash) {
+            window.location.hash = hash;
+        }
     }
 
-    export function closeOverlay(options = {}) {
-        const { fromHash = false } = options;
+    export function closeOverlay() {
+        if (typeof window === "undefined") return;
 
-        if (!fromHash) {
-            closeOverlayHash();
+        if (hash && window.location.hash === hash) {
+            history.replaceState(
+                null,
+                "",
+                window.location.pathname + window.location.search
+            );
         }
 
         unlockScroll();
@@ -61,13 +55,17 @@
     function onHashChange() {
         if (!hash) return;
 
-        if (suppressNextHash) {
-            suppressNextHash = false;
-            return;
-        }
-
         if (open && window.location.hash !== hash) {
             unlockScroll();
+            dispatch("requestClose");
+        }
+    }
+
+    function onKeydown(e) {
+        if (!open) return;
+        if (e.key === "Escape") {
+            e.preventDefault();
+            closeOverlay();
             dispatch("requestClose");
         }
     }
@@ -75,11 +73,13 @@
     onMount(() => {
         if (typeof window === "undefined") return;
         window.addEventListener("hashchange", onHashChange);
+        window.addEventListener("keydown", onKeydown);
     });
 
     onDestroy(() => {
         if (typeof window !== "undefined") {
             window.removeEventListener("hashchange", onHashChange);
+            window.removeEventListener("keydown", onKeydown);
         }
         unlockScroll();
     });

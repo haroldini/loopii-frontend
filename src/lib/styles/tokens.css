@@ -16,6 +16,7 @@
     /* Spacing */
     --space-1: 0.3rem;
     --space-2: 0.6rem;
+    --space-2-5: 0.9rem;
     --space-3: 1.2rem;
     --space-4: 1.8rem;
     --space-5: 2.4rem;
@@ -60,7 +61,7 @@
     --z-toast: 1200;
 
     /* Scrims */
-    --scrim-1: rgba(0, 0, 0, 0.45);
+    --scrim-1: rgba(0, 0, 0, 0.65);
 
     /* Shadows (system + micro) */
     --shadow-1: 0 8px 20px rgba(0, 0, 0, 0.25);

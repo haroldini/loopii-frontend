@@ -2,9 +2,8 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import Icon from "@iconify/svelte";
-    import { getAvatarUrl } from "$lib/utils/profile.js";
+    import { getAvatarUrl, timeAgo } from "$lib/utils/profile.js";
     import { countryMap, GENDER_ICONS, UI_ICONS } from "$lib/stores/app.js";
-    import { timeAgo } from "$lib/utils/misc.js";
 
     export let profile;
     export let loop = null;

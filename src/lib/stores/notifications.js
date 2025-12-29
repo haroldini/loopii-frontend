@@ -9,8 +9,12 @@ import { getProfileFromLoop, updateLoopState } from "$lib/api/loop.js";
 import { upsertRequestItem,selectedRequest, loopRequests } from "$lib/stores/loopRequests.js";
 import { upsertLoopItem, selectedLoop, loops, adjustNewLoopsCount } from "$lib/stores/loops.js";
 import { addToast } from "$lib/stores/popups.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
 import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
 
+
+const isDev = ENVIRONMENT === "dev";
 
 
 // ---------------- Notification Type Resolver ---------------- //
@@ -97,7 +101,7 @@ export async function initNotificationSub() {
             },
             async (payload) => {
                 const n = payload.new;
-                console.log("New notification received:", n);
+                if (isDev) console.debug("Notification received:", { id: n?.id, type: n?.type, data: n?.data });
 
                 try {
                     // Loop notification with profile card + /loops nav
@@ -113,11 +117,11 @@ export async function initNotificationSub() {
                             profile = data?.profile ?? null;
                             loop = data?.loop ?? null;
                             if (!profile || !loop) {
-                                console.error("Notification dropped: profile or loop not found", loopId);
+                                if (isDev) console.debug("Notification dropped:", { reason: "profile_or_loop_missing", loopId });
                                 return;
                             }
                         } catch (err) {
-                            console.error("Notification dropped: failed to load profile/loop:", err);
+                            if (isDev) console.debug("Notification dropped:", { reason: "load_profile_loop_failed", loopId, error: err?.message || String(err) });
                             return;
                         }
 
@@ -146,13 +150,17 @@ export async function initNotificationSub() {
                                 if (!wasSeen) {
                                     adjustNewLoopsCount();
                                 }
-                                updateLoopState(loopId, { is_seen: true }).catch(console.error);
+                                updateLoopState(loopId, { is_seen: true }).catch((err) => {
+                                    if (isDev) console.error("Failed to mark loop as seen:", err);
+                                });
 
                             } else {
                                 const wasSeen = !!loop?.is_seen;
                                 selectedLoop.set({ loop, profile });
                                 if (!wasSeen) adjustNewLoopsCount();
-                                updateLoopState(loopId, { is_seen: true }).catch(console.error);
+                                updateLoopState(loopId, { is_seen: true }).catch((err) => {
+                                    if (isDev) console.error("Failed to mark loop as seen:", err);
+                                });
                             }
 
                             goto("/loops");
@@ -178,7 +186,7 @@ export async function initNotificationSub() {
 							item = await getRequestByDecider(deciderId);
 							if (!item?.decision || !item?.profile) return;
 						} catch (err) {
-							console.error("Notification dropped: failed to load request:", err);
+							if (isDev) console.debug("Notification dropped:", { reason: "load_request_failed", deciderId, error: err?.message || String(err) });
 							return;
 						}
 
@@ -219,12 +227,12 @@ export async function initNotificationSub() {
                         });
                     }
 				} catch (err) {
-					console.error("Error handling notification payload:", err);
+					if (isDev) console.error("Notification handler error:", err);
 				}
 			}
 		)
         .subscribe((status, err) => {
-            console.log("Notification channel:", status, err ?? "");
+            if (isDev) console.debug("Notification channel:", { status, error: err ?? null });
         });
 
     notificationChannel = ch;
@@ -232,7 +240,7 @@ export async function initNotificationSub() {
 
 export function clearNotificationSub() {
     if (notificationChannel) {
-        console.log("Unsubscribing from notifications");
+        if (isDev) console.debug("Unsubscribing from notifications");
         supabase.removeChannel(notificationChannel);
         notificationChannel = null;
     }

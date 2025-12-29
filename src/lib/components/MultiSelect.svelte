@@ -13,6 +13,7 @@
 
     export let overlayHash = "#select-multiple";
 
+
     // keys (works for countries, interests, languages)
     export let valueKey = "id";
     export let labelKey = "name";
@@ -32,6 +33,7 @@
     export let value = []; // bind:value from parent
     export let disabled = false;
 
+
     const dispatch = createEventDispatcher();
 
     let overlay;
@@ -42,6 +44,7 @@
 
     let searchEl;
     let groupCheckboxEls = {};
+
 
     function normArray(v) {
         return Array.isArray(v) ? v : [];
@@ -139,7 +142,7 @@
         });
     }
 
-    function closeOverlay(confirm = false, fromHash = false) {
+    function closeOverlay(confirm = false) {
         if (confirm) {
             value = [...draft];
             dispatch("change", { value });
@@ -149,7 +152,7 @@
         }
 
         isOpen = false;
-        overlay?.closeOverlay({ fromHash });
+        overlay?.closeOverlay();
         groupCheckboxEls = {};
     }
 
@@ -355,12 +358,18 @@
         closedClass="u-hidden"
         renderOpenOnly={false}
         ariaLabel={title}
-        on:requestClose={() => closeOverlay(false, true)}
+        on:requestClose={() => closeOverlay(false)}
     >
         {#if isOpen}
-            <div class="overlay__scrim"></div>
+            <button
+                type="button"
+                class="overlay__scrim"
+                aria-hidden="true"
+                tabindex="-1"
+                on:click={() => closeOverlay(false)}
+            ></button>
 
-            <div class="overlay__panel">
+            <div class="overlay__panel multiselect__panel">
                 <!-- Header -->
                 <header class="overlay__header">
                     <div class="bar__title">
@@ -471,31 +480,34 @@
                 <!-- Bottom actionbar -->
                 <div class="overlay__actionbar">
                     <div class="overlay__actions">
-                        <button
-                            type="button"
-                            class="btn btn--ghost"
-                            on:click={() => closeOverlay(false)}
-                        >
-                            <Icon icon={UI_ICONS.close} class="btn__icon" />
-                            <span class="btn__label">Cancel</span>
-                        </button>
+                        <div class="overlay__actions-left">
+                            <button
+                                type="button"
+                                class="btn btn--ghost"
+                                on:click={() => closeOverlay(false)}
+                            >
+                                <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                <span class="btn__label">Cancel</span>
+                            </button>
+                        </div>
+                        <div class="overlay__actions-right">
+                            <span
+                                class={"multi-select__headerCount text-muted " + (atMax ? "is-at-max" : "")}
+                                aria-live="polite"
+                            >
+                                {headerCountText}
+                            </span>
 
-                        <span
-                            class={"multi-select__headerCount text-muted " + (atMax ? "is-at-max" : "")}
-                            aria-live="polite"
-                        >
-                            {headerCountText}
-                        </span>
-
-                        <button
-                            type="button"
-                            class="btn btn--primary"
-                            on:click={() => closeOverlay(true)}
-                            disabled={doneDisabled}
-                        >
-                            <Icon icon={UI_ICONS.check} class="btn__icon" />
-                            <span class="btn__label">Done</span>
-                        </button>
+                            <button
+                                type="button"
+                                class="btn btn--primary"
+                                on:click={() => closeOverlay(true)}
+                                disabled={doneDisabled}
+                            >
+                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                <span class="btn__label">Done</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -512,6 +524,16 @@
         justify-content: space-between;
         gap: var(--space-2);
         text-align: left;
+    }
+
+    @media (min-width: 768px) {
+        .multiselect__panel {
+            max-width: 32rem;
+            width: min(32rem, calc(100% - var(--space-4)));
+            height: auto;
+            max-height: min(92vh, 900px);
+            margin: 0 auto;
+        }
     }
 
     .multi-select__control:hover {

@@ -2,11 +2,17 @@
 import { writable, get } from "svelte/store";
 import { getUserLoops, deleteLoop as apiDeleteLoop } from "$lib/api/loop.js";
 import { addToast } from "$lib/stores/popups.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
+
 
 export const loops = writable([]);
 export const selectedLoop = writable(null);
 export const loopsTotal = writable(0);
 export const newLoopsCount = writable(0);
+
 
 // Adjust the backend-driven unseen loops badge by a delta (default -1). Clamped to 0.
 export function adjustNewLoopsCount(delta = -1) {
@@ -16,6 +22,7 @@ export function adjustNewLoopsCount(delta = -1) {
 	});
 }
 
+
 export const loopsState = writable({
 	limit: 20,
 	end: false,
@@ -24,10 +31,8 @@ export const loopsState = writable({
 	cursorId: null,
 });
 
-export const loopsStatus = writable("unloaded");
 
-// Per-session flag: when false, delete confirmation is skipped.
-// Call resetLoopDeleteConfirmPreference() on component unmount to restore prompting.
+export const loopsStatus = writable("unloaded");
 export const loopDeleteConfirmEnabled = writable(true);
 
 
@@ -48,10 +53,10 @@ function sortLoops(items) {
     });
 }
 
-// --- Helper: dedupe by loop.id (keeps last occurrence) ---
+// --- Helper: dedupe by loop.id ---
 function dedupeByLoopId(items) {
     const map = new Map();
-    for (const it of items) {
+	for (const it of items || []) {
         const id = it?.loop?.id;
         if (id) map.set(id, it);
     }
@@ -92,14 +97,12 @@ export function upsertLoopItem(item) {
 }
 
 
-// Initialize loops on first visit
 export async function initLoopsStore() {
 	if (get(loopsStatus) !== "unloaded") return;
 	await loadInitialLoops();
 }
 
 
-// Load initial loops
 export async function loadInitialLoops() {
 	const s = get(loopsState);
 	if (s.loading) return;
@@ -120,7 +123,7 @@ export async function loadInitialLoops() {
 		newLoopsCount.set(unseen_total || 0);
 
 		loopsState.set({
-			...s,
+			limit: s.limit,
 			loading: false,
 			initialized: true,
 			end: !has_more,
@@ -128,14 +131,13 @@ export async function loadInitialLoops() {
 		});
 		loopsStatus.set("loaded");
 	} catch (err) {
-		console.error("Failed to load loops:", err);
+		if (isDev) console.error("loadInitialLoops failed:", { status: err?.status, message: err?.message });
 		loopsStatus.set("error");
 		loopsState.update((x) => ({ ...x, loading: false }));
 	}
 }
 
 
-// Load more loops (pagination)
 export async function loadMoreLoops() {
 	const s = get(loopsState);
 	if (s.loading || s.end) return;
@@ -158,19 +160,18 @@ export async function loadMoreLoops() {
 		if (unseen_total !== undefined) newLoopsCount.set(unseen_total || 0);
 
 		loopsState.set({
-			...s,
+			limit: s.limit,
 			loading: false,
 			end: !has_more,
 			cursorId: next_cursor ?? s.cursorId,
 		});
 	} catch (err) {
-		console.error("Failed to load more loops:", err);
+		if (isDev) console.error("loadMoreLoops failed:", { status: err?.status, message: err?.message });
 		loopsState.update((x) => ({ ...x, loading: false }));
 	}
 }
 
 
-// Refresh loops (reload from scratch)
 export async function refreshLoopsStore() {
 	const s = get(loopsState);
 	if (s.loading) return;
@@ -201,7 +202,7 @@ export async function refreshLoopsStore() {
 		newLoopsCount.set(unseen_total || 0);
 
 		loopsState.set({
-			...s,
+			limit: s.limit,
 			end: !has_more,
 			loading: false,
 			initialized: true,
@@ -209,7 +210,7 @@ export async function refreshLoopsStore() {
 		});
 		loopsStatus.set("loaded");
 	} catch (err) {
-		console.error("Failed to refresh loops:", err);
+		if (isDev) console.error("refreshLoopsStore failed:", { status: err?.status, message: err?.message });
 		loopsStatus.set("error");
 		loopsState.update((x) => ({ ...x, loading: false }));
 	}
@@ -250,12 +251,11 @@ function removeLoopLocally(loopId) {
 }
 
 
-// --- Perform delete once user has confirmed (or confirmation skipped) ---
-// Optimistic: update UI first, revert on failure.
+// --- Perform delete once user has confirmed ---
 async function performLoopDelete(loopId) {
 	if (!loopId) return;
 
-	// Snapshot current state for potential rollback
+	// Snapshot state for potential rollback
 	const prevLoops = get(loops);
 	const prevTotal = get(loopsTotal);
 	const prevNewCount = get(newLoopsCount);
@@ -269,13 +269,8 @@ async function performLoopDelete(loopId) {
 
 	try {
 		await apiDeleteLoop(loopId);
-		addToast({
-			text: "Loop removed.",
-			description: "The profile has been removed from your loops.",
-			autoHideMs: 3000,
-		});
 	} catch (err) {
-		console.error("Failed to delete loop:", err);
+		if (isDev) console.error("performLoopDelete failed:", { status: err?.status, message: err?.message, loopId });
 
 		// Roll back optimistic changes
 		loops.set(prevLoops);
@@ -297,7 +292,6 @@ async function performLoopDelete(loopId) {
 export function confirmLoopDelete(loopId) {
 	if (!loopId) return;
 
-	// If user has chosen "don't ask again" in this session, delete immediately
 	if (!get(loopDeleteConfirmEnabled)) {
 		void performLoopDelete(loopId);
 		return;
@@ -305,7 +299,7 @@ export function confirmLoopDelete(loopId) {
 
 	addToast({
 		variant: "modal",
-		text: "Delete this loop?",
+		text: "Delete loop?",
 		description: "This will permanently remove this loop from your account.",
 		autoHideMs: null,
 		actions: [
@@ -321,7 +315,7 @@ export function confirmLoopDelete(loopId) {
 				},
 			},
 			{
-				label: "Delete and don't ask again",
+				label: "Don't ask again",
 				variant: "danger",
 				onClick: () => {
 					loopDeleteConfirmEnabled.set(false);
@@ -333,7 +327,7 @@ export function confirmLoopDelete(loopId) {
 }
 
 
-// Reset preference so confirmation is shown again (call on component unmount)
+// Reset preference so confirmation is shown again
 export function resetLoopDeleteConfirmPreference() {
 	loopDeleteConfirmEnabled.set(true);
 }

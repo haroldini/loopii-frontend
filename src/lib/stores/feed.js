@@ -1,6 +1,11 @@
 
 import { writable, get } from "svelte/store";
 import { getFeedProfiles, evaluatePeer } from "$lib/api/feed.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
+
 
 export const peer = writable(null);
 export const peerQueue = writable([]);               // queue[0] is the current peer (not removed until evaluated)
@@ -29,7 +34,7 @@ export async function fetchPeerBatch() {
 
             return { ok: true, added };
         } catch (err) {
-            console.error("fetchPeerBatch error:", err);
+            if (isDev) console.error("fetchPeerBatch failed:", { status: err?.status, message: err?.message });
             const status = err?.status;
             if (status === 403) {
                 peerStatus.set("hidden");
@@ -97,7 +102,6 @@ export async function initPeerStore() {
 // Handle user decision on current peer (connect or skip), advance to next peer instantly.
 export function handleDecision(connect) {
     const current = get(peer);
-    console.log("handleDecision", { current, connect });
     if (!current) return;
 
     const peerId = current.id;
@@ -107,11 +111,8 @@ export function handleDecision(connect) {
         try {
             ongoingEvaluations.update(ids => [...ids, peerId])
             const result = await evaluatePeer(peerId, connect);
-            if (result.looped) {
-                console.log("Looped with peer:");
-            }
         } catch (err) {
-            console.error("Error evaluating peer:", err);
+            if (isDev) console.error("evaluatePeer failed:", { peerId, connect, status: err?.status, message: err?.message });
         } finally {
             ongoingEvaluations.update(ids => ids.filter(id => id !== peerId));
         }
@@ -119,7 +120,6 @@ export function handleDecision(connect) {
 
     // Advance immediately
     peerQueue.update(q => q.slice(1));
-    console.log("Queue after decision:", get(peerQueue));
 
     if (get(peerQueue).length === 0) {
         peer.set(null);

@@ -3,13 +3,11 @@
     import { createEventDispatcher, onMount } from "svelte";
     import Icon from "@iconify/svelte";
     import { UI_ICONS, platformMap, interestMap } from "$lib/stores/app.js";
-    import { getAvatarUrl } from "$lib/utils/profile.js";
+    import { getAvatarUrl, timeAgo, buildSocialLink } from "$lib/utils/profile.js";
 
     import ProfileMediaCarousel from "$lib/components/ProfileMediaCarousel.svelte";
     import ProfileHeader from "$lib/components/ProfileHeader.svelte";
 
-    import { buildSocialLink } from "$lib/utils/urls.js";
-    import { timeAgo } from "$lib/utils/misc.js";
     import { addToast } from "$lib/stores/popups.js";
     
     export let profile;
@@ -88,6 +86,7 @@
         };
     });
 
+
     // Derived data
 
     $: socialPlatforms =
@@ -98,6 +97,7 @@
 
     $: displayName = profile?.name || profile?.username;
 
+    
     // UI Functions
 
     let lastCopied = null;

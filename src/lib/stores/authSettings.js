@@ -1,6 +1,6 @@
 
-import { writable, derived, get } from  "svelte/store";
-import { user, expectedPhrase } from "$lib/stores/auth.js";
+import { writable, derived, get } from "svelte/store";
+import { expectedPhrase } from "$lib/stores/auth.js";
 
 
 ///// --- Form state ---
@@ -39,7 +39,9 @@ function validateForm($mode, $currentPassword, $newPassword, $confirmNewPassword
     if ($mode === "password") {
         // Password required and must match
         if (!$newPassword) errors.push({ message: "New password is required", display: false });
-        if ($newPassword !== $confirmNewPassword) {
+        if (!$confirmNewPassword) {
+            errors.push({ message: "Confirm password is required", display: false });
+        } else if ($newPassword !== $confirmNewPassword) {
             errors.push({ message: "Passwords do not match", display: true });
         }
         // Password complexity requirements
@@ -64,7 +66,9 @@ function validateForm($mode, $currentPassword, $newPassword, $confirmNewPassword
 
         if (!e1) errors.push({ message: "New email is required", display: true });
         if (e1 && !re.test(e1)) errors.push({ message: "Email is not valid", display: true });
-        if (e1 !== e2) errors.push({ message: "Emails do not match", display: true });
+        if (!e2) errors.push({ message: "Confirm email is required", display: false });
+        else if (e1 !== e2) errors.push({ message: "Emails do not match", display: true });
+
     
     // If deleting account, require the dangerous confirm phrase
     } else if ($mode === "delete") {

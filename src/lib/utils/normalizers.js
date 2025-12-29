@@ -5,6 +5,12 @@ import { allPlatforms } from "$lib/stores/app.js";
 
 // ---- Helpers ----
 
+export function ensureFullStop(s) {
+    if (!s || typeof s !== "string") return s;
+    const t = s.trim();
+    return t.endsWith(".") ? t : `${t}.`;
+}
+
 export function normalizeString(v, { lower = false } = {}) {
     if (v == null) return null;
     const trimmed = v.trim();

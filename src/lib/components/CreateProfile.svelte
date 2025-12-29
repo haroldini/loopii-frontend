@@ -1,24 +1,23 @@
 
 <script>
-	import { onMount, onDestroy } from "svelte";
+	import { onDestroy, tick } from "svelte";
+    import { get } from "svelte/store";
     import Icon from "@iconify/svelte";
-	import { get } from "svelte/store";
-	import { user, signOut } from "$lib/stores/auth.js";
 	import { allCountries, allInterests, allPlatforms, UI_ICONS } from "$lib/stores/app.js";
 	import { 
 		username, name, dob, gender, country, bio, loop_bio, looking_for,
 		latitude, longitude, location, selectedInterests, socials, avatarUrl, avatarFile,
-		error, readyToSubmit, validationErrors, currentPage, prefsState, resetAllCreateProfile, 
-		profileFormState, submitProfile, resetState, submissionProgress, avatarOriginalUrl, avatarCropState,
+		error, readyToSubmit, validationErrors, currentPage, prefsState, 
+		profileFormState, submitProfile, resetState, avatarOriginalUrl, avatarCropState,
 		updateHandle, removeSocial, usernameAvailability, ensureUsernameAvailable
 	} from "$lib/stores/createProfile.js";
 
 	import ImagePicker from "$lib/components/ImagePicker.svelte";
 	import ProfileFields from "$lib/components/ProfileFields.svelte";
 	import PrefsForm from "$lib/components/PrefsForm.svelte";
-    import { goto } from "$app/navigation";
 
 	let avatarPicker;
+
 
 	// fallback message timer for loading app after profile creation
     let showFallback = false;
@@ -98,7 +97,7 @@
         if (!$readyToSubmit) return;
         const ok = await ensureUsernameAvailable();
         if (!ok) return;
-        $currentPage = 1;
+        currentPage.set(1);
     }
 
 </script>
@@ -182,9 +181,6 @@
                                 type="button"
                                 class="btn btn--danger"
                                 on:click={() => {
-                                    if (typeof $avatarFile === "string" && $avatarFile.startsWith("blob:")) {
-                                        try { URL.revokeObjectURL($avatarFile); } catch {}
-                                    }
                                     avatarFile.set(null);
                                     avatarOriginalUrl.set(null);
                                     avatarCropState.set(null);
@@ -312,7 +308,7 @@
 
             <div class="row row--between">
                 <button type="button" class="btn btn--ghost btn--block" on:click={() => ($currentPage = 2)}>
-                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label"> Back</span>
+                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon"/><span class="btn__label">Back</span>
                 </button>
 
                 <button

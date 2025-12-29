@@ -1,7 +1,66 @@
 
 import { get } from "svelte/store";
-import { API_URL } from "$lib/utils/env.js";
-import { session } from "$lib/stores/auth.js"; 
+import { API_URL, ENVIRONMENT } from "$lib/utils/env.js";
+import { session } from "$lib/stores/auth.js";
+
+
+const isDev = ENVIRONMENT === "dev";
+
+
+function stripTrailingFullStop(message) {
+    if (typeof message !== "string") return message;
+    const trimmed = message.trim();
+
+    // Strip exactly one trailing "." (leave ".." / "..." intact)
+    if (trimmed.endsWith(".") && !trimmed.endsWith("..")) {
+        return trimmed.slice(0, -1).trim();
+    }
+
+    return trimmed;
+}
+
+
+function parseErrorMessage(payload, fallback) {
+    let message = fallback || "Request failed";
+
+    const detail = payload?.detail;
+    if (!detail) {
+        return stripTrailingFullStop(message);
+    }
+
+    if (Array.isArray(detail)) {
+        message = detail
+            .map((x) => {
+                const msg = x?.msg ?? String(x);
+
+                const loc = Array.isArray(x?.loc)
+                    ? x.loc
+                        .filter(Boolean)
+                        .filter((p) => p !== "body" && p !== "query" && p !== "path")
+                        .join(".")
+                    : null;
+
+                return loc ? `${loc}: ${msg}` : msg;
+            })
+            .join("; ");
+
+        return stripTrailingFullStop(message);
+    }
+
+    if (typeof detail === "string") {
+        return stripTrailingFullStop(detail);
+    }
+
+    if (typeof detail?.message === "string") {
+        return stripTrailingFullStop(detail.message);
+    }
+
+    try {
+        return stripTrailingFullStop(JSON.stringify(detail));
+    } catch {
+        return stripTrailingFullStop(message);
+    }
+}
 
 
 /**
@@ -13,17 +72,16 @@ async function request(endpoint, { method = "GET", data, body } = {}) {
     const url = `${API_URL}${endpoint}`;
     const token = get(session)?.access_token;
 
-    // Build headers
     const headers = {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    // Only set Content-Type if not sending FormData
-    if (!(body instanceof FormData) && data) {
+    const isFormData = body instanceof FormData;
+
+    if (!isFormData && data) {
         headers["Content-Type"] = "application/json";
     }
 
-    // Build fetch options
     const options = {
         method,
         headers,
@@ -32,35 +90,72 @@ async function request(endpoint, { method = "GET", data, body } = {}) {
     if (data) options.body = JSON.stringify(data);
     if (body) options.body = body;
 
-    const res = await fetch(url, options);
-
-    // Always read response body as text first, then try to parse JSON
-    const text = await res.text();
+    let res;
+    let text = "";
     let payload = null;
-    try { payload = text ? JSON.parse(text) : null; } catch { /* non-JSON */ }
 
-    // Handle error responses
-    if (!res.ok) {
-        let message = res.statusText || "Request failed";
+    try {
+        res = await fetch(url, options);
+        text = await res.text();
 
-        if (payload?.detail) {
-            const d = payload.detail;
-            if (Array.isArray(d)) message = d.map(x => x.msg || String(x)).join("; ");
-            else if (typeof d === "string") message = d;
-            else if (typeof d?.message === "string") message = d.message;
-            else message = JSON.stringify(d);
+        try {
+            payload = text ? JSON.parse(text) : null;
+        } catch {
+            payload = null;
         }
+    } catch (err) {
+        const e = new Error("Network error");
+        e.status = 0;
+        e.data = null;
+
+        if (isDev) {
+            console.error("API error:", {
+                endpoint,
+                method,
+                url,
+                status: 0,
+                requestBody: data ?? (isFormData ? "[FormData]" : null),
+                response: null,
+                error: err?.message || String(err),
+            });
+        }
+
+        throw e;
+    }
+
+    if (!res.ok) {
+        const message = parseErrorMessage(payload, res.statusText);
 
         const err = new Error(message);
         err.status = res.status;
         err.data = payload;
-        console.error("API error:", { endpoint, status: res.status, payload, options, err });
+
+        if (isDev) {
+            console.error("API error:", {
+                endpoint,
+                method,
+                url,
+                status: res.status,
+                requestBody: data ?? (isFormData ? "[FormData]" : null),
+                response: payload ?? (text ? "[non-json]" : null),
+            });
+        }
+
         throw err;
     }
 
-    console.debug("API success:", { endpoint, status: res.status, payload, options });
+    if (isDev) {
+        console.debug("API success:", {
+            endpoint,
+            method,
+            url,
+            status: res.status,
+            requestBody: data ?? (isFormData ? "[FormData]" : null),
+            response: payload ?? (text ? "[non-json]" : null),
+        });
+    }
+
     return payload ?? {};
 }
-
 
 export default request;

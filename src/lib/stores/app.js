@@ -1,16 +1,9 @@
 
 import { writable, get, derived } from "svelte/store";
 import { browser } from "$app/environment";
-import { goto } from "$app/navigation";
 
 import { getAllReferences } from "$lib/api/references.js";
-import { refreshLoopsStore, selectedLoop } from "$lib/stores/loops.js";
-import { getProfileFromLoop } from "$lib/api/loop.js";
 
-import ProfileCardPreview from "$lib/components/ProfileCardPreview.svelte";
-
-
-// ---------------- Theme ---------------- //
 
 // ---------------- Appearance prefs (theme + style) ---------------- //
 
@@ -122,7 +115,7 @@ export const styleOptions = [
 const stylePref = createSelectPreference({
     storageKey: "style",
     options: styleOptions,
-    defaultValue: "default",
+    defaultValue: "pixel",
     datasetKey: "style",
 });
 
@@ -245,7 +238,7 @@ export async function initReferences({ force = false } = {}) {
         const platforms = data?.platforms ?? [];
 
         if (!Array.isArray(countries) || !Array.isArray(interests) || !Array.isArray(platforms)) {
-            throw new Error("Invalid references payload");
+            throw new Error("Invalid reference data");
         }
 
         // Sort countries with US and GB first
@@ -254,7 +247,7 @@ export async function initReferences({ force = false } = {}) {
             if (b.code === "US") return 1;
             if (a.code === "GB") return -1;
             if (b.code === "GB") return 1;
-            return a.name.localeCompare(b.name);
+            return String(a.name || "").localeCompare(String(b.name || ""));
         });
 
         // Attach flag icons by country code
@@ -275,10 +268,9 @@ export async function initReferences({ force = false } = {}) {
         allCountries.set(countriesWithFlags);
         allInterests.set(interests);
         allPlatforms.set(platformsWithIcons);
-
         referencesStatus.set("loaded");
+
     } catch (err) {
-        console.error("Failed to load reference data", err);
         allCountries.set([]);
         allInterests.set([]);
         allPlatforms.set([]);

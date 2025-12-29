@@ -1,10 +1,13 @@
 
 import { writable, derived, get } from "svelte/store";
 import { createClient } from "@supabase/supabase-js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "$lib/utils/env.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, ENVIRONMENT } from "$lib/utils/env.js";
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
 import { addToast } from "$lib/stores/popups.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -15,6 +18,7 @@ export const session = writable(null);
 export const resetToken = writable(null);
 export const authState = writable("loading"); 
 // "loading" | "unauthenticated" | "authenticated" | "recovery" | "error"
+
 
 // For dangerous actions that require confirmation phrase
 export const expectedPhrase = derived(user, ($user) => {
@@ -44,7 +48,7 @@ export async function initAuth() {
         if (urlMsg) {
             addToast({
                 variant: "banner",
-                text: "Message from loopii:",
+                text: "Notice",
                 description: urlMsg,
                 autoHideMs: null,
             });
@@ -58,7 +62,7 @@ export async function initAuth() {
                 refresh_token: hashParams.get("refresh_token")
             });
             if (error) {
-                console.error("Error setting recovery session:", error.message);
+                if (isDev) console.error("Error setting recovery session:", error?.message || error);
                 authState.set("error");
                 return;
             }
@@ -71,7 +75,7 @@ export async function initAuth() {
         // Normal session lookup
         const { data, error } = await supabase.auth.getSession();
         if (error) {
-            console.error("Error getting session:", error.message);
+            if (isDev) console.error("Error getting session:", error?.message || error);
             authState.set("error");
             return;
         }
@@ -82,7 +86,6 @@ export async function initAuth() {
         // Subscribe to auth state changes once
         if (!authSub) {
             const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-                // console.log("auth event:", _event, newSession);
                 session.set(newSession);
                 user.set(newSession?.user ?? null);
                 authState.set(newSession?.user ? "authenticated" : "unauthenticated");
@@ -91,17 +94,15 @@ export async function initAuth() {
         }
 
     } catch (err) {
-        console.error("Unexpected error during auth init:", err);
         authState.set("error");
         addToast({
             variant: "banner",
-            text: "Failed to authenticate.",
-            description: "loopii couldn't authenticate you. Please refresh the page or try again later.",
+            text: "Couldn't sign you in.",
+            description: "Please refresh the page or try again later.",
             autoHideMs: null,
         });
     } finally {
         if (get(authState) === "loading") {
-            console.warn("Auth finished without setting state. Defaulting to unauthenticated");
             authState.set("unauthenticated");
         }
     }
@@ -129,7 +130,7 @@ export function forceUnauth() {
         const key = `sb-${SUPABASE_URL}-auth-token`;
         localStorage.removeItem(key);
     } catch (err) {
-        console.warn("Failed to clear Supabase cache:", err);
+        if (isDev) console.warn("Failed to clear Supabase cache:", err);
     }
     authState.set("unauthenticated");
     user.set(null);
@@ -143,12 +144,12 @@ async function safeAuthCall(fn) {
         const { data, error } = await fn();
         if (error) {
             // If auth error, deauth user
-            if (error.status === 401 || error.status === 403) {
+            if (error?.status === 401 || error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
-                    text: "Your session has expired.",
-                    description: "Sorry! Please sign in again to continue.",
+                    text: "Session expired.",
+                    description: "Please sign in again to continue.",
                     autoHideMs: null,
                 });
             }
@@ -156,7 +157,6 @@ async function safeAuthCall(fn) {
         }
         return { data, error: null };
     } catch (err) {
-        console.error("Auth call failed:", err);
         return { data: null, error: normalizeError(err) };
     }
 }
@@ -193,18 +193,16 @@ export async function resetPasswordWithToken(newPassword) {
         supabase.auth.updateUser({ password: newPassword })
     );
     if (error) {
-        console.error("Error resetting password with token:", error);
         return { data: null, error };
     } 
 
     // Revoke all sessions if password was reset successfully
     const { error: signOutError } = await supabase.auth.signOut({ scope: "global" });
     if (signOutError) {
-        console.error("Error during global sign out:", signOutError);
         addToast({
             variant: "banner",
-            text: "Password reset successful!",
-            description: "Your password was reset, but we couldn't sign you out of other sessions.",
+            text: "Password reset.",
+            description: "We couldn't sign you out everywhere. If you're on a shared device, sign out manually.",
             autoHideMs: null,
         });
         return { data: data, error: normalizeError(signOutError) };
@@ -216,23 +214,20 @@ export async function signOut(scope = "local") {
     try {
         const { error } = await supabase.auth.signOut({ scope });
         if (error && error.code !== "session_not_found") {
-            console.error(`Error signing out (${scope}):`, error);
             return { data: null, error: normalizeError(error) };
         }
         if (scope === "global") {
             addToast({
                 variant: "banner",
-                text: "Successfully signed out everywhere!",
-                description: "You have been signed out of all sessions on all devices.",
+                text: "Signed out everywhere.",
                 autoHideMs: null,
             });
         }
     } catch (err) {
-        console.error(`Unexpected error during signOut (${scope}):`, err);
         if (scope === "global") {
             addToast({
                 variant: "banner",
-                text: "Could not sign you out everywhere.",
+                text: "Couldn't sign you out everywhere.",
                 description: normalizeError(err),
                 autoHideMs: null,
             });
@@ -256,11 +251,11 @@ export async function updatePassword(currentPassword, newPassword) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update password.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session expired after password update" };
+            return { data: null, error: "Please sign in again to update your password" };
         }
 
         // Update client with new session
@@ -272,30 +267,30 @@ export async function updatePassword(currentPassword, newPassword) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Password successfully updated!",
-                description: "Your password has been updated, but we couldn't refresh your session. Please sign in to continue.",
+                text: "Password updated.",
+                description: "Please sign in to continue.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session expired after password update" };
+            return { data: null, error: "Please sign in again to continue" };
         }
 
         session.set(newSession.session);
         user.set(newSession.session.user);
         addToast({
             variant: "banner",
-            text: "Password successfully updated!",
+            text: "Password updated.",
             autoHideMs: null,
         });
         return { data, error: null };
 
     } catch (err) {
         // If auth error, deauth user
-        if (err.status === 401 || err.status === 403) {
+        if (err?.status === 401 || err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update password.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
         }
@@ -312,22 +307,22 @@ export async function updateEmail(newEmail) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update email.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your email.",
                 autoHideMs: null,
             });
-            return { data: null, error: "No active user" };
+            return { data: null, error: "Please sign in again to update your email" };
         }
 
         // Attempt update
         const { data, error } = await supabase.auth.updateUser({ email: newEmail });
         if (error) {
-            if (error.status === 401 || error.status === 403) {
+            if (error?.status === 401 || error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
-                    text: "Failed to update email.",
-                    description: "Sorry, your session has expired. Please sign in to try again.",
+                    text: "Session expired.",
+                    description: "Please sign in again to update your email.",
                     autoHideMs: null,
                 });
             }
@@ -340,19 +335,18 @@ export async function updateEmail(newEmail) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Email successfully updated!",
-                description: "Your email has been updated, but we couldn't refresh your session. Please sign in to continue.",
+                text: "Email updated.",
+                description: "Please sign in to continue.",
                 autoHideMs: null,
             });
-            return { data: null, error: "Session invalid after email update" };
+            return { data: null, error: "Please sign in to continue" };
         }
 
         session.set(refreshed.session);
         user.set(refreshed.session.user);
         addToast({
             variant: "banner",
-            text: "Email successfully updated!",
-            description: "Your email has been updated successfully.",
+            text: "Email updated.",
             autoHideMs: null,
         });
         return { data, error: null };
@@ -377,15 +371,15 @@ export async function deleteAccount(currentPassword, confirmPhrase) {
         forceUnauth();
         addToast({
             variant: "banner",
-            text: "Account deleted :(",
-            description: "We're sorry to see you go! Your account and data have been permanently deleted.",
+            text: "Account deleted.",
+            description: "Your account has been permanently removed.",
             autoHideMs: null,
         });
         return { data, error: null };
 
     } catch (err) {
         // If auth error, deauth user
-        if (err.status === 401 || err.status === 403) {
+        if (err?.status === 401 || err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",

@@ -1,12 +1,18 @@
 
 import { writable, get } from "svelte/store";
 import { getUserRequests } from "$lib/api/request.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
+
 
 // Store of pending loop requests: [{ decision, profile }]
 export const loopRequests = writable([]);
 export const selectedRequest = writable(null);
 export const loopRequestsTotal = writable(0);
 export const newRequestsCount = writable(0);
+
 
 // Adjust the pending requests badge by a delta (default -1). Clamped to 0.
 export function adjustNewRequestsCount(delta = -1) {
@@ -16,6 +22,7 @@ export function adjustNewRequestsCount(delta = -1) {
 	});
 }
 
+
 export const loopRequestsState = writable({
 	limit: 18,
 	end: false,
@@ -24,7 +31,9 @@ export const loopRequestsState = writable({
 	cursorId: null,
 });
 
+
 export const loopRequestsStatus = writable("unloaded");
+
 
 // --- Helper: sort newest first by decision.created_at ---
 function sortRequests(items) {
@@ -103,7 +112,7 @@ export async function loadInitialLoopRequests() {
 		newRequestsCount.set(total || 0);
 
 		loopRequestsState.set({
-			...s,
+			limit: s.limit,
 			loading: false,
 			initialized: true,
 			end: !has_more,
@@ -111,7 +120,7 @@ export async function loadInitialLoopRequests() {
 		});
 		loopRequestsStatus.set("loaded");
 	} catch (err) {
-		console.error("Failed to load loop requests:", err);
+		if (isDev) console.error("loadInitialLoopRequests failed:", { status: err?.status, message: err?.message });
 		loopRequestsStatus.set("error");
 		loopRequestsState.update((x) => ({ ...x, loading: false }));
 	}
@@ -145,7 +154,7 @@ export async function loadMoreLoopRequests() {
 			cursorId: next_cursor ?? s.cursorId,
 		});
 	} catch (err) {
-		console.error("Failed to load more loop requests:", err);
+		if (isDev) console.error("loadMoreLoopRequests failed:", { status: err?.status, message: err?.message });
 		loopRequestsState.update((x) => ({ ...x, loading: false }));
 	}
 }
@@ -175,7 +184,7 @@ export async function refreshLoopRequestsStore() {
 		newRequestsCount.set(total || 0);
 
 		loopRequestsState.set({
-			...s,
+			limit: s.limit,
 			end: !has_more,
 			loading: false,
 			initialized: true,
@@ -183,7 +192,7 @@ export async function refreshLoopRequestsStore() {
 		});
 		loopRequestsStatus.set("loaded");
 	} catch (err) {
-		console.error("Failed to refresh loop requests:", err);
+		if (isDev) console.error("refreshLoopRequestsStore failed:", { status: err?.status, message: err?.message });
 		loopRequestsStatus.set("error");
 		loopRequestsState.update((x) => ({ ...x, loading: false }));
 	}

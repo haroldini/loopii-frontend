@@ -416,7 +416,7 @@
 
         <div class="section stack">
             <h3>Log out</h3>
-            <div class="card card--panel" role="region" aria-label="Visual settings">
+            <div class="card card--panel" role="region" aria-label="Log out">
                 <div class="section stack">
                     <div class="form__actions">
                         <button

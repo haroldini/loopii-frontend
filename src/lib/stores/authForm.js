@@ -11,7 +11,7 @@ export const resetToken = writable("");
 
 
 ///// --- UI state ---
-export const subPage = writable("login"); // "login", "signup", "requestReset", "reset
+export const subPage = writable("login"); // "login", "signup", "requestReset", "reset"
 export const emailTouched = writable(false);
 export const passwordTouched = writable(false);
 export const isSubmitting = writable(false);
@@ -24,7 +24,7 @@ export const error = writable("");
 export const authFormStatus = writable(""); 
 // "loggingIn", "loginFailed", "loggedIn",
 // "signingUp", "signUpFailed, "signedUp",
-// "sendingResetRequest", ""resetRequestFailed", "resetEmailSent",
+// "sendingResetRequest", "resetRequestFailed", "resetEmailSent",
 // "resettingPassword", "resetPasswordFailed", "passwordReset
 
 
@@ -41,15 +41,15 @@ export function validateForm($subPage, $email, $confirmEmail = "", $password = "
 
     // Require and validate confirm email on signup
     if (["signup"].includes($subPage)) {
-        if (!$confirmEmail) errors.push({ field: "email", message: "Confirm Email is required", display: false });
-        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ field: "email", message: "Emails do not match", display: true });
+        if (!$confirmEmail) errors.push({ field: "email", message: "Confirm email is required", display: false });
+        if ($email && $confirmEmail && $email !== $confirmEmail) errors.push({ field: "email", message: "Emails don't match", display: true });
     }
     
     // Require and validate confirm password on signup and reset
     if (["signup", "reset"].includes($subPage)) {
-        if (!$confirmPassword) errors.push({ field: "password", message: "Confirm Password is required", display: false });
+        if (!$confirmPassword) errors.push({ field: "password", message: "Confirm password is required", display: false });
         if ($password && $confirmPassword && $password !== $confirmPassword)
-            errors.push({ field: "password", message: "Passwords do not match", display: true });
+            errors.push({ field: "password", message: "Passwords don't match", display: true });
     }
 
     // Require password on login, signup and reset
@@ -111,7 +111,7 @@ export function resetAuthForm() {
     toggleMode("login");
     email.set("");
     password.set("");
-    resetToken.set("")
+    resetToken.set("");
 }
 
 // Reset all the sensitive stores

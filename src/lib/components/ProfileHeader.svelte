@@ -14,7 +14,7 @@
         formatNumber,
         formatStarSign,
         computeDistanceLabel
-    } from "$lib/utils/misc.js";
+    } from "$lib/utils/profile.js";
 
     export let profile;
 

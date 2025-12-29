@@ -105,7 +105,7 @@
 }
 
 .switch__input:checked ~ .switch__track {
-    background: var(--accent);
+    background: var(--accent-secondary);
 }
 
 .switch__input:checked ~ .switch__thumb {
@@ -342,11 +342,19 @@
     align-items: center;
     gap: var(--space-2);
     width: 100%;
-    flex-wrap: wrap;
 }
 
-.overlay__actions > :first-child {
-    margin-right: auto;
+.overlay__actions-left {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.overlay__actions-right {
+    display: flex;
+    gap: var(--space-2);
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 /* ===== Sticky bars ===== */

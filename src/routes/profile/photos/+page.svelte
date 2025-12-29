@@ -9,7 +9,7 @@
 
     import { profile } from "$lib/stores/profile.js";
     import { uploadProfileImage, setProfileAvatar, deleteProfileImage } from "$lib/api/image.js";
-    import { timeAgo } from "$lib/utils/misc.js";
+    import { timeAgo } from "$lib/utils/profile.js";
     import { addToast } from "$lib/stores/popups.js";
     import ImagePicker from "$lib/components/ImagePicker.svelte";
 

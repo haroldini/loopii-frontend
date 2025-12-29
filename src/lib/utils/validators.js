@@ -5,15 +5,15 @@ const MIN_AGE_YEARS = 18;
 const DOB_MIN_YEAR = 1900;
 
 const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 30;
+const USERNAME_MAX_LENGTH = 20;
 
 const NAME_MAX_LENGTH = 30;
-const BIO_MAX_LENGTH = 500;
-const LOCATION_MAX_LENGTH = 50;
-const LOOP_BIO_MAX_LENGTH = 500;
-const LOOKING_FOR_MAX_LENGTH = 500;
+const BIO_MAX_LENGTH = 1000;
+const LOCATION_MAX_LENGTH = 30;
+const LOOP_BIO_MAX_LENGTH = 1000;
+const LOOKING_FOR_MAX_LENGTH = 1000;
 
-const MAX_INTERESTS = 20;
+const MAX_INTERESTS = 15;
 
 const ALLOWED_AVATAR_TYPES = ["image/jpeg"];
 const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -22,6 +22,7 @@ const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 // ----- BASIC FIELD VALIDATORS -----
 
 export function validateUsername(username) {
+    username = username?.trim();
     if (!username) {
         return { field: "username", message: "Username is required", display: false };
     }
@@ -86,6 +87,7 @@ export function validateCountry(country) {
 }
 
 export function validateName(name) {
+    name = name?.trim();
     if (name && name.length > NAME_MAX_LENGTH) {
         return {
             field: "name",
@@ -97,6 +99,7 @@ export function validateName(name) {
 }
 
 export function validateBio(bio) {
+    bio = bio?.trim();
     if (bio && bio.length > BIO_MAX_LENGTH) {
         return {
             field: "bio",
@@ -108,6 +111,7 @@ export function validateBio(bio) {
 }
 
 export function validateLocation(location) {
+    location = location?.trim();
     if (location && location.length > LOCATION_MAX_LENGTH) {
         return {
             field: "location",
@@ -119,6 +123,7 @@ export function validateLocation(location) {
 }
 
 export function validateLoopBio(loopBio) {
+    loopBio = loopBio?.trim();
     if (loopBio && loopBio.length > LOOP_BIO_MAX_LENGTH) {
         return {
             field: "loop_bio",
@@ -130,6 +135,7 @@ export function validateLoopBio(loopBio) {
 }
 
 export function validateLookingFor(lookingFor) {
+    lookingFor = lookingFor?.trim();
     if (lookingFor && lookingFor.length > LOOKING_FOR_MAX_LENGTH) {
         return {
             field: "looking_for",
@@ -214,15 +220,6 @@ export function validateSocials(socials) {
             errors.push({
                 field,
                 message: "Username must be at most 50 characters",
-                display: true,
-            });
-            return;
-        }
-
-        if (handle.startsWith("@") || handle.startsWith("/")) {
-            errors.push({
-                field,
-                message: "Username cannot start with '@' or '/'",
                 display: true,
             });
             return;

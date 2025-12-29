@@ -2,12 +2,15 @@
 import { writable, derived, get } from "svelte/store";
 import { createProfile, getProfile, createProfileInterests, createProfileSocials, checkUsernameAvailability } from "$lib/api/profile.js";
 import { uploadProfileImage, setProfileAvatar } from "$lib/api/image.js";
-import { allCountries, allInterests, allPlatforms } from "$lib/stores/app.js";
 import { profile, profileState } from "$lib/stores/profile.js";
 import { validateProfileFields } from "$lib/utils/validators.js";
 import { normalizeProfile } from "$lib/utils/normalizers.js";
 import { addToast } from "$lib/stores/popups.js";
 import { updateSearchPrefs, updateVisibilityPrefs } from "$lib/api/prefs.js";
+import { ENVIRONMENT } from "$lib/utils/env.js";
+
+
+const isDev = ENVIRONMENT === "dev";
 
 
 // --- Form state ---
@@ -24,6 +27,7 @@ export const selectedInterests = writable([]);
 export const socials = writable([]);
 export const loop_bio = writable(null);
 export const looking_for = writable(null);
+
 
 // Avatar image state
 export const avatarFile = writable(null);
@@ -48,6 +52,7 @@ export const submissionProgress = writable(null);
 export const profileFormState = writable("idle");
 // "idle" | "submitting" | "success" | "exists" | "partial" | "error"
 
+
 // Username availability: "idle" | "checking" | "available" | "taken" | "error"
 export const usernameAvailability = writable({
     state: "idle",
@@ -58,6 +63,7 @@ export const usernameAvailability = writable({
 username.subscribe(() => {
     usernameAvailability.set({ state: "idle", message: null });
 });
+
 
 // Onboarding prefs (from PrefsForm)
 export const prefsState = writable({
@@ -169,7 +175,7 @@ export async function ensureUsernameAvailable() {
             return false;
         }
     } catch (err) {
-        console.error("Username availability check failed:", err);
+		if (isDev) console.error("Username availability check failed:", err);
         usernameAvailability.set({
             state: "error",
             message: "Could not check username availability, please try again",
@@ -227,7 +233,7 @@ export async function submitProfile() {
 			});
 		} catch (err) {
     		if (err.status === 409) {
-				const msg = "You already have a profile. Redirecting to feed...";
+				const msg = "You already have a profile. Continuing to app...";
 				error.set(msg);
 				addToast({
 					variant: "banner",
@@ -237,21 +243,10 @@ export async function submitProfile() {
 				});
 				profileFormState.set("exists");
 			} else if (err.status === 422) {
-				let validationMsg = "Invalid profile data";
-				const detail = err.data?.detail;
-
-				if (Array.isArray(detail) && detail.length > 0) {
-					validationMsg = detail.map(d => d.msg || String(d)).join("; ");
-				} else if (typeof detail === "string") {
-					validationMsg = detail;
-				} else if (detail?.message) {
-					validationMsg = detail.message;
-				}
-
-				error.set(validationMsg);
+				error.set(err.message || "Invalid profile data");
 				profileFormState.set("error");
 			} else {
-				error.set(err.message || "Unexpected error creating profile");
+				error.set(err.message || "Couldn't create profile");
 				profileFormState.set("error");
 			}
 			return;
@@ -264,6 +259,7 @@ export async function submitProfile() {
 				submissionProgress.set("Adding your interests");
 				await createProfileInterests({ interest_ids: normalized.interests });
 			} catch {
+				if (isDev) console.error("Interests save failed:", err);
 				interestsError = true;
 			}
 		}
@@ -275,6 +271,7 @@ export async function submitProfile() {
 				submissionProgress.set("Adding your socials");
 				await createProfileSocials({ socials: normalized.socials });
 			} catch {
+				if (isDev) console.error("Socials save failed:", err);
 				socialsError = true;
 			}
 		}
@@ -290,7 +287,7 @@ export async function submitProfile() {
 				await setProfileAvatar(imageId);
 			}
 		} catch (err) {
-			console.error("Avatar upload failed:", err);
+			if (isDev) console.error("Avatar upload failed:", err);
 			avatarError = true;
 		}
 
@@ -335,7 +332,7 @@ export async function submitProfile() {
 					});
 				}
 			} catch (err) {
-				console.error("Error saving search prefs:", err);
+				if (isDev) console.error("Search prefs save failed:", err);
 				searchPrefsError = true;
 			}
 
@@ -363,7 +360,7 @@ export async function submitProfile() {
 						});
 					}
 				} catch (err) {
-					console.error("Error saving visibility prefs:", err);
+					if (isDev) console.error("Visibility prefs save failed:", err);
 					visibilityPrefsError = true;
 				}
 			}
@@ -396,7 +393,7 @@ export async function submitProfile() {
 			addToast({
 				variant: "banner",
 				text: "Welcome to loopii!",
-				description: "Your profile has been created successfully.",
+				description: "Your profile is ready.",
 				autoHideMs: 5000,
 			});
 			profileFormState.set("success");

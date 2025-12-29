@@ -458,7 +458,7 @@
                 <label class="field__label" for="interests">{labelFor(field)}</label>
                 <MultiSelect
                     title="Your interests"
-                    hint="Select up to 20 interests that describe you."
+                    hint="Select up to 15 interests that describe you."
                     placeholder="None selected"
                     searchPlaceholder="Search interests..."
                     overlayHash="#select-interests"
@@ -466,7 +466,7 @@
                     valueKey="id"
                     labelKey="name"
                     groupKey="category"
-                    max={20}
+                    max={15}
                     showSearch={false}
                     showBulkActions={false}
                     allowGroupSelect={false}
