@@ -396,7 +396,7 @@ export async function submitProfile() {
 			addToast({
 				variant: "banner",
 				text: "Welcome to loopii!",
-				description: "Your profile has been created successfully.",
+				description: "Your profile is ready.",
 				autoHideMs: 5000,
 			});
 			profileFormState.set("success");

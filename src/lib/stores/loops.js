@@ -269,11 +269,6 @@ async function performLoopDelete(loopId) {
 
 	try {
 		await apiDeleteLoop(loopId);
-		addToast({
-			text: "Loop removed.",
-			description: "The profile has been removed from your loops.",
-			autoHideMs: 3000,
-		});
 	} catch (err) {
 		console.error("Failed to delete loop:", err);
 
@@ -305,7 +300,7 @@ export function confirmLoopDelete(loopId) {
 
 	addToast({
 		variant: "modal",
-		text: "Delete this loop?",
+		text: "Delete loop?",
 		description: "This will permanently remove this loop from your account.",
 		autoHideMs: null,
 		actions: [
@@ -321,7 +316,7 @@ export function confirmLoopDelete(loopId) {
 				},
 			},
 			{
-				label: "Delete and don't ask again",
+				label: "Don't ask again",
 				variant: "danger",
 				onClick: () => {
 					loopDeleteConfirmEnabled.set(false);

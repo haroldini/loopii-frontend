@@ -44,7 +44,7 @@ export async function initAuth() {
         if (urlMsg) {
             addToast({
                 variant: "banner",
-                text: "Message from loopii:",
+                text: "Notice",
                 description: urlMsg,
                 autoHideMs: null,
             });
@@ -95,8 +95,8 @@ export async function initAuth() {
         authState.set("error");
         addToast({
             variant: "banner",
-            text: "Failed to authenticate.",
-            description: "loopii couldn't authenticate you. Please refresh the page or try again later.",
+            text: "Couldn't sign you in.",
+            description: "Please refresh the page or try again later.",
             autoHideMs: null,
         });
     } finally {
@@ -147,8 +147,8 @@ async function safeAuthCall(fn) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
-                    text: "Your session has expired.",
-                    description: "Sorry! Please sign in again to continue.",
+                    text: "Session expired.",
+                    description: "Please sign in again to continue.",
                     autoHideMs: null,
                 });
             }
@@ -203,8 +203,8 @@ export async function resetPasswordWithToken(newPassword) {
         console.error("Error during global sign out:", signOutError);
         addToast({
             variant: "banner",
-            text: "Password reset successful!",
-            description: "Your password was reset, but we couldn't sign you out of other sessions.",
+            text: "Password reset.",
+            description: "We couldn't sign you out everywhere. If you're on a shared device, sign out manually.",
             autoHideMs: null,
         });
         return { data: data, error: normalizeError(signOutError) };
@@ -222,8 +222,7 @@ export async function signOut(scope = "local") {
         if (scope === "global") {
             addToast({
                 variant: "banner",
-                text: "Successfully signed out everywhere!",
-                description: "You have been signed out of all sessions on all devices.",
+                text: "Signed out everywhere.",
                 autoHideMs: null,
             });
         }
@@ -232,7 +231,7 @@ export async function signOut(scope = "local") {
         if (scope === "global") {
             addToast({
                 variant: "banner",
-                text: "Could not sign you out everywhere.",
+                text: "Couldn't sign you out everywhere.",
                 description: normalizeError(err),
                 autoHideMs: null,
             });
@@ -256,8 +255,8 @@ export async function updatePassword(currentPassword, newPassword) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update password.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
             return { data: null, error: "Session expired after password update" };
@@ -272,8 +271,8 @@ export async function updatePassword(currentPassword, newPassword) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Password successfully updated!",
-                description: "Your password has been updated, but we couldn't refresh your session. Please sign in to continue.",
+                text: "Password updated.",
+                description: "Please sign in to continue.",
                 autoHideMs: null,
             });
             return { data: null, error: "Session expired after password update" };
@@ -283,7 +282,7 @@ export async function updatePassword(currentPassword, newPassword) {
         user.set(newSession.session.user);
         addToast({
             variant: "banner",
-            text: "Password successfully updated!",
+            text: "Password updated.",
             autoHideMs: null,
         });
         return { data, error: null };
@@ -294,8 +293,8 @@ export async function updatePassword(currentPassword, newPassword) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update password.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
         }
@@ -312,8 +311,8 @@ export async function updateEmail(newEmail) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Failed to update email.",
-                description: "Sorry, your session has expired. Please sign in to try again.",
+                text: "Session expired.",
+                description: "Please sign in again to update your email.",
                 autoHideMs: null,
             });
             return { data: null, error: "No active user" };
@@ -326,8 +325,8 @@ export async function updateEmail(newEmail) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
-                    text: "Failed to update email.",
-                    description: "Sorry, your session has expired. Please sign in to try again.",
+                    text: "Session expired.",
+                    description: "Please sign in again to update your email.",
                     autoHideMs: null,
                 });
             }
@@ -340,8 +339,8 @@ export async function updateEmail(newEmail) {
             forceUnauth();
             addToast({
                 variant: "banner",
-                text: "Email successfully updated!",
-                description: "Your email has been updated, but we couldn't refresh your session. Please sign in to continue.",
+                text: "Email updated.",
+                description: "Please sign in to continue.",
                 autoHideMs: null,
             });
             return { data: null, error: "Session invalid after email update" };
@@ -351,8 +350,7 @@ export async function updateEmail(newEmail) {
         user.set(refreshed.session.user);
         addToast({
             variant: "banner",
-            text: "Email successfully updated!",
-            description: "Your email has been updated successfully.",
+            text: "Email updated.",
             autoHideMs: null,
         });
         return { data, error: null };
@@ -377,8 +375,8 @@ export async function deleteAccount(currentPassword, confirmPhrase) {
         forceUnauth();
         addToast({
             variant: "banner",
-            text: "Account deleted :(",
-            description: "We're sorry to see you go! Your account and data have been permanently deleted.",
+            text: "Account deleted.",
+            description: "Your account has been permanently removed.",
             autoHideMs: null,
         });
         return { data, error: null };

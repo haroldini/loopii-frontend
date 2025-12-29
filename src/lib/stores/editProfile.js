@@ -273,7 +273,7 @@ async function performProfileUpdate(changed, audioPayload) {
         profileEditState.set("success");
         startEditing();
         addToast({
-            text: "Profile updated successfully.",
+            text: "Profile updated.",
             autoHideMs: 3000,
         });
     } catch (err) {
@@ -281,7 +281,7 @@ async function performProfileUpdate(changed, audioPayload) {
         error.set(err.message || "Unexpected error saving profile");
         console.error("Error updating profile:", err);
         addToast({
-            text: "Failed to update profile.",
+            text: "Profile update failed.",
             description: err.message || "We couldn't save your changes. Please try again later.",
             autoHideMs: 5000,
         });
@@ -364,12 +364,12 @@ export async function saveEdits() {
                     variant: "danger",
                     onClick: () => {
                         confirmCooldownSave();
+                        goto("/profile");
                     },
                 },
             ],
         });
 
-        goto("/profile");
         return;
     }
 
