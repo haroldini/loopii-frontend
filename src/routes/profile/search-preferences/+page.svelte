@@ -130,7 +130,7 @@
 
 
 <svelte:head>
-    <title>loopii • Search Preferences</title>
+    <title>loopii • Preferences</title>
 </svelte:head>
 
 

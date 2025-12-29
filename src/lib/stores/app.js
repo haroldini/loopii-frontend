@@ -135,7 +135,6 @@ if (browser) {
     initStyle();
 }
 
-
 // ---------------- Icons ---------------- //
 
 const PLATFORM_ICONS = {

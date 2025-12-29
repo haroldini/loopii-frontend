@@ -130,7 +130,7 @@
 
 
 <svelte:head>
-    <title>loopii • Visibility Preferences</title>
+    <title>loopii • Visibility</title>
 </svelte:head>
 
 
