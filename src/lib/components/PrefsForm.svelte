@@ -323,6 +323,7 @@
                     valueKey="id"
                     labelKey="name"
                     groupKey="sub_region"
+                    overlayHash="#select-countries"
                     bind:value={countryIds}
                 />
         </div>
@@ -350,6 +351,11 @@
                         }
                         mode="preview"
                         defaultZoom={11}
+                        overlayHash={
+                            mode === "search" 
+                                ? "#select-search-location" 
+                                : "#select-visibility-location"
+                        }
                         on:confirm={(e) => {
                             proximityLat = e.detail.lat;
                             proximityLng = e.detail.lng;
