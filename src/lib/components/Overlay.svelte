@@ -1,7 +1,8 @@
 
 <script>
     import { createEventDispatcher, onDestroy, onMount } from "svelte";
-
+    import { browser } from "$app/environment";
+    
     export let open = false;
     export let hash = null;
 

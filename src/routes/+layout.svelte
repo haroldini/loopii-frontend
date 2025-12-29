@@ -6,6 +6,7 @@
     import { get } from "svelte/store";
     import { onMount } from "svelte";
     import { page } from "$app/stores";
+    import { browser } from "$app/environment";
     import { preloadData } from "$app/navigation";
 
     import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
@@ -23,11 +24,15 @@
     import CreateProfile from "$lib/components/CreateProfile.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
+    import QuickSettings from "$lib/components/QuickSettings.svelte";
+
 
     const LOADING_TIMEOUT = 5000; // 5 seconds
     let didPreloadRoutes = false;
 
+
     let { children } = $props();
+
 
     // ---------------- Page metadata ---------------- //
     const pageTitle = $derived.by(() => {
@@ -206,6 +211,12 @@
 
 <Popups />
 
+{#if !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
+    {#if browser}
+        <QuickSettings />
+    {/if}
+{/if}
+
 
 <!-- Couldn't connect to loopii // Missing db, auth, profile, etc. -->
 {#if $referencesStatus === "error" || $authState === "error" || $profileState === "error"}
@@ -222,7 +233,6 @@
                         <button type="button" class="btn btn--primary btn--block" onclick={retryAll}>
                             <Icon icon={UI_ICONS.refresh} class="btn__icon" />Retry
                         </button>
-    
                         {#if $authState === "authenticated"}
                             <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
                                 <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
@@ -308,23 +318,11 @@
         <div class="gate">
             <div class="gate__inner content content--narrow stack">
                 <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
-
                 <section class="card">
                     <div class="section stack">
                         <CreateProfile />
                     </div>
                 </section>
-
-                {#if !["success", "partial", "exists", "submitting"].includes($profileFormState)}
-                    <section class="u-separator-top">
-                        <div class="section stack">
-                            <p class="text-hint text-center">Logged in as {$user.email}</p>
-                            <button type="button" class="btn btn--danger btn--mini text-center" onclick={confirmLocalSignOut}>
-                                <Icon icon={UI_ICONS.logout} class="btn__icon" /> Log out
-                            </button>
-                        </div>
-                    </section>
-                {/if}
             </div>
         </div>
     {/if}
