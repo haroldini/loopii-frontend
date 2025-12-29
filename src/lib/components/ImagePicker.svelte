@@ -102,7 +102,7 @@
         await tick();
     }
 
-    async function exitToPreview(confirm = false, fromHash = false) {
+    async function exitToPreview(confirm = false) {
         const srcKey = currentSourceKey();
 
         if (confirm && cropper) {
@@ -152,7 +152,7 @@
         }
 
         internalMode = "preview";
-        overlay?.closeOverlay({ fromHash });
+        overlay?.closeOverlay();
     }
 
     function handleFileSelect(e) {
@@ -253,10 +253,16 @@
     closedClass="u-hidden"
     renderOpenOnly={false}
     ariaLabel="Upload image"
-    on:requestClose={() => exitToPreview(false, true)}
+    on:requestClose={() => exitToPreview(false)}
 >
     {#if internalMode === "fullscreen"}
-        <div class="overlay__scrim"></div>
+        <button
+            type="button"
+            class="overlay__scrim"
+            aria-hidden="true"
+            tabindex="-1"
+            on:click={() => exitToPreview(false)}
+        ></button>
 
         <div class="overlay__panel">
             <header class="overlay__header">
@@ -298,37 +304,39 @@
 
             <div class="overlay__actionbar">
                 <div class="overlay__actions">
-                    <button
-                        type="button"
-                        class="btn btn--ghost"
-                        on:click={() => exitToPreview(false)}
-                    >
-                        <Icon icon={UI_ICONS.close} class="btn__icon" />
-                        <span class="btn__label">Cancel</span>
-                    </button>
+                    <div class="overlay__actions-left">
+                        <button
+                            type="button"
+                            class="btn btn--ghost btn--icon"
+                            on:click={() => exitToPreview(false)}
+                        >
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
+                        </button>
+                    </div>
+                    <div class="overlay__actions-right">
+                        <button
+                            type="button"
+                            class="btn btn--ghost"
+                            on:click={replaceImage}
+                        >
+                            <span class="btn__label">
+                                {#if (workingUrl || originalUrl)}
+                                    Replace
+                                {:else}
+                                    Select
+                                {/if}
+                            </span>
+                        </button>
 
-                    <button
-                        type="button"
-                        class="btn btn--ghost"
-                        on:click={replaceImage}
-                    >
-                        <span class="btn__label">
-                            {#if (workingUrl || originalUrl)}
-                                Replace
-                            {:else}
-                                Select
-                            {/if}
-                        </span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn--primary"
-                        on:click={() => exitToPreview(true)}
-                    >
-                        <Icon icon={UI_ICONS.check} class="btn__icon" />
-                        <span class="btn__label">Confirm</span>
-                    </button>
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={() => exitToPreview(true)}
+                        >
+                            <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <span class="btn__label">Confirm</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

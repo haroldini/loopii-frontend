@@ -18,9 +18,9 @@
         overlay?.openOverlay();
     }
 
-    function close(fromHash = false) {
+    function close() {
         isOpen = false;
-        overlay?.closeOverlay({ fromHash });
+        overlay?.closeOverlay();
     }
 
     function confirmLocalSignOut() {
@@ -35,7 +35,7 @@
                     label: "Log out",
                     variant: "danger",
                     onClick: async () => {
-                        close(false);
+                        close();
                         await tick();
                         await signOut();
                     },
@@ -48,7 +48,7 @@
         if (!isOpen) return;
         if (e.key === "Escape") {
             e.preventDefault();
-            close(false);
+            close();
         }
     }
 
@@ -75,11 +75,11 @@
 <!-- Fixed trigger -->
 <button
     type="button"
-    class="quick-settings__trigger btn btn--ghost btn--icon"
+    class="quick-settings__trigger btn btn--icon"
     aria-label="Open settings"
     aria-haspopup="dialog"
     aria-expanded={isOpen}
-    on:click={() => (isOpen ? close(false) : open())}
+    on:click={() => (isOpen ? close() : open())}
 >
     <Icon icon={UI_ICONS.settings} class="btn__icon" />
 </button>
@@ -93,15 +93,15 @@
     closedClass="u-hidden"
     renderOpenOnly={false}
     ariaLabel="Quick settings"
-    on:requestClose={() => close(true)}
+    on:requestClose={() => close()}
 >
     {#if isOpen}
         <button
-        type="button"
-        class="overlay__scrim"
-        aria-hidden="true"
-        tabindex="-1"
-        on:click={() => close(false)}
+            type="button"
+            class="overlay__scrim"
+            aria-hidden="true"
+            tabindex="-1"
+            on:click={() => close()}
         ></button>
 
         <div class="overlay__panel quick-settings__panel" role="document">
@@ -117,7 +117,7 @@
                     type="button"
                     class="btn btn--ghost btn--icon"
                     aria-label="Close"
-                    on:click={() => close(false)}
+                    on:click={() => close()}
                 >
                     <Icon icon={UI_ICONS.close} class="btn__icon" />
                 </button>
@@ -155,11 +155,22 @@
 
                     <div class="section stack">
                         <h3>Account</h3>
+                        <div class="card card--panel" role="region" aria-label="Log out">
+                            <div class="section stack">
+                                <div class="form__actions">
+                                    <button
+                                        type="button"
+                                        class="btn btn--danger"
+                                        on:click={confirmLocalSignOut}
+                                    >
+                                        <Icon icon={UI_ICONS.logout} class="btn__icon" />
+                                        <span class="btn__label">Log Out</span>
+                                    </button>
+                                </div>
 
-                        <button type="button" class="btn btn--danger" on:click={confirmLocalSignOut}>
-                            <Icon icon={UI_ICONS.logout} class="btn__icon" />
-                            <span class="btn__label">Log out</span>
-                        </button>
+                                <p class="text-hint">Log out of your account on this device.</p>
+                            </div>
+                        </div>
                     </div>
                 {/if}
             </main>
@@ -181,7 +192,7 @@
             max-width: 32rem;
             width: min(32rem, calc(100% - var(--space-4)));
             height: auto;
-            max-height: calc(100dvh - (var(--space-4) + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
+            max-height: min(92vh, 900px);
             margin: 0 auto;
         }
     }
