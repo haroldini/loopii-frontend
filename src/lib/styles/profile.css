@@ -275,9 +275,9 @@
     padding: 0.25rem 0.6rem;
 
     background: var(--accent);
-    border-color: transparent;
+    border: transparent;
     color: var(--bg-app);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: var(--font-weight-semibold);
 }
 
@@ -302,7 +302,7 @@
     min-width: 0;
     flex: 1 1 auto;
 
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
 
@@ -353,7 +353,7 @@
 }
 
 .profile-preview__date {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
 }
 

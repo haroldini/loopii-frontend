@@ -9,17 +9,17 @@
 
     /* Global colors */
     --color-black: #121212;
-    --gender-male: #4A90E2;
-    --gender-female: #E94E77;
-    --gender-other: #9B59B6;
+    --gender-male:   #4DA3FF;
+    --gender-female: #F472B6;
+    --gender-other:  #A78BFA;
 
     /* Spacing */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 1rem;
-    --space-4: 1.5rem;
-    --space-5: 2rem;
-    --space-6: 3rem;
+    --space-1: 0.3rem;
+    --space-2: 0.6rem;
+    --space-3: 1.2rem;
+    --space-4: 1.8rem;
+    --space-5: 2.4rem;
+    --space-6: 3.6rem;
 
     /* Radius */
     --radius-sm: 0.25rem;
@@ -45,7 +45,7 @@
 
     /* Bars */
     --nav-height: 4rem;
-    --header-height: 4.5rem;
+    --header-height: 4rem;
 
     /* Safe areas */
     --safe-top: env(safe-area-inset-top, 0px);
@@ -85,21 +85,25 @@
 /* Very small devices */
 @media (max-width: 320px) {
     :root {
-        --font-size-root: 11px;
+        --font-size-root: 12px;
+        --nav-height: max(4.5rem, 9vh);
+        --header-height: max(4.5rem, 9vh);
     }
 }
 
 /* Small devices */
 @media (min-width: 321px) and (max-width: 480px) {
     :root {
-        --font-size-root: 13px;
+        --font-size-root: 14px;
+        --nav-height: max(4.5rem, 9vh);
+        --header-height: max(4.5rem, 9vh);
     }
 }
 
 /* Medium devices */
 @media (min-width: 481px) and (max-width: 767px) {
     :root {
-        --font-size-root: 14px;
+        --font-size-root: 15px;
     }
 }
 
@@ -112,12 +116,6 @@
     }
 }
 
-/* Large devices */
-@media (min-width: 1024px) {
-    :root {
-        --font-size-root: 16px;
-    }
-}
 
 /* ===== Default style (Pixel) ===== */
 :root {
