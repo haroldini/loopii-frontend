@@ -19,6 +19,8 @@
         validationErrors, error, status, readyToSubmit,
         resetSensitive, resetValidation
     } from "$lib/stores/authSettings.js";
+    import { solveCaptcha } from "$lib/utils/captcha.js";
+    import { isCaptchaRequired } from "$lib/stores/auth.js";
 
 
     // ACCOUNT / LOGIN SETTINGS
@@ -151,11 +153,38 @@
 
             } else if ($mode === "reset") {
                 status.set("updating");
-                const { error: err } = await requestPasswordReset($user?.email || "");
-                if (err) {
-                    error.set(err || "Could not send reset email");
-                    status.set("failed");
-                } else status.set("emailPending");
+
+                let token;
+
+                // First attempt (no captcha)
+                let res = await requestPasswordReset($user?.email || "");
+                if (!res.error) {
+                    status.set("emailPending");
+                    return;
+                }
+
+                // If captcha required, solve + retry once with token
+                if (isCaptchaRequired(res.error)) {
+                    try {
+                        token = await solveCaptcha({
+                            message: "Captcha required to send a password reset email.",
+                        });
+                    } catch (e) {
+                        error.set("Captcha required. Please try again");
+                        status.set("failed");
+                        return;
+                    }
+
+                    res = await requestPasswordReset($user?.email || "", token);
+                    if (!res.error) {
+                        status.set("emailPending");
+                        return;
+                    }
+                }
+
+                // Final failure: show supabase error
+                error.set(res.error || "Could not send reset email");
+                status.set("failed");
             }
         } finally {
             isSubmitting.set(false);
@@ -392,7 +421,7 @@
                             class="btn btn--ghost"
                             class:is-loading={$isSubmitting}
                             on:click={handleSubmit}
-                            disabled={!$readyToSubmit || $isSubmitting}
+                            disabled={!$readyToSubmit || $isSubmitting }
                         >
                             {#if $isSubmitting}
                                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />

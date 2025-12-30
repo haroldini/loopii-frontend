@@ -26,6 +26,11 @@ export const expectedPhrase = derived(user, ($user) => {
     return `DELETE ${email}`;
 });
 
+// Helper for parsing captcha required errors
+export function isCaptchaRequired(errMsg) {
+    return (errMsg || "").toLowerCase().includes("captcha verification process failed");
+}
+
 
 // --- Auth initialisation ---
 let authSub; // Singleton subscription to auth changes
@@ -144,7 +149,7 @@ async function safeAuthCall(fn) {
         const { data, error } = await fn();
         if (error) {
             // If auth error, deauth user
-            if (error?.status === 401 || error?.status === 403) {
+            if (error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
@@ -164,26 +169,34 @@ async function safeAuthCall(fn) {
 
 // --- Authentication actions ---
 
-export function signInWithEmail(email, password) {
+export function signInWithEmail(email, password, captchaToken) {
     return safeAuthCall(() =>
-        supabase.auth.signInWithPassword({ email, password })
-    );
-}
-
-export function signUpWithEmail(email, password) {
-    return safeAuthCall(() =>
-        supabase.auth.signUp({
+        supabase.auth.signInWithPassword({
             email,
             password,
-            options: { emailRedirectTo: window.location.origin },
+            ...(captchaToken ? { options: { captchaToken } } : {}),
         })
     );
 }
 
-export function requestPasswordReset(email) {
+export function signUpWithEmail(email, password, captchaToken) {
+    return safeAuthCall(() =>
+        supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: window.location.origin,
+                ...(captchaToken ? { captchaToken } : {}),
+            },
+        })
+    );
+}
+
+export function requestPasswordReset(email, captchaToken) {
     return safeAuthCall(() =>
         supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin,
+            ...(captchaToken ? { captchaToken } : {}),
         })
     );
 }
@@ -285,7 +298,7 @@ export async function updatePassword(currentPassword, newPassword) {
 
     } catch (err) {
         // If auth error, deauth user
-        if (err?.status === 401 || err?.status === 403) {
+        if (err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",
@@ -293,7 +306,7 @@ export async function updatePassword(currentPassword, newPassword) {
                 description: "Please sign in again to update your password.",
                 autoHideMs: null,
             });
-        }
+        } 
         return { data: null, error: normalizeError(err) };
     }
 }
@@ -317,7 +330,7 @@ export async function updateEmail(newEmail) {
         // Attempt update
         const { data, error } = await supabase.auth.updateUser({ email: newEmail });
         if (error) {
-            if (error?.status === 401 || error?.status === 403) {
+            if (error?.status === 403) {
                 forceUnauth();
                 addToast({
                     variant: "banner",
@@ -379,7 +392,7 @@ export async function deleteAccount(currentPassword, confirmPhrase) {
 
     } catch (err) {
         // If auth error, deauth user
-        if (err?.status === 401 || err?.status === 403) {
+        if (err?.status === 403) {
             forceUnauth();
             addToast({
                 variant: "banner",

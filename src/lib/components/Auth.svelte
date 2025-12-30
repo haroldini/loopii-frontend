@@ -16,6 +16,9 @@
         validationErrors, error, authFormStatus, readyToSubmit,
         toggleMode, resetAuthForm, toggleForm, resetSensitive
     } from "$lib/stores/authForm.js";
+    import { solveCaptcha } from "$lib/utils/captcha.js";
+    import { isCaptchaRequired } from "$lib/stores/auth.js";
+
 
     // Unmounting logic
     onDestroy(() => {
@@ -23,7 +26,7 @@
         resetToken.set(null);
     });
 
-    // <-- REACTIVE RECOVERY CHECK
+    // REACTIVE RECOVERY CHECK
     $: if ($authState === "recovery" && $resetToken) {
         subPage.set("reset");
     }
@@ -40,32 +43,116 @@
 
         try {
             if ($subPage === "signup") {
-                authFormStatus.set("signingUp")
-                result = await signUpWithEmail($email, $password);
-                if (!result.error && result.data.user) {
+                authFormStatus.set("signingUp");
+
+                let res = await signUpWithEmail($email, $password);
+                if (!res.error && res.data.user) {
                     authFormStatus.set("signedUp");
                     toggleForm(false);
+                    return;
                 }
-                else authFormStatus.set("signUpFailed")
+
+                if (isCaptchaRequired(res.error)) {
+                    let token;
+                    try {
+                        token = await solveCaptcha({
+                            message: "Captcha required to create an account.",
+                        });
+                    } catch (e) {
+                        error.set("Captcha required. Please try again");
+                        authFormStatus.set("signUpFailed");
+                        showForm.set(true);
+                        return;
+                    }
+
+                    res = await signUpWithEmail($email, $password, token);
+                    if (!res.error && res.data.user) {
+                        authFormStatus.set("signedUp");
+                        toggleForm(false);
+                        return;
+                    }
+                }
+
+                authFormStatus.set("signUpFailed");
+                if (res.error) {
+                    error.set(res.error || "Something went wrong. Please try again later");
+                    showForm.set(true);
+                }
+                return;
 
             } else if ($subPage === "login") {
-                authFormStatus.set("loggingIn")
-                result = await signInWithEmail($email, $password);
-                if (!result.error && result.data.session) {
+                authFormStatus.set("loggingIn");
+
+                let res = await signInWithEmail($email, $password);
+                if (!res.error && res.data.session) {
                     authFormStatus.set("loggedIn");
-                    resetAuthForm()
+                    resetAuthForm();
                     goto("/");
+                    return;
                 }
-                else authFormStatus.set("loginFailed")
-                
+
+                if (isCaptchaRequired(res.error)) {
+                    let token;
+                    try {
+                        token = await solveCaptcha({
+                            message: "Captcha required to log in.",
+                        });
+                    } catch (e) {
+                        error.set("Captcha required. Please try again");
+                        authFormStatus.set("loginFailed");
+                        showForm.set(true);
+                        return;
+                    }
+
+                    res = await signInWithEmail($email, $password, token);
+                    if (!res.error && res.data.session) {
+                        authFormStatus.set("loggedIn");
+                        resetAuthForm();
+                        goto("/");
+                        return;
+                    }
+                }
+
+                authFormStatus.set("loginFailed");
+                error.set(res.error || "Something went wrong. Please try again later");
+                showForm.set(true);
+                return;
+
             } else if ($subPage === "requestReset") {
-                authFormStatus.set("sendingResetRequest")
-                result = await requestPasswordReset($email);
-                if (!result.error) {
+                authFormStatus.set("sendingResetRequest");
+
+                let res = await requestPasswordReset($email);
+                if (!res.error) {
                     authFormStatus.set("resetEmailSent");
                     toggleForm(false);
+                    return;
                 }
-                else authFormStatus.set("resetRequestFailed")
+
+                if (isCaptchaRequired(res.error)) {
+                    let token;
+                    try {
+                        token = await solveCaptcha({
+                            message: "Captcha required to send a password reset email.",
+                        });
+                    } catch (e) {
+                        error.set("Captcha required. Please try again");
+                        authFormStatus.set("resetRequestFailed");
+                        showForm.set(true);
+                        return;
+                    }
+
+                    res = await requestPasswordReset($email, token);
+                    if (!res.error) {
+                        authFormStatus.set("resetEmailSent");
+                        toggleForm(false);
+                        return;
+                    }
+                }
+
+                authFormStatus.set("resetRequestFailed");
+                error.set(res.error || "Something went wrong. Please try again later");
+                showForm.set(true);
+                return;
 
             } else if ($subPage === "reset") {
                 authFormStatus.set("resettingPassword")
@@ -86,11 +173,11 @@
             }
         } finally {
             if (!$error) {
-                // Don't reset form yet for email confirmations
                 if (!["resetEmailSent", "signedUp"].includes($authFormStatus)) {
                     resetSensitive(); 
                 }
             }
+            captchaRef?.reset();
             isSubmitting.set(false);
         }
     }
