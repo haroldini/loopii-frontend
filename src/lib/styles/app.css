@@ -1,7 +1,7 @@
 /* styles/app.css */
 
 /* Order matters */
-@layer tokens, reset, base, layout, components, utilities;
+@layer tokens, reset, base, layout, components, utilities, overlays;
 
 @import "./tokens.css" layer(tokens);
 @import "./reset.css" layer(reset);
@@ -12,5 +12,6 @@
 @import "./components.css" layer(components);
 @import "./profile.css" layer(components);
 @import "./utilities.css" layer(utilities);
+@import "./overlays.css" layer(overlays);
 
 @import "nouislider/dist/nouislider.css";

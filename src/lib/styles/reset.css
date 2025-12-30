@@ -108,3 +108,21 @@ html.overlay-open .page > .content {
 *::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
 }
+
+
+/* Overrides */
+
+.cropper-view-box {
+    outline: 1px solid color-mix(in oklab, var(--accent) 85%, transparent);
+}
+
+.cropper-dashed {
+    display: none;
+}
+
+.cropper-point {
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: var(--accent);
+    border-radius: 50%;
+}

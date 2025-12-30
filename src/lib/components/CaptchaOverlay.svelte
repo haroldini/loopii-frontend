@@ -14,7 +14,7 @@
     let captchaToken = "";
 
     let busy = false;
-    let message = "Captcha required. Please complete the challenge to continue.";
+    let message = null;
 
     // Promise hooks (set by openAndSolve)
     let resolveFn = null;
@@ -40,7 +40,7 @@
         busy = false;
         resolveFn = null;
         rejectFn = null;
-        message = "Captcha required. Please complete the challenge to continue.";
+        message = null;
     }
 
     function cancel(reason = "cancelled") {
@@ -101,6 +101,7 @@
     closedClass="u-hidden"
     renderOpenOnly={false}
     ariaLabel="Captcha verification"
+    mode="windowed"
     on:requestClose={() => cancel("closed")}
 >
     {#if isOpen}
@@ -109,24 +110,18 @@
             class="overlay__scrim"
             aria-hidden="true"
             tabindex="-1"
-            on:click={() => cancel("scrim")}
         ></button>
 
         <div class="overlay__panel captcha__panel" role="document">
-            <header class="overlay__header captcha__header">
-                <div class="bar__title">
-                    <h3>Verify you’re human</h3>
-                    <p class="text-hint">{message}</p>
+            <header class="bar bar--header overlay__header">
+                <div class="bar__inner">
+                    <div class="bar__title">
+                        <h3>Verify you're human</h3>
+                        {#if message}
+                            <p class="text-hint">{message}</p>
+                        {/if}
+                    </div>
                 </div>
-
-                <button
-                    type="button"
-                    class="btn btn--ghost btn--icon"
-                    aria-label="Close"
-                    on:click={() => cancel("close")}
-                >
-                    ✕
-                </button>
             </header>
 
             <main class="overlay__body captcha__body">
@@ -138,62 +133,33 @@
                         on:token={onCaptchaToken}
                     />
                 </div>
-
-                <div class="captcha__actions">
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--block"
-                        on:click={() => cancel("cancel")}
-                        disabled={busy}
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn--primary btn--block"
-                        on:click={confirm}
-                        disabled={!captchaToken || busy}
-                    >
-                        {busy ? "Verifying..." : "Continue"}
-                    </button>
-                </div>
             </main>
+
+            <div class="overlay__actionbar">
+                <div class="overlay__actions">
+                    <div class="overlay__actions-left">
+                        <button
+                            type="button"
+                            class="btn btn--ghost btn--icon"
+                            aria-label="Close"
+                            on:click={() => cancel("close")}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div class="overlay__actions-right">
+                        <button
+                            type="button"
+                            class="btn btn--primary btn--block"
+                            on:click={confirm}
+                            disabled={!captchaToken || busy}
+                        >
+                            {busy ? "Verifying..." : "Continue"}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     {/if}
 </Overlay>
 
-
-<style>
-    /* .captcha__panel {
-        max-width: 32rem;
-        width: min(32rem, calc(100% - var(--space-4)));
-        height: auto;
-        max-height: min(92vh, 900px);
-        margin: 0 auto;
-    } */
-
-    .captcha__header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: var(--space-2);
-    }
-
-    .captcha__body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
-    }
-
-    .captcha__widget {
-        display: flex;
-        justify-content: center;
-    }
-
-    .captcha__actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-2);
-    }
-</style>

@@ -14,7 +14,45 @@
     export let ariaLabel = "";
     export let ariaModal = true;
 
+    export let mode = "auto";
+    export let windowedAt = 768;
+
     const dispatch = createEventDispatcher();
+
+
+    // ===== Window / Fullscreen Management =====
+
+    let isWindowed = false;
+    let mql;
+
+    function syncWindowed() {
+        if (!browser) return;
+
+        if (mql) {
+            mql.removeEventListener("change", onMqlChange);
+            mql = null;
+        }
+
+        if (mode === "windowed") {
+            isWindowed = true;
+            return;
+        }
+        if (mode === "fullscreen") {
+            isWindowed = false;
+            return;
+        }
+
+        mql = window.matchMedia(`(min-width: ${windowedAt}px)`);
+        isWindowed = mql.matches;
+        mql.addEventListener("change", onMqlChange);
+    }
+
+    function onMqlChange(e) {
+        isWindowed = e.matches;
+    }
+
+    $: if (browser) syncWindowed();
+
 
     // ===== Overlay Management =====
 
@@ -70,10 +108,14 @@
         }
     }
 
+
+    // ===== Lifecycle =====
+
     onMount(() => {
         if (typeof window === "undefined") return;
         window.addEventListener("hashchange", onHashChange);
         window.addEventListener("keydown", onKeydown);
+        syncWindowed();
     });
 
     onDestroy(() => {
@@ -81,14 +123,20 @@
             window.removeEventListener("hashchange", onHashChange);
             window.removeEventListener("keydown", onKeydown);
         }
+        if (mql) mql.removeEventListener("change", onMqlChange);
         unlockScroll();
     });
+
+    $: rootClass =
+        open
+            ? [openClass, isWindowed ? "overlay--windowed" : ""].filter(Boolean).join(" ")
+            : closedClass;
 </script>
 
 
 {#if !renderOpenOnly || open}
     <div
-        class={open ? openClass : closedClass}
+        class={rootClass}
         role={open ? role : undefined}
         aria-modal={open ? String(ariaModal) : undefined}
         aria-label={open ? ariaLabel : undefined}

@@ -166,9 +166,7 @@
                 // If captcha required, solve + retry once with token
                 if (isCaptchaRequired(res.error)) {
                     try {
-                        token = await solveCaptcha({
-                            message: "Captcha required to send a password reset email.",
-                        });
+                        token = await solveCaptcha({});
                     } catch (e) {
                         error.set("Captcha required. Please try again");
                         status.set("failed");

@@ -358,6 +358,7 @@
         closedClass="u-hidden"
         renderOpenOnly={false}
         ariaLabel={title}
+        windowedAt={480}
         on:requestClose={() => closeOverlay(false)}
     >
         {#if isOpen}
@@ -371,12 +372,14 @@
 
             <div class="overlay__panel multiselect__panel">
                 <!-- Header -->
-                <header class="overlay__header">
-                    <div class="bar__title">
-                        <h3>{title}</h3>
-                        {#if hint}
-                            <p class="text-hint">{hint}</p>
-                        {/if}
+                <header class="bar bar--header overlay__header">
+                    <div class="bar__inner">
+                        <div class="bar__title">
+                            <h3>{title}</h3>
+                            {#if hint}
+                                <p class="text-hint">{hint}</p>
+                            {/if}
+                        </div>
                     </div>
                 </header>
 
@@ -514,163 +517,3 @@
         {/if}
     </Overlay>
 </div>
-
-
-<style>
-    .multi-select__control {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-2);
-        text-align: left;
-    }
-
-    @media (min-width: 768px) {
-        .multiselect__panel {
-            max-width: 32rem;
-            width: min(32rem, calc(100% - var(--space-4)));
-            height: auto;
-            max-height: min(92vh, 900px);
-            margin: 0 auto;
-        }
-    }
-
-    .multi-select__control:hover {
-        background: var(--bg-hover);
-    }
-
-    .multi-select__control:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .multi-select__value {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .multi-select__meta {
-        flex: 0 0 auto;
-        font-size: 0.9rem;
-    }
-
-    .multi-select__headerCount {
-        font-size: 0.9rem;
-        user-select: none;
-    }
-
-    .multi-select__headerCount.is-at-max {
-        color: var(--danger);
-        font-weight: var(--font-weight-semibold);
-    }
-
-    .multi-select__tools {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-
-        padding: var(--space-2) var(--gutter);
-        background: var(--bg-surface);
-        border-bottom: var(--border-width) solid var(--border-color);
-
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-    }
-
-    .multi-select__bulk {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-2);
-    }
-
-    .multi-select__list {
-        padding: var(--space-2) var(--gutter) var(--space-4);
-        display: flex;
-        flex-direction: column;
-        gap: 0.175rem;
-    }
-
-    .multi-select__empty {
-        padding: var(--space-3) var(--gutter);
-    }
-
-    .multi-select__row {
-        display: grid;
-        grid-template-columns: 1.5rem 1fr auto;
-        gap: var(--space-2);
-        align-items: center;
-
-        padding: 0.55rem 0.6rem;
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .multi-select__row:hover {
-        background: var(--bg-hover);
-    }
-
-    .multi-select__row[aria-selected="true"] {
-        background: color-mix(in oklab, var(--accent) 14%, var(--bg-surface));
-    }
-
-    .multi-select__row--group {
-        margin-top: var(--space-2);
-        background: color-mix(in oklab, var(--bg-surface) 84%, var(--border-color));
-        border: var(--border-width) solid var(--border-color);
-    }
-
-    .multi-select__row--group:hover {
-        background: color-mix(in oklab, var(--bg-hover) 86%, var(--border-color));
-    }
-
-    .multi-select__row--group[aria-disabled="true"] {
-        cursor: default;
-    }
-
-    .multi-select__row--group[aria-disabled="true"]:hover {
-        background: color-mix(in oklab, var(--bg-surface) 84%, var(--border-color));
-    }
-
-    .multi-select__label {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: var(--text-secondary);
-    }
-
-    .multi-select__count {
-        font-size: 0.85rem;
-    }
-
-    .multi-select__row input[type="checkbox"] {
-        width: 1.5rem;
-        height: 1.5rem;
-        margin: 0;
-        accent-color: var(--accent);
-        cursor: pointer;
-    }
-
-    .multi-select__row--group[aria-disabled="true"] input[type="checkbox"] {
-        cursor: not-allowed;
-    }
-
-    .multi-select__row--group--static {
-        cursor: default;
-    }
-
-    .multi-select__row--group--static:hover {
-        background: color-mix(in oklab, var(--bg-surface) 84%, var(--border-color));
-    }
-
-    .multi-select__group-spacer {
-        width: 1.5rem;
-        height: 1.5rem;
-        display: block;
-    }
-</style>
