@@ -17,7 +17,7 @@ export const user = writable(null);
 export const session = writable(null);
 export const resetToken = writable(null);
 export const authState = writable("loading"); 
-// "loading" | "unauthenticated" | "authenticated" | "recovery" | "error"
+// "loading" | "unauthenticated" | "authenticated" | "recovery" | "error" | "timeout"
 
 
 // For dangerous actions that require confirmation phrase

@@ -12,13 +12,12 @@
     let overlay;
     let isOpen = false;
 
-    let captchaRef;
     let captchaToken = "";
 
     let busy = false;
     let message = null;
 
-    // Promise hooks (set by openAndSolve)
+    // Promise hooks
     let resolveFn = null;
     let rejectFn = null;
 
@@ -46,7 +45,6 @@
 
     function cleanup() {
         captchaToken = "";
-        captchaRef?.reset();
         busy = false;
         autoSubmitted = false;
         resolveFn = null;
@@ -56,8 +54,11 @@
 
     function cancel(reason = "cancelled") {
         const rej = rejectFn;
-        cleanup();
-        closeOverlay();
+        try {
+            closeOverlay();
+        } finally {
+            cleanup();
+        }
         rej?.(new Error(reason));
     }
 
@@ -65,14 +66,12 @@
         if (!captchaToken || busy) return;
         busy = true;
 
-        // Resolve with token, then close/reset.
         const res = resolveFn;
         const token = captchaToken;
 
         cleanup();
         closeOverlay();
 
-        // Let DOM update (avoid callers racing with teardown)
         await tick();
         res?.(token);
     }
@@ -95,11 +94,13 @@
     }
 
     onDestroy(() => {
-        // If component is destroyed while awaiting captcha, reject.
-        if (rejectFn) {
-            try { rejectFn(new Error("captcha_unmounted")); } catch {}
+        const rej = rejectFn;
+        try {
+            closeOverlay();
+        } finally {
+            cleanup();
         }
-        cleanup();
+        try { rej?.(new Error("captcha_unmounted")); } catch {}
     });
 </script>
 
@@ -138,7 +139,6 @@
             <main class="overlay__body captcha__body">
                 <div class="captcha__widget">
                     <HCaptcha
-                        bind:this={captchaRef}
                         sitekey={HCAPTCHA_SITEKEY}
                         theme="dark"
                         on:token={onCaptchaToken}

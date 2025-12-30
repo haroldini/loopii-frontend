@@ -167,7 +167,7 @@
                                         on:click={confirmLocalSignOut}
                                     >
                                         <Icon icon={UI_ICONS.logout} class="btn__icon" />
-                                        <span class="btn__label">Log Out</span>
+                                        <span class="btn__label">Log out</span>
                                     </button>
                                 </div>
 

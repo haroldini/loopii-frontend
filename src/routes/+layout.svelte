@@ -40,7 +40,7 @@
     // ---------------- Page metadata ---------------- //
     const pageTitle = $derived.by(() => {
         if ($referencesStatus === "error" || $authState === "error" || $profileState === "error") {
-            return "loopii • couldn't connect";
+            return "loopii";
         }
 
         if (
@@ -49,7 +49,7 @@
             $authState === "loading" ||
             $profileState === "loading"
         ) {
-            return "loopii • Loading";
+            return "loopii";
         }
 
         if ($authState === "unauthenticated" && $subPage === "login") {
@@ -99,7 +99,7 @@
         setTimeout(() => {
             if ($referencesStatus === "loading") {
                 console.warn("References loading timeout.");
-                referencesStatus.set("error");
+                referencesStatus.set("timeout");
             }
 
             if ($authState === "loading") {
@@ -233,10 +233,10 @@
                 <div class="section stack">
                     <Icon icon={UI_ICONS.animFailed} class="icon--large" />
                     <p class="text-center text-fw-semibold">Couldn't connect to loopii.</p>
-                    <p class="text-center text-hint">Please refresh or try again later.</p>
+                    <p class="text-hint text-center">If the problem persists, refresh or try again later.</p>
                     <div class="actionbar">
                         <button type="button" class="btn btn--primary btn--block" onclick={retryAll}>
-                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Retry
+                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Try again
                         </button>
                         {#if $authState === "authenticated"}
                             <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-{:else if $authState === "timeout" || $profileState === "timeout"}
+{:else if $authState === "timeout" || $profileState === "timeout" || $referencesStatus === "timeout"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
@@ -281,8 +281,8 @@
             <section class="card">
                 <div class="section stack">
                     <Icon icon={UI_ICONS.animFailed} class="icon--large" />
-                    <p class="text-center">Sorry, loopii is taking longer than expected to load.</p>
-                    <p class="text-center text-hint">Try again, or log out and log back in.</p>
+                    <p class="text-center text-fw-semibold">Couldn't connect to loopii.</p>
+                    <p class="text-hint text-center">If the problem persists, refresh or try again later.</p>
                     <div class="actionbar">
                         <button type="button" class="btn btn--primary btn--block" onclick={refreshPage}>
                             <Icon icon={UI_ICONS.refresh} class="btn__icon" />Try again
@@ -349,11 +349,16 @@
             <section class="card">
                 <div class="section stack">
                     <Icon icon={UI_ICONS.animFailed} class="icon--large" />
-                    <p>Sorry, something went wrong.</p>
-                    <p class="text-hint">Try refreshing, or log out and log back in.</p>
-                    <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                        <Icon icon={UI_ICONS.logout} class="btn__icon" /> Log out
-                    </button>
+                    <p class="text-center text-fw-semibold">Sorry, something went wrong.</p>
+                    <p class="text-hint text-center">If the problem persists, log out or try again later.</p>
+                    <div class="actionbar">
+                        <button type="button" class="btn btn--primary btn--block" onclick={refreshPage}>
+                            <Icon icon={UI_ICONS.refresh} class="btn__icon" />Reconnect
+                        </button>
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
