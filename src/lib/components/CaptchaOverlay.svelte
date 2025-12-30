@@ -1,9 +1,11 @@
 
 <script>
     import { onDestroy, tick } from "svelte";
-    import Overlay from "$lib/components/Overlay.svelte";
-    import HCaptcha from "$lib/components/HCaptcha.svelte";
+    import Icon from "@iconify/svelte";
+    import { UI_ICONS } from "$lib/stores/app.js"; 
     import { HCAPTCHA_SITEKEY } from "$lib/utils/env.js";
+    import HCaptcha from "$lib/components/HCaptcha.svelte";
+    import Overlay from "$lib/components/Overlay.svelte";
 
     const HASH = "#captcha";
 
@@ -20,8 +22,16 @@
     let resolveFn = null;
     let rejectFn = null;
 
+    let autoSubmitted = false;
     function onCaptchaToken(e) {
         captchaToken = e.detail.token || "";
+        if (!captchaToken) {
+            autoSubmitted = false;
+            return;
+        }
+        if (busy || autoSubmitted) return;
+        autoSubmitted = true;
+        confirm();
     }
 
     function openOverlay() {
@@ -38,6 +48,7 @@
         captchaToken = "";
         captchaRef?.reset();
         busy = false;
+        autoSubmitted = false;
         resolveFn = null;
         rejectFn = null;
         message = null;
@@ -144,17 +155,24 @@
                             aria-label="Close"
                             on:click={() => cancel("close")}
                         >
-                            ✕
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
                         </button>
                     </div>
                     <div class="overlay__actions-right">
                         <button
                             type="button"
-                            class="btn btn--primary btn--block"
+                            class="btn btn--primary"
+                            class:is-loading={busy}
                             on:click={confirm}
                             disabled={!captchaToken || busy}
                         >
-                            {busy ? "Verifying..." : "Continue"}
+                            {#if busy}
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                                <span class="btn__label">Submitting...</span>
+                            {:else}
+                                <span class="btn__label">Continue</span>
+                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                            {/if}
                         </button>
                     </div>
                 </div>
