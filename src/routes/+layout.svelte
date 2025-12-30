@@ -11,6 +11,7 @@
 
     import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
+    import { registerCaptchaOverlay } from "$lib/utils/captcha.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
     import { initLoopsStore } from "$lib/stores/loops.js";
@@ -25,10 +26,12 @@
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
     import QuickSettings from "$lib/components/QuickSettings.svelte";
+    import CaptchaOverlay from "$lib/components/CaptchaOverlay.svelte";
 
 
     const LOADING_TIMEOUT = 5000; // 5 seconds
     let didPreloadRoutes = false;
+    let captchaOverlay = $state(null);
 
 
     let { children } = $props();
@@ -83,6 +86,7 @@
 
     // ---------------- Initial setup ---------------- //
     onMount(() => {
+        registerCaptchaOverlay(captchaOverlay); 
         initReferences();
         initAuth();
 
@@ -210,12 +214,13 @@
 
 
 <Popups />
-
-{#if !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
-    {#if browser}
+{#if browser}
+    <CaptchaOverlay bind:this={captchaOverlay} />
+    {#if !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
         <QuickSettings />
     {/if}
 {/if}
+
 
 
 <!-- Couldn't connect to loopii // Missing db, auth, profile, etc. -->

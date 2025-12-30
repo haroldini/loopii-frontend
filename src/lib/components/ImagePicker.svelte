@@ -265,11 +265,13 @@
         ></button>
 
         <div class="overlay__panel">
-            <header class="overlay__header">
-                <div class="bar__title">
-                    <h3>{title}</h3>
-                    <p class="text-hint">{hint}</p>
-                </div>
+            <header class="bar bar--header overlay__header">
+                <div class="bar__inner">
+                    <div class="bar__title">
+                        <h3>{title}</h3>
+                        <p class="text-hint">{hint}</p>
+                    </div>
+                </div>  
             </header>
 
             <main class="overlay__body overlay__body--no-scroll imagepicker__body">
@@ -366,112 +368,3 @@
     on:change={handleFileSelect}
     class="u-hidden"
 />
-
-
-<style>
-    .imagepicker__preview {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        border-radius: var(--radius-lg);
-        border: var(--border-width) solid var(--border-color);
-        background: var(--bg-surface);
-
-        outline: 0 solid transparent;
-        outline-offset: 0;
-        transition: outline-offset 0.15s ease;
-    }
-
-    .imagepicker__preview:hover {
-        border-color: transparent;
-        outline: 2px solid var(--accent);
-        outline-offset: 4px;
-    }
-
-    .imagepicker__preview-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        pointer-events: none;
-    }
-
-    .imagepicker__body {
-        overflow: hidden;
-        padding: var(--space-3);
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
-    .imagepicker__stage {
-        flex: 1 1 auto;
-        min-height: 0;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .imagepicker__image-wrapper {
-        width: min(100%, 75rem);
-        aspect-ratio: 1 / 1;
-
-        max-height: 100%;
-        max-width: 100%;
-
-        background: var(--bg-app);
-        border: var(--border-width) solid var(--border-color);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .imagepicker__full-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        pointer-events: none;
-    }
-
-    .imagepicker__no-image {
-        width: min(100%, 75rem);
-        height: 100%;
-
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-
-        color: var(--text-muted);
-        cursor: pointer;
-        border-radius: var(--radius-lg);
-        border: var(--border-width) dashed var(--border-color);
-        background: var(--bg-surface);
-        text-align: center;
-        padding: var(--space-4);
-    }
-
-    :global(.cropper-view-box) {
-        outline: 1px solid color-mix(in oklab, var(--accent) 85%, transparent);
-    }
-
-    :global(.cropper-dashed) {
-        display: none;
-    }
-
-    :global(.cropper-point) {
-        width: 0.75rem;
-        height: 0.75rem;
-        background-color: var(--accent);
-        border-radius: 50%;
-    }
-</style>

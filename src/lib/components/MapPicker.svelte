@@ -246,163 +246,79 @@
     bind:this={overlay}
     open={mode === "fullscreen"}
     hash={overlayHash}
-    openClass=""
-    closedClass=""
+    openClass="overlay"
+    closedClass="mappicker__preview card"
     renderOpenOnly={false}
     role="presentation"
     ariaModal={false}
-    ariaLabel=""
+    ariaLabel="Select location"
+    windowedAt={768}
     on:requestClose={() => exitToPreview(false)}
 >
-    <div
-        class={mode === "fullscreen" ? "overlay" : "mappicker__preview card"}
-        role={mode === "fullscreen" ? "dialog" : undefined}
-        aria-modal={mode === "fullscreen" ? "true" : undefined}
-        aria-label={mode === "fullscreen" ? title : "Map picker"}
-    >
-        {#if mode === "fullscreen"}
-            <button
-                type="button"
-                class="overlay__scrim"
-                aria-hidden="true"
-                tabindex="-1"
-                on:click={() => exitToPreview(false)}
-            ></button>
-        {/if}
+    {#if mode === "fullscreen"}
+        <button
+            type="button"
+            class="overlay__scrim"
+            aria-hidden="true"
+            tabindex="-1"
+            on:click={() => exitToPreview(false)}
+        ></button>
+    {/if}
 
-        <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
-            {#if mode === "fullscreen"}
-                <header class="overlay__header">
+    <div class={mode === "fullscreen" ? "overlay__panel" : "mappicker__panel"}>
+        {#if mode === "fullscreen"}
+            <header class="bar bar--header overlay__header">
+                <div class="bar__inner">
                     <div class="bar__title">
                         {#if title}<h3>{title}</h3>{/if}
                         {#if hint}<p class="text-hint">{hint}</p>{/if}
                     </div>
-                </header>
-            {/if}
+                </div>
+            </header>
+        {/if}
 
-            <main class={mode === "fullscreen"
-                ? "overlay__body overlay__body--no-scroll mappicker__body"
-                : "mappicker__body"}
-            >
-                <div class="mappicker__stage">
-                    <div class="mappicker__map-wrapper">
+        <main class={mode === "fullscreen"
+            ? "overlay__body overlay__body--no-scroll mappicker__body"
+            : "mappicker__body"}
+        >
+            <div class="mappicker__stage">
+                <div class="mappicker__map-wrapper">
+                    <button
+                        type="button"
+                        bind:this={mapContainer}
+                        class="mappicker__map ui-pressable"
+                        on:click={mode === "preview" ? enterFullscreen : null}
+                        aria-label="Open map in fullscreen"
+                    ></button>
+                </div>
+            </div>
+        </main>
+
+        {#if mode === "fullscreen"}
+            <div class="overlay__actionbar">
+                <div class="overlay__actions">
+                    <div class="overlay__actions-left">
                         <button
                             type="button"
-                            bind:this={mapContainer}
-                            class="mappicker__map ui-pressable"
-                            on:click={mode === "preview" ? enterFullscreen : null}
-                            aria-label="Open map in fullscreen"
-                        ></button>
+                            class="btn btn--ghost"
+                            on:click={() => exitToPreview(false)}
+                        >
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
+                            <span class="btn__label">Cancel</span>
+                        </button>
+                    </div>
+                    <div class="overlay__actions-right">
+                        <button
+                            type="button"
+                            class="btn btn--primary"
+                            on:click={() => exitToPreview(true)}
+                        >
+                            <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <span class="btn__label">Confirm</span>
+                        </button>
                     </div>
                 </div>
-            </main>
-
-            {#if mode === "fullscreen"}
-                <div class="overlay__actionbar">
-                    <div class="overlay__actions">
-                        <div class="overlay__actions-left">
-                            <button
-                                type="button"
-                                class="btn btn--ghost"
-                                on:click={() => exitToPreview(false)}
-                            >
-                                <Icon icon={UI_ICONS.close} class="btn__icon" />
-                                <span class="btn__label">Cancel</span>
-                            </button>
-                        </div>
-                        <div class="overlay__actions-right">
-                            <button
-                                type="button"
-                                class="btn btn--primary"
-                                on:click={() => exitToPreview(true)}
-                            >
-                                <Icon icon={UI_ICONS.check} class="btn__icon" />
-                                <span class="btn__label">Confirm</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            {/if}
-        </div>
+            </div>
+        {/if}
     </div>
 </Overlay>
-
-
-<style>
-    .mappicker__preview {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        padding: 0;
-        border-radius: var(--radius-lg);
-        position: relative;
-        z-index: 0;
-    }
-
-    .mappicker__panel {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
-    .mappicker__body {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: hidden;
-        width: 100%;
-        height: 100%;
-    }
-
-    .mappicker__stage {
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        display: flex;
-    }
-
-    .overlay .mappicker__body {
-        padding: var(--space-3);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .overlay .mappicker__stage {
-        flex: 1 1 auto;
-        align-items: center;
-        justify-content: center;
-        min-height: 0;
-    }
-
-    .mappicker__map-wrapper {
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-    }
-
-    .overlay .mappicker__map-wrapper {
-        width: min(100%, 75rem);
-        height: 100%;
-
-        background: var(--bg-app);
-        border: var(--border-width) solid var(--border-color);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-
-        display: flex;
-        align-items: stretch;
-        justify-content: stretch;
-    }
-
-    .mappicker__map {
-        width: 100%;
-        height: 100%;
-        border: 0;
-        padding: 0;
-        margin: 0;
-        border-radius: 0;
-        background: transparent;
-        display: block;
-    }
-</style>

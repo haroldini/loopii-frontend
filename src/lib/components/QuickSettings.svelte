@@ -93,6 +93,7 @@
     closedClass="u-hidden"
     renderOpenOnly={false}
     ariaLabel="Quick settings"
+    windowedAt={480}
     on:requestClose={() => close()}
 >
     {#if isOpen}
@@ -105,12 +106,14 @@
         ></button>
 
         <div class="overlay__panel quick-settings__panel" role="document">
-            <header class="overlay__header quick-settings__header">
-                <div class="bar__title">
-                    <h3>Settings</h3>
-                    {#if isAuthed}
-                        <p class="text-hint">Signed in as <strong>{email}</strong></p>
-                    {/if}
+            <header class="bar bar--header overlay__header">
+                <div class="bar__inner">
+                    <div class="bar__title">
+                        <h3>Settings</h3>
+                        {#if isAuthed}
+                            <p class="text-hint">Signed in as <strong>{email}</strong></p>
+                        {/if}
+                    </div>
                 </div>
 
                 <button
@@ -177,36 +180,3 @@
         </div>
     {/if}
 </Overlay>
-
-
-<style>
-    .quick-settings__trigger {
-        position: fixed;
-        top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
-        right: var(--space-3);
-        z-index: var(--z-nav);
-    }
-
-    @media (min-width: 768px) {
-        .quick-settings__panel {
-            max-width: 32rem;
-            width: min(32rem, calc(100% - var(--space-4)));
-            height: auto;
-            max-height: min(92vh, 900px);
-            margin: 0 auto;
-        }
-    }
-
-    .quick-settings__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-2);
-    }
-
-    .quick-settings__body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
-    }
-</style>
