@@ -12,7 +12,7 @@ const isDev = ENVIRONMENT === "dev";
 // For profile data and state
 export const profile = writable(null);
 export const profileState = writable("idle");
-// "idle" | "loading" | "missing" | "loaded" | "error"
+// "idle" | "loading" | "missing" | "loaded" | "error" | "timeout"
 
 
 // Reset profile on deauth

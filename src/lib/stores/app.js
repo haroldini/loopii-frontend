@@ -221,7 +221,7 @@ export const allCountries = writable([]);
 export const allInterests = writable([]);
 export const allPlatforms = writable([]);
 
-// "unloaded" | "loading" | "loaded" | "error"
+// "unloaded" | "loading" | "loaded" | "error" | "timeout"
 export const referencesStatus = writable("unloaded");
 
 export async function initReferences({ force = false } = {}) {
