@@ -172,13 +172,15 @@
                 showForm.set(true);
             }
         } finally {
-            if (!$error) {
-                if (!["resetEmailSent", "signedUp"].includes($authFormStatus)) {
-                    resetSensitive(); 
+            try {
+                if (!$error) {
+                    if (!["resetEmailSent", "signedUp"].includes($authFormStatus)) {
+                        resetSensitive();
+                    }
                 }
+            } finally {
+                isSubmitting.set(false);
             }
-            captchaRef?.reset();
-            isSubmitting.set(false);
         }
     }
 
