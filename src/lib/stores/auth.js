@@ -32,6 +32,11 @@ export function isCaptchaRequired(errMsg) {
     return (errMsg || "").toLowerCase().includes("captcha verification process failed");
 }
 
+// Helper for getting the Supabase project ref from the hostname.
+function getSupabaseProjectRef() {
+    return new URL(SUPABASE_URL).hostname.split(".")[0];
+}
+
 
 // --- Auth initialisation ---
 let authSub; // Singleton subscription to auth changes
@@ -69,7 +74,8 @@ export async function initAuth() {
             });
             if (error) {
                 if (isDev) console.error("Error setting recovery session:", error?.message || error);
-                authState.set("error");
+                if (!error?.status) authState.set("timeout");
+                else forceUnauth();
                 return;
             }
             resetToken.set(access_token);
@@ -82,9 +88,17 @@ export async function initAuth() {
         const { data, error } = await supabase.auth.getSession();
         if (error) {
             if (isDev) console.error("Error getting session:", error?.message || error);
-            authState.set("error");
+
+            // No status => likely network/server issue
+            if (!error?.status) {
+                authState.set("timeout");
+                return;
+            }
+            
+            forceUnauth();
             return;
         }
+
         session.set(data.session);
         user.set(data.session?.user ?? null);
         authState.set(data.session?.user ? "authenticated" : "unauthenticated");
@@ -100,6 +114,11 @@ export async function initAuth() {
         }
 
     } catch (err) {
+        if (isDev) console.error("initAuth threw:", err);
+        if (!err?.status) {
+            authState.set("timeout");
+            return;
+        }
         authState.set("error");
         addToast({
             variant: "banner",
@@ -107,6 +126,7 @@ export async function initAuth() {
             description: "Please refresh the page or try again later.",
             autoHideMs: null,
         });
+
     } finally {
         if (get(authState) === "loading") {
             authState.set("unauthenticated");
@@ -133,11 +153,13 @@ function normalizeError(err, fallback = ERR_FALLBACK) {
 // --- Helper to force unauth ---
 export function forceUnauth() {
     try {
-        const key = `sb-${SUPABASE_URL}-auth-token`;
-        localStorage.removeItem(key);
+        const ref = getSupabaseProjectRef();
+        localStorage.removeItem(`sb-${ref}-auth-token`);
+        localStorage.removeItem(`sb-${ref}-auth-token-code-verifier`);
     } catch (err) {
         if (isDev) console.warn("Failed to clear Supabase cache:", err);
     }
+    resetToken.set(null);
     authState.set("unauthenticated");
     user.set(null);
     session.set(null);

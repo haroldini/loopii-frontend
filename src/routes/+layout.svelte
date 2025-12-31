@@ -287,9 +287,11 @@
                         <button type="button" class="btn btn--primary btn--block" onclick={refreshPage}>
                             <Icon icon={UI_ICONS.refresh} class="btn__icon" />Try again
                         </button>
-                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
-                            <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
-                        </button>
+                        {#if $authState === "authenticated"}
+                            <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                                <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                            </button>
+                        {/if}
                     </div>
                 </div>
             </section>
