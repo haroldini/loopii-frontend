@@ -121,6 +121,8 @@
     }
 
     async function handleSubmit() {
+        if ($isSubmitting) return;
+
         error.set("");
         status.set("idle");
         emailSentToNew = "";
@@ -135,7 +137,7 @@
                 status.set("updating");
                 const { error: err } = await updatePassword($currentPassword, $newPassword);
                 if (err) {
-                    error.set(err || "Could not update password");
+                    error.set(err || "Couldn't update password");
                     status.set("failed");
                 } else status.set("updated");
 
@@ -143,7 +145,7 @@
                 status.set("updating");
                 const { error: err } = await updateEmail($newEmail);
                 if (err) {
-                    error.set(err || "Could not update email");
+                    error.set(err || "Couldn't update email");
                     status.set("failed");
                 } else {
                     emailSentToNew = $newEmail;
@@ -166,7 +168,7 @@
                 // If captcha required, solve + retry once with token
                 if (isCaptchaRequired(res.error)) {
                     try {
-                        token = await solveCaptcha({});
+                        token = await solveCaptcha();
                     } catch (e) {
                         error.set("Captcha required. Please try again");
                         status.set("failed");
@@ -181,13 +183,16 @@
                 }
 
                 // Final failure: show supabase error
-                error.set(res.error || "Could not send reset email");
+                error.set(res.error || "Couldn't send reset email");
                 status.set("failed");
             }
         } finally {
-            isSubmitting.set(false);
-            resetValidation();
-            if (!["emailPending", "failed"].includes($status)) resetSensitive();
+            try {
+                resetValidation();
+                if (!["emailPending", "failed"].includes($status)) resetSensitive();
+            } finally {
+                isSubmitting.set(false);
+            }
         }
     }
 
@@ -403,8 +408,12 @@
 
                             {#if $status === "emailPending" && $mode === "email"}
                                 <p class="text-success">
-                                    Confirmation emails sent! Check <strong>{emailSentToOld}</strong> and <strong>{emailSentToNew}</strong>.
+                                    Confirmation emails sent! Click the confirmation links in <strong>both</strong> inboxes to verify:
                                 </p>
+                                <ul class="text-success" style="margin: 0; padding-left: 1.25rem;">
+                                    <li class="text-success text-fw-semibold">{emailSentToOld}</li>
+                                    <li class="text-success text-fw-semibold">{emailSentToNew}</li>
+                                </ul>
                             {:else if $status === "emailPending" && $mode === "reset"}
                                 <p class="text-success">
                                     Password reset email sent! Check your inbox (<strong>{$user?.email}</strong>).

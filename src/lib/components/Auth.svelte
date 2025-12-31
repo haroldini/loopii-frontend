@@ -55,9 +55,7 @@
                 if (isCaptchaRequired(res.error)) {
                     let token;
                     try {
-                        token = await solveCaptcha({
-                            message: "Captcha required to create an account.",
-                        });
+                        token = await solveCaptcha();
                     } catch (e) {
                         error.set("Captcha required. Please try again");
                         authFormStatus.set("signUpFailed");
@@ -94,9 +92,7 @@
                 if (isCaptchaRequired(res.error)) {
                     let token;
                     try {
-                        token = await solveCaptcha({
-                            message: "Captcha required to log in.",
-                        });
+                        token = await solveCaptcha();
                     } catch (e) {
                         error.set("Captcha required. Please try again");
                         authFormStatus.set("loginFailed");
@@ -131,9 +127,7 @@
                 if (isCaptchaRequired(res.error)) {
                     let token;
                     try {
-                        token = await solveCaptcha({
-                            message: "Captcha required to send a password reset email.",
-                        });
+                        token = await solveCaptcha();
                     } catch (e) {
                         error.set("Captcha required. Please try again");
                         authFormStatus.set("resetRequestFailed");
@@ -398,7 +392,7 @@
 
     {:else if $authFormStatus === "passwordReset"}
         <Icon icon={UI_ICONS.animSuccess} class="icon--large" />
-        <p class="text-success text-fw-semibold">
+        <p class="text-success text-fw-semibold text-center">
             Your password has been reset successfully.
         </p>
 
@@ -414,7 +408,7 @@
     <!-- Escape hatch -->
     {:else}
         <Icon icon={UI_ICONS.animFailed} class="icon--large" />
-        <p class="text-danger">
+        <p class="text-success text-fw-semibold text-center">
             An unexpected error occurred. Please try again.
         </p>
 

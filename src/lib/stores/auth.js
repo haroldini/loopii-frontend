@@ -5,6 +5,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY, ENVIRONMENT } from "$lib/utils/env.js"
 
 import { updatePassword as _updatePassword, deleteAccount as _deleteAccount } from "$lib/api/account.js";
 import { addToast } from "$lib/stores/popups.js";
+import { solveCaptcha } from "$lib/utils/captcha.js";
 
 
 const isDev = ENVIRONMENT === "dev";
@@ -258,40 +259,38 @@ export async function signOut(scope = "local") {
 
 export async function updatePassword(currentPassword, newPassword) {
     try {
-        // Backend verifies current password and updates Supabase
-        const data = await _updatePassword({ currentPassword, newPassword });
-        if (!data?.session) {
-            forceUnauth();
-            addToast({
-                variant: "banner",
-                text: "Session expired.",
-                description: "Please sign in again to update your password.",
-                autoHideMs: null,
-            });
-            return { data: null, error: "Please sign in again to update your password" };
+        // ----- Main PW update block -----
+        let data;
+        try {
+            data = await _updatePassword({ currentPassword, newPassword });
+        } catch (err) {
+
+            // Captcha required error
+            if (err?.status === 428) {
+                let token;
+                try {
+                    token = await solveCaptcha();
+                } catch (e) {
+                    return { data: null, error: "Captcha required. Please try again" };
+                }
+                // Try again with captcha
+                data = await _updatePassword({ currentPassword, newPassword, captchaToken: token });
+            
+            // Other backend error
+            } else {
+                throw err;
+            }
         }
 
-        // Update client with new session
-        const { data: newSession, error } = await supabase.auth.setSession({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-        });
-        if (error || !newSession?.session?.user) {
-            forceUnauth();
-            addToast({
-                variant: "banner",
-                text: "Password updated.",
-                description: "Please sign in to continue.",
-                autoHideMs: null,
-            });
-            return { data: null, error: "Please sign in again to continue" };
-        }
-
-        session.set(newSession.session);
-        user.set(newSession.session.user);
+        // Revoke session & prompt login
+        try {
+            await supabase.auth.signOut({ scope: "global" });
+        } catch {}
+        forceUnauth();
         addToast({
             variant: "banner",
             text: "Password updated.",
+            description: "Please sign in again to continue.",
             autoHideMs: null,
         });
         return { data, error: null };
@@ -341,34 +340,13 @@ export async function updateEmail(newEmail) {
             }
             return { data: null, error: normalizeError(error) };
         }
-
-        // Fetch fresh session after update
-        const { data: refreshed, error: refreshError } = await supabase.auth.getSession();
-        if (refreshError || !refreshed?.session?.user) {
-            forceUnauth();
-            addToast({
-                variant: "banner",
-                text: "Email updated.",
-                description: "Please sign in to continue.",
-                autoHideMs: null,
-            });
-            return { data: null, error: "Please sign in to continue" };
-        }
-
-        session.set(refreshed.session);
-        user.set(refreshed.session.user);
-        addToast({
-            variant: "banner",
-            text: "Email updated.",
-            autoHideMs: null,
-        });
         return { data, error: null };
-
+        
     } catch (err) {
-        // Standard error handling
         return { data: null, error: normalizeError(err) };
     }
 }
+
 
 export async function deleteAccount(currentPassword, confirmPhrase) {
 
@@ -380,7 +358,31 @@ export async function deleteAccount(currentPassword, confirmPhrase) {
 
     try {
         // Delete account
-        const data = await _deleteAccount({ currentPassword });
+        let data;
+        try {
+            data = await _deleteAccount({ currentPassword });
+        } catch (err) {
+            const msg = normalizeError(err);
+
+            // Captcha required error
+            if (isCaptchaRequired(msg) || err?.status === 428) {
+                let token;
+                try {
+                    token = await solveCaptcha({
+                        message: "Captcha required to delete your account.",
+                    });
+                } catch (e) {
+                    return { data: null, error: "Captcha required. Please try again" };
+                }
+                // Try again with captcha
+                data = await _deleteAccount({ currentPassword, captchaToken: token });
+            
+            // Other backend error
+            } else {
+                throw err;
+            }
+        }
+
         forceUnauth();
         addToast({
             variant: "banner",
