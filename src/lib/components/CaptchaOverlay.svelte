@@ -117,12 +117,10 @@
     on:requestClose={() => cancel("closed")}
 >
     {#if isOpen}
-        <button
-            type="button"
+        <div
             class="overlay__scrim"
             aria-hidden="true"
-            tabindex="-1"
-        ></button>
+        ></div>
 
         <div class="overlay__panel captcha__panel" role="document">
             <header class="bar bar--header overlay__header">

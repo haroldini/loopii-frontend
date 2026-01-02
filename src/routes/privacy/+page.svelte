@@ -7,7 +7,7 @@
     import { authState } from "$lib/stores/auth.js";
     import { profileState } from "$lib/stores/profile.js";
 
-    const CONTACT_EMAIL = "contact@loopii.app"; // change if you use Proton/pm.me
+    const CONTACT_EMAIL = "contact@loopii.app";
 
     $: inApp = $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded";
 

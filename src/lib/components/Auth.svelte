@@ -20,6 +20,12 @@
     import { isCaptchaRequired } from "$lib/stores/auth.js";
 
 
+    let acceptedLegal = false;
+
+    $: if ($subPage !== "signup") {
+        acceptedLegal = false;
+    }
+
     // Unmounting logic
     onDestroy(() => {
         resetAuthForm();
@@ -33,8 +39,12 @@
 
     // Function to handle the authentication page form complete, triggering correct auth function
     async function handleSubmit() {
+        if ($subPage === "signup" && !acceptedLegal) {
+            error.set("Please confirm you agree to the Terms and Privacy Policy");
+            showForm.set(true);
+            return;
+        }
         isSubmitting.set(true); // Prevent accidental double submission
-
         error.set("");
         authFormStatus.set("");
         validationErrors.set([]);
@@ -276,6 +286,24 @@
             </p>
         {/if}
 
+{#if $subPage === "signup"}
+    <label class="form__legal" for="auth-accept-legal">
+        <span>
+            I agree to the
+            <a class="text-link" href="/terms" target="_blank" rel="noreferrer">Terms</a>
+            and
+            <a class="text-link" href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+        </span>
+
+        <input
+            id="auth-accept-legal"
+            type="checkbox"
+            checked={acceptedLegal}
+            on:change={(e) => (acceptedLegal = e.target.checked)}
+        />
+    </label>
+{/if}
+
         {#if $error}
             <p class="text-danger">{$error}</p>
         {/if}
@@ -290,7 +318,7 @@
                         type="submit"
                         class="btn btn--primary btn--block"
                         class:is-loading={$isSubmitting}
-                        disabled={!$readyToSubmit || $isSubmitting}
+                        disabled={!$readyToSubmit || $isSubmitting || !acceptedLegal}
                         >
                         <span class="btn__label">Sign up</span>
                         <Icon icon={UI_ICONS.signUp} class="btn__icon" />

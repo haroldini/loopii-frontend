@@ -221,6 +221,8 @@
     <!-- Only index and follow on the homepage -->
     {#if $page.url.pathname === "/"}
         <meta name="robots" content="index, follow" />
+    {:else if PUBLIC_ROUTES.has($page.url.pathname)}
+        <meta name="robots" content="noindex, follow" />
     {:else}
         <meta name="robots" content="noindex, nofollow" />
     {/if}
