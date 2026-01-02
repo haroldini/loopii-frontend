@@ -47,6 +47,30 @@ img {
     display: block;
 }
 
+
+/* Lists */
+ul,
+ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+}
+
+li {
+    margin: 0.25rem 0;
+}
+
+li::marker {
+    color: var(--text-muted);
+}
+
+ul ul,
+ul ol,
+ol ul,
+ol ol {
+    margin-top: var(--space-2);
+}
+
 /* Accessible focus baseline (class patterns may override). */
 :focus-visible {
     outline: var(--focus-ring-width) solid var(--focus-ring-color);

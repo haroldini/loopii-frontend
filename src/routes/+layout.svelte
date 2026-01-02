@@ -34,6 +34,17 @@
     let captchaOverlay = $state(null);
 
 
+    const PUBLIC_ROUTES = new Set(["/privacy", "/terms", "/contact"]);
+    const shouldBypassGates = $derived.by(() => {
+        const isPublic = PUBLIC_ROUTES.has($page.url.pathname);
+        const appReady =
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded";
+
+        return isPublic && !appReady;
+    });
+
     let { children } = $props();
 
 
@@ -90,6 +101,10 @@
         initReferences();
         initAuth();
 
+        preloadData("/privacy");
+        preloadData("/terms");
+        preloadData("/contact");
+        
         updateThemeColor();
 
         const unsubscribeTheme = theme.subscribe(() => {
@@ -216,15 +231,23 @@
 <Popups />
 {#if browser}
     <CaptchaOverlay bind:this={captchaOverlay} />
-    {#if !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
+    {#if !shouldBypassGates && !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
         <QuickSettings />
     {/if}
 {/if}
 
 
+<!-- Display public routes -->
+{#if shouldBypassGates}
+    <div class="app app--no-nav">
+        <div class="app-body">
+            {@render children?.()}
+        </div>
+    </div>
+
 
 <!-- Couldn't connect to loopii // Missing db, auth, profile, etc. -->
-{#if $referencesStatus === "error" || $authState === "error" || $profileState === "error"}
+{:else if $referencesStatus === "error" || $authState === "error" || $profileState === "error"}
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
             

@@ -410,7 +410,7 @@
                                 <p class="text-success">
                                     Confirmation emails sent! Click the confirmation links in <strong>both</strong> inboxes to verify:
                                 </p>
-                                <ul class="text-success" style="margin: 0; padding-left: 1.25rem;">
+                                <ul class="text-success">
                                     <li class="text-success text-fw-semibold">{emailSentToOld}</li>
                                     <li class="text-success text-fw-semibold">{emailSentToNew}</li>
                                 </ul>
@@ -470,5 +470,50 @@
             </div>
         </div>
 
+        <div class="section stack">
+            <h3>Info</h3>
+            <div class="card card--panel" role="region" aria-label="Privacy, terms, and contact">
+                <div class="section stack">
+                    <div class="actionbar">
+                        <button
+                            type="button"
+                            class="btn btn--block btn--ghost"
+                            on:click={() => goto("/privacy")}
+                            aria-label="Privacy"
+                            title="Privacy"
+                        >
+                            <Icon icon={UI_ICONS["privacy"]} class="btn__icon" />
+                            <span class="btn__label">Privacy</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--block btn--ghost"
+                            on:click={() => goto("/terms")}
+                            aria-label="Terms"
+                            title="Terms"
+                        >
+                            <Icon icon={UI_ICONS["terms"]} class="btn__icon" />
+                            <span class="btn__label">Terms</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--block btn--ghost"
+                            on:click={() => goto("/contact")}
+                            aria-label="Contact"
+                            title="Contact"
+                        >
+                            <Icon icon={UI_ICONS["email"]} class="btn__icon" />
+                            <span class="btn__label">Contact</span>
+                        </button>
+                    </div>
+
+                    <p class="text-hint">
+                        Cookies/local storage are covered in Privacy.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -74,6 +74,11 @@
     overflow-x: clip;
 }
 
+.app--no-nav {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 .app-body {
     height: 100%;
     min-height: 0;
