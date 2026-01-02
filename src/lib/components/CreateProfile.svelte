@@ -104,7 +104,7 @@
 
 
 {#if ["success", "partial", "exists"].includes($profileFormState)}
-    <Icon icon={UI_ICONS.animLoading} class="icon--large" />
+    <Icon icon={UI_ICONS.animLoading} class="icon--large text-accent" />
     <p class="text-center">Loading app...</p>
 
     {#if showFallback}

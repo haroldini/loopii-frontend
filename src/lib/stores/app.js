@@ -172,6 +172,11 @@ export const UI_ICONS = {
     "stars": "mdi:creation-outline",
     "star": "mdi:star-outline",
     "starFilled": "mdi:star",
+    "github": "mdi:github",
+    "bug": "mdi:bug",
+    "terms": "mdi:file-document-outline",
+    "privacy": "mdi:shield-lock-outline",
+    "email": "mdi:email-outline",
     
     "delete": "mdi:delete",
     "minus": "mdi:minus",

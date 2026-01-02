@@ -1,6 +1,7 @@
 
 <script>
     import { onDestroy, onMount, tick } from "svelte";
+    import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
 
     import Overlay from "$lib/components/Overlay.svelte";
@@ -176,6 +177,47 @@
                         </div>
                     </div>
                 {/if}
+
+                <div class="u-divider" role="separator" aria-hidden="true"></div>
+
+                <div class="section stack">
+                    <h3>Info</h3>
+
+                    <div class="actions actions--center actions-fillwrap">
+                        <button
+                            type="button"
+                            class="btn btn--ghost text-fw-semibold"
+                            on:click={() => goto("/privacy")}
+                            aria-label="Privacy"
+                            title="Privacy"
+                        >
+                            <Icon icon={UI_ICONS.privacy} class="btn__icon" />
+                            <span class="btn__label">Privacy</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--ghost text-fw-semibold"
+                            on:click={() => goto("/terms")}
+                            aria-label="Terms"
+                            title="Terms"
+                        >
+                            <Icon icon={UI_ICONS.terms} class="btn__icon" />
+                            <span class="btn__label">Terms</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn--ghost text-fw-semibold"
+                            on:click={() => goto("/contact")}
+                            aria-label="Contact"
+                            title="Contact"
+                        >
+                            <Icon icon={UI_ICONS.email} class="btn__icon" />
+                            <span class="btn__label">Contact</span>
+                        </button>
+                    </div>
+                </div>
             </main>
         </div>
     {/if}
