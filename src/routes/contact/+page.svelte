@@ -7,15 +7,15 @@
     import { authState } from "$lib/stores/auth.js";
     import { profileState } from "$lib/stores/profile.js";
 
-    const EMAIL = "contact@loopii.app"; // set to your Proton/pm.me if you prefer
+    const EMAIL = "contact@loopii.app";
     const GITHUB = "https://github.com/haroldini";
-    const LINKEDIN = "https://www.linkedin.com/in/harry-burdekin/";
     const ISSUES = "https://github.com/haroldini/loopii-frontend/issues";
 
     $: inApp = $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded";
 
     function goBack() {
-        goto(inApp ? "/settings" : "/");
+        if (inApp) goto("/settings");
+        else window.location.replace("/");
     }
 </script>
 
@@ -58,38 +58,12 @@
                             title={EMAIL}
                         >
                             <Icon icon={UI_ICONS.email} class="btn__icon" />
-                            <span class="btn__label">Email</span>
-                        </a>
-
-                        <a
-                            class="btn btn--ghost btn--block"
-                            href={GITHUB}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label="GitHub"
-                            title="GitHub"
-                        >
-                            <Icon icon={UI_ICONS.github} class="btn__icon" />
-                            <span class="btn__label">GitHub</span>
-                        </a>
-
-                        <a
-                            class="btn btn--ghost btn--block"
-                            href={LINKEDIN}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label="LinkedIn"
-                            title="LinkedIn"
-                        >
-                            <Icon icon={UI_ICONS.link} class="btn__icon" />
-                            <span class="btn__label">LinkedIn</span>
+                            <span class="btn__label">{EMAIL}</span>
                         </a>
                     </div>
 
                     <p class="text-hint">
-                        Email is for account access/deletion, privacy questions, and safety reports.
-                        GitHub is for code/UI bugs and reproducible issues.
-                        LinkedIn is for professional contact.
+                        Email is for support, privacy questions, and safety reports.
                     </p>
                 </div>
             </div>

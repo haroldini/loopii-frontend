@@ -222,6 +222,18 @@
     margin-right: auto;
 }
 
+.actions--fillwrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    width: 100%;
+    justify-content: center;
+}
+
+.actions--fillwrap > * {
+    flex: 1 1 0;
+}
+
 /* ===== Segmented control (window tabs) ===== */
 
 .segmented {

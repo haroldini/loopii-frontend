@@ -12,7 +12,8 @@
     $: inApp = $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded";
 
     function goBack() {
-        goto(inApp ? "/settings" : "/");
+        if (inApp) goto("/settings");
+        else window.location.replace("/");
     }
 </script>
 

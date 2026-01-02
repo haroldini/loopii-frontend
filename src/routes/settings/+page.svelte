@@ -474,10 +474,10 @@
             <h3>Info</h3>
             <div class="card card--panel" role="region" aria-label="Privacy, terms, and contact">
                 <div class="section stack">
-                    <div class="actionbar">
+                    <div class="actions actions--center actions--fillwrap">
                         <button
                             type="button"
-                            class="btn btn--block btn--ghost"
+                            class="btn btn--ghost text-fw-semibold"
                             on:click={() => goto("/privacy")}
                             aria-label="Privacy"
                             title="Privacy"
@@ -488,7 +488,7 @@
 
                         <button
                             type="button"
-                            class="btn btn--block btn--ghost"
+                            class="btn btn--ghost text-fw-semibold"
                             on:click={() => goto("/terms")}
                             aria-label="Terms"
                             title="Terms"
@@ -499,7 +499,7 @@
 
                         <button
                             type="button"
-                            class="btn btn--block btn--ghost"
+                            class="btn btn--ghost text-fw-semibold"
                             on:click={() => goto("/contact")}
                             aria-label="Contact"
                             title="Contact"
