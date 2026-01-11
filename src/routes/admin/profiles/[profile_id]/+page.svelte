@@ -695,12 +695,10 @@
 
                         <div class="u-divider"></div>
 
-                        <h3>Reports</h3>
-
-                        {#if (data?.reports_received || []).length === 0 && (data?.reports_made || []).length === 0}
+                        <h3>Reports received</h3>
+                        {#if (data?.reports_received || []).length === 0}
                             <p class="text-hint">No reports.</p>
                         {:else}
-                            <h4>Received</h4>
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
@@ -864,8 +862,12 @@
                                     </tbody>
                                 </table>
                             </div>
+                        {/if}
 
-                            <h4>Made</h4>
+                        <h3>Reports made</h3>
+                        {#if (data?.reports_made || []).length === 0}
+                            <p class="text-hint">No reports.</p>
+                        {:else}
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
@@ -940,14 +942,13 @@
 
                                                                             {#if r.resolved_by_profile_id}
                                                                                 <div>
-                                                                                    <strong>resolved_by:</strong>
                                                                                     <a
-                                                                                        class="btn btn--ghost btn--icon"
+                                                                                        class="text-link"
                                                                                         href={profileHref(r.resolved_by_profile_id)}
                                                                                         title="View resolving admin profile"
                                                                                         aria-label="View resolving admin profile"
                                                                                     >
-                                                                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                                                        <strong>resolved_by</strong>
                                                                                     </a>
                                                                                 </div>
                                                                             {/if}
@@ -1032,12 +1033,11 @@
 
                         <div class="u-divider"></div>
 
-                        <h3>Admin actions</h3>
+                        <h3>Admin actions received</h3>
 
-                        {#if (data?.actions_received || []).length === 0 && (data?.actions_made || []).length === 0}
+                        {#if (data?.actions_received || []).length === 0}
                             <p class="text-hint">No admin actions.</p>
                         {:else}
-                            <h4>Received</h4>
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
@@ -1086,86 +1086,6 @@
                                                 </tr>
 
                                                 {#if expandedActionsReceived.has(keyOf(a))}
-                                                    <tr>
-                                                        <td colspan="5">
-                                                            <div class="stack" style="gap:var(--space-2);">
-                                                                <div><strong>public_message:</strong> {a.public_message || "-"}</div>
-                                                                <div><strong>internal_note:</strong> {a.internal_note || "-"}</div>
-
-                                                                {#if a.effective_until || a.until}
-                                                                    <div>
-                                                                        <strong>effective_until:</strong>
-                                                                        <span class="admin-code" title={dtTitle(a.effective_until || a.until)}>
-                                                                            {dtLabel(a.effective_until || a.until)}
-                                                                        </span>
-                                                                    </div>
-                                                                {/if}
-
-                                                                {#if a.field_key}
-                                                                    <div><strong>field_key:</strong> <span class="admin-code">{a.field_key}</span></div>
-                                                                {/if}
-                                                                {#if a.field_value !== undefined}
-                                                                    <div><strong>field_value:</strong> {a.field_value === null ? "null" : a.field_value}</div>
-                                                                {/if}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                {/if}
-                                            {/key}
-                                        {/each}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <h4>Made</h4>
-                            <div style="width:100%;overflow-x:auto;">
-                                <table class="admin-table">
-                                    <thead>
-                                        <tr><th>created</th><th>action</th><th>reason</th><th>target</th><th></th></tr>
-                                    </thead>
-                                    <tbody>
-                                        {#each (data.actions_made || []) as a}
-                                            {#key keyOf(a)}
-                                                <tr>
-                                                    <td class="admin-code">
-                                                        <span title={dtTitle(a.created_at)}>{dtLabel(a.created_at)}</span>
-                                                    </td>
-                                                    <td>{a.action}</td>
-                                                    <td>{a.reason_code}</td>
-                                                    <td>
-                                                        {#if profileHref(a.target_profile_id)}
-                                                            <a
-                                                                class="btn btn--ghost btn--icon"
-                                                                href={profileHref(a.target_profile_id)}
-                                                                title="View target profile"
-                                                                aria-label="View target profile"
-                                                            >
-                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                            </a>
-                                                        {:else}
-                                                            <button type="button" class="btn btn--ghost btn--icon" disabled title="No target">
-                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                            </button>
-                                                        {/if}
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn--ghost btn--icon"
-                                                            on:click={() => toggleActionMade(keyOf(a))}
-                                                            title={expandedActionsMade.has(keyOf(a)) ? "Collapse action" : "Expand action"}
-                                                            aria-label={expandedActionsMade.has(keyOf(a)) ? "Collapse action" : "Expand action"}
-                                                        >
-                                                            {#if expandedActionsMade.has(keyOf(a))}
-                                                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
-                                                            {:else}
-                                                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
-                                                            {/if}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-
-                                                {#if expandedActionsMade.has(keyOf(a))}
                                                     <tr>
                                                         <td colspan="5">
                                                             <div class="stack" style="gap:var(--space-2);">

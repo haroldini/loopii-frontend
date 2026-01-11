@@ -67,23 +67,25 @@
         </div>
     </header>
 
-    <div class="content content--full admin-wrap">
-        <section class="card admin-shell">
-            <nav class="segmented admin-tabs" aria-label="Admin navigation">
-                <a href="/admin" aria-current={isActive("/admin") ? "page" : undefined}>
-                    Dashboard
-                </a>
-                <a href="/admin/profiles" aria-current={isActive("/admin/profiles") ? "page" : undefined}>
-                    Profiles
-                </a>
-                <a href="/admin/reports" aria-current={isActive("/admin/reports") ? "page" : undefined}>
-                    Reports
-                </a>
-            </nav>
+    <div class="content stack">
+        <div class="admin-wrap">
+            <section class="card admin-shell">
+                <nav class="segmented admin-tabs" aria-label="Admin navigation">
+                    <a href="/admin" aria-current={isActive("/admin") ? "page" : undefined}>
+                        Dashboard
+                    </a>
+                    <a href="/admin/profiles" aria-current={isActive("/admin/profiles") ? "page" : undefined}>
+                        Profiles
+                    </a>
+                    <a href="/admin/reports" aria-current={isActive("/admin/reports") ? "page" : undefined}>
+                        Reports
+                    </a>
+                </nav>
 
-            <div class="admin-shell__body">
-                {@render children?.()}
-            </div>
-        </section>
+                <div class="admin-shell__body">
+                    {@render children?.()}
+                </div>
+            </section>
+        </div>
     </div>
 </div>
