@@ -377,7 +377,7 @@
 
         <div class="toolbar__group">
             <button type="button" class="btn btn--ghost btn--icon" on:click={() => goto("/admin/profiles")} aria-label="Back">
-                <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
+                <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
             </button>
 
             <button
@@ -396,7 +396,7 @@
 
     {#if !data}
         <div class="page__center">
-            <Icon icon={UI_ICONS.animLoading} class="page__icon" />
+            <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
         </div>
     {:else}
         <div class="admin-grid">
@@ -405,8 +405,12 @@
                     <div class="section stack">
                         <div class="row" style="justify-content:space-between;align-items:center;">
                             <h3 style="margin:0;">Overview</h3>
-                            <button type="button" class="btn btn--mini btn--ghost" on:click={() => (showOverview = !showOverview)}>
-                                {showOverview ? "Hide" : "Show"}
+                            <button type="button" class="btn btn--ghost btn--icon" on:click={() => (showOverview = !showOverview)}>
+                                {#if showOverview}
+                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                {:else}
+                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                {/if}
                             </button>
                         </div>
 
@@ -455,8 +459,12 @@
 
                         <div class="row" style="justify-content:space-between;align-items:center;">
                             <h4 style="margin:0;">Stats</h4>
-                            <button type="button" class="btn btn--mini btn--ghost" on:click={() => (showStats = !showStats)}>
-                                {showStats ? "Hide" : "Show"}
+                            <button type="button" class="btn btn--ghost btn--icon" on:click={() => (showStats = !showStats)}>
+                                {#if showStats}
+                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                {:else}
+                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                {/if}
                             </button>
                         </div>
 
@@ -509,16 +517,18 @@
                         <h3>Actions</h3>
 
                         <div class="actionbar">
-                            <button type="button" class="btn btn--primary" on:click={doWarn} disabled={acting || loading}>
-                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                            <button type="button" class="btn btn--danger" on:click={doWarn} disabled={acting || loading}>
+                                <Icon icon={UI_ICONS.alert} class="btn__icon" />
                                 <span class="btn__label">Warn</span>
                             </button>
 
                             <button type="button" class="btn btn--danger" on:click={doBan} disabled={acting || loading}>
+                                <Icon icon={UI_ICONS.close} class="btn__icon" />
                                 <span class="btn__label">Ban</span>
                             </button>
 
                             <button type="button" class="btn btn--success" on:click={doUnban} disabled={acting || loading}>
+                                <Icon icon={UI_ICONS.check} class="btn__icon" />
                                 <span class="btn__label">Unban</span>
                             </button>
                         </div>
@@ -533,6 +543,7 @@
                         </div>
 
                         <button type="button" class="btn btn--danger" on:click={doTempBan} disabled={acting || loading}>
+                            <Icon icon={UI_ICONS.close} class="btn__icon" />
                             <span class="btn__label">Apply temp ban</span>
                         </button>
 
@@ -554,7 +565,8 @@
                             <textarea id={id_clear_value} bind:value={clear_value} disabled={acting}></textarea>
                         </div>
 
-                        <button type="button" class="btn btn--primary" on:click={doClearContent} disabled={acting || loading}>
+                        <button type="button" class="btn btn--danger" on:click={doClearContent} disabled={acting || loading}>
+                            <Icon icon={UI_ICONS.swap} class="btn__icon" />
                             <span class="btn__label">Apply overwrite</span>
                         </button>
 
@@ -583,11 +595,11 @@
                                                 <td>
                                                     <button
                                                         type="button"
-                                                        class="btn btn--mini btn--danger"
+                                                        class="btn btn--danger btn--icon"
                                                         on:click={() => confirmDeleteImage(img.id)}
                                                         disabled={acting || loading}
                                                     >
-                                                        Delete
+                                                        <Icon icon={UI_ICONS.delete} class="btn__icon" />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -606,7 +618,8 @@
                                 on:click={() => confirmDeleteAudio(data.profile.audio.id)}
                                 disabled={acting || loading}
                             >
-                                Delete audio
+                                <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                <span class="btn__label">Delete audio</span>
                             </button>
                         {:else}
                             <p class="text-hint">No audio.</p>
@@ -647,20 +660,24 @@
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => gotoProfile(r.reporter_profile_id)}
                                                             disabled={!r.reporter_profile_id}
                                                         >
-                                                            View
+                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
                                                         </button>
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportReceived(keyOf(r))}
                                                         >
-                                                            {expandedReportsReceived.has(keyOf(r)) ? "Hide" : "Details"}
+                                                            {#if expandedReportsReceived.has(keyOf(r))}
+                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                            {:else}
+                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                            {/if}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -669,7 +686,7 @@
                                                     <tr>
                                                         <td colspan="5">
                                                             <div class="stack" style="gap:var(--space-2);">
-                                                                <div><strong>public_message:</strong> {r.public_message || "-"}</div>
+                                                                <div><strong>details:</strong> {r.details || "-"}</div>
                                                                 <div><strong>internal_note:</strong> {r.internal_note || "-"}</div>
                                                             </div>
                                                         </td>
@@ -699,20 +716,24 @@
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => gotoProfile(r.reportee_profile_id)}
                                                             disabled={!r.reportee_profile_id}
                                                         >
-                                                            View
+                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
                                                         </button>
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportMade(keyOf(r))}
                                                         >
-                                                            {expandedReportsMade.has(keyOf(r)) ? "Hide" : "Details"}
+                                                            {#if expandedReportsMade.has(keyOf(r))}
+                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                            {:else}
+                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                            {/if}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -759,20 +780,24 @@
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => gotoProfile(a.admin_profile_id)}
                                                             disabled={!a.admin_profile_id}
                                                         >
-                                                            View
+                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
                                                         </button>
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleActionReceived(keyOf(a))}
                                                         >
-                                                            {expandedActionsReceived.has(keyOf(a)) ? "Hide" : "Details"}
+                                                            {#if expandedActionsReceived.has(keyOf(a))}
+                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                            {:else}
+                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                            {/if}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -820,20 +845,24 @@
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => gotoProfile(a.target_profile_id)}
                                                             disabled={!a.target_profile_id}
                                                         >
-                                                            View
+                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
                                                         </button>
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
-                                                            class="btn btn--mini btn--ghost"
+                                                            class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleActionMade(keyOf(a))}
                                                         >
-                                                            {expandedActionsMade.has(keyOf(a)) ? "Hide" : "Details"}
+                                                            {#if expandedActionsMade.has(keyOf(a))}
+                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                            {:else}
+                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                            {/if}
                                                         </button>
                                                     </td>
                                                 </tr>

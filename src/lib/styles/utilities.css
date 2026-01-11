@@ -42,3 +42,7 @@
 .u-border-dashed {
     border-style: dashed !important;
 }
+
+.u-fill-vh {
+    min-height: 80vh;
+}

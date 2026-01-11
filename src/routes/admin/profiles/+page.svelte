@@ -123,7 +123,7 @@
         <div class="toolbar__group">
             <h3>Profiles</h3>
             {#if typeof total === "number"}
-                <span class="pill"><span class="pill__label">{total}</span></span>
+                <span class="pill"><span class="pill__label">{total} results</span></span>
             {/if}
             <span class="pill"><span class="pill__label">page {pageNum}</span></span>
         </div>
@@ -168,10 +168,10 @@
 
     {#if items.length === 0 && loading}
         <div class="page__center">
-            <Icon icon={UI_ICONS.animLoading} class="page__icon" />
+            <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
         </div>
     {:else if items.length === 0}
-        <p class="text-hint">No profiles.</p>
+        <p class="text-hint text-center">No profiles.</p>
     {:else}
         <div class="stack">
             {#each items as row}
@@ -199,11 +199,11 @@
                                         {/if}
 
                                         {#if row?.meta?.access?.status}
-                                            · <span class="pill"><span class="pill__label">{row.meta.access.status}</span></span>
+                                            · <span class="text-hint">{row.meta.access.status}</span>
                                         {/if}
 
                                         {#if row?.meta?.access?.role}
-                                            · <span class="pill"><span class="pill__label">{row.meta.access.role}</span></span>
+                                            · <span class="text-hint">{row.meta.access.role}</span>
                                         {/if}
 
                                         · joined <span title={dtTitle(row.profile?.created_at)} class="admin-code">{dtLabel(row.profile?.created_at)}</span>
@@ -245,8 +245,8 @@
                         </div>
 
                         <div class="admin-row__actions">
-                            <button type="button" class="btn btn--mini btn--primary" on:click={() => openProfile(row.profile?.id)}>
-                                View
+                            <button type="button" class="btn btn--primary btn--icon" on:click={() => openProfile(row.profile?.id)}>
+                                <Icon icon={UI_ICONS.eyeOpen} class="btn__icon" />
                             </button>
                         </div>
                     </div>

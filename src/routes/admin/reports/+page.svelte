@@ -236,10 +236,10 @@
         <div class="stack">
             {#if items.length === 0 && loading}
                 <div class="page__center">
-                    <Icon icon={UI_ICONS.animLoading} class="page__icon" />
+                    <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
                 </div>
             {:else if items.length === 0}
-                <p class="text-hint">No reports.</p>
+                <p class="text-hint text-center">No reports.</p>
             {:else}
                 {#each items as item}
                     {@const c = dt(item?.report?.created_at)}
@@ -259,17 +259,19 @@
                                 <div class="admin-row__actions">
                                     <button
                                         type="button"
-                                        class="btn btn--mini btn--ghost"
+                                        class="btn btn--mini btn--primary"
                                         on:click={() => goto(`/admin/profiles/${item?.report?.reportee_profile_id}`)}
                                     >
-                                        Reportee
+                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                        <span class="btn__label">Reportee</span>
                                     </button>
                                     <button
                                         type="button"
                                         class="btn btn--mini btn--ghost"
                                         on:click={() => goto(`/admin/profiles/${item?.report?.reporter_profile_id}`)}
                                     >
-                                        Reporter
+                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                        <span class="btn__label">Reporter</span>
                                     </button>
                                 </div>
                             </div>
@@ -302,8 +304,13 @@
                             </div>
 
                             <div class="actions actions--end">
+                                <button type="button" class="text-link" on:click={() => setStatus(item.report.id, "actioned", { bulk: true })}>
+                                    Bulk action
+                                </button>
+                            </div>
+                            <div class="actions actions--end">
                                 <button type="button" class="text-link" on:click={() => setStatus(item.report.id, "dismissed", { bulk: true })}>
-                                    Bulk dismiss (same reason + reportee)
+                                    Bulk dismiss
                                 </button>
                             </div>
                         </div>

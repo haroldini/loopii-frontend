@@ -38,8 +38,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h2 class="text-heading">Admin</h2>
-                <p class="text-hint">Moderation</p>
+                <h2 class="text-heading">Admin Panel</h2>
             </div>
 
             <div class="bar__actions">
