@@ -2,9 +2,10 @@
 <script>
     import Icon from "@iconify/svelte";
     import { get } from "svelte/store";
-
+    
     import { UI_ICONS } from "$lib/stores/app.js";
     import { profile, refreshProfileSilently } from "$lib/stores/profile.js";
+    import { addToast } from "$lib/stores/popups.js";
     import { ackWarning } from "$lib/api/profile.js";
 
     let { onSignOut = () => {} } = $props();
@@ -42,6 +43,12 @@
             await refreshProfileSilently();
         } catch (err) {
             console.warn("ackWarning failed:", err);
+            addToast({
+                variant: "modal",
+                text: "Couldn't acknowledge warning.",
+                description: "Please try again later. If the issue persists, contact support.",
+                autoHideMs: null,
+            });
         } finally {
             isSubmitting = false;
         }

@@ -6,7 +6,7 @@
 
     import Overlay from "$lib/components/Overlay.svelte";
     import { UI_ICONS, theme, themeOptions, setTheme, style, styleOptions, setStyle } from "$lib/stores/app.js";
-    import { user, authState, signOut } from "$lib/stores/auth.js";
+    import { user, authState, signOut, deleteAccount, expectedPhrase } from "$lib/stores/auth.js";
     import { addToast } from "$lib/stores/popups.js";
 
     const HASH = "#quick-settings";
@@ -23,6 +23,8 @@
         isOpen = false;
         overlay?.closeOverlay();
     }
+
+    // ---------------- Sign out of account ----------------
 
     function confirmLocalSignOut() {
         addToast({
@@ -45,6 +47,87 @@
         });
     }
 
+    // ---------------- Delete account ----------------
+
+    let showDelete = false;
+
+    let deletePassword = "";
+    let deletePhrase = "";
+    let deleteError = "";
+    let isDeleting = false;
+
+    function resetDeleteForm() {
+        deletePassword = "";
+        deletePhrase = "";
+        deleteError = "";
+        showDelete = false;
+    }
+
+    function validateDelete() {
+        deleteError = "";
+
+        if (!deletePassword.trim()) {
+            deleteError = "Enter your current password.";
+            return false;
+        }
+
+        const expected = get(expectedPhrase);
+        if ((deletePhrase || "").trim() !== expected) {
+            deleteError = "Confirmation phrase does not match.";
+            return false;
+        }
+
+        return true;
+    }
+
+    async function runDeleteAccount() {
+        if (isDeleting) return;
+        if (!validateDelete()) return;
+
+        isDeleting = true;
+
+        try {
+            const { error } = await deleteAccount(deletePassword, deletePhrase);
+
+            if (error) {
+                deleteError = error;
+                addToast({
+                    variant: "banner",
+                    text: "Couldn't delete account.",
+                    description: error || "Please try again later.",
+                    autoHideMs: null,
+                });
+                return;
+            }
+
+            // Success: close overlay then sign out locally
+            close();
+            await tick();
+            await signOut();
+            resetDeleteForm();
+
+        } finally {
+            isDeleting = false;
+        }
+    }
+
+    function confirmDeleteAccount() {
+        if (!validateDelete()) return;
+
+        addToast({
+            variant: "modal",
+            text: "Delete your account?",
+            description: "This will permanently delete your account and data. This action cannot be undone.",
+            autoHideMs: null,
+            actions: [
+                { label: "Cancel", variant: "secondary" },
+                { label: "Delete account", variant: "danger", onClick: runDeleteAccount },
+            ],
+        });
+    }
+
+    // ---------------- Overlay mechanics ----------------
+
     function onKeydown(e) {
         if (!isOpen) return;
         if (e.key === "Escape") {
@@ -55,8 +138,6 @@
 
     onMount(async () => {
         window.addEventListener("keydown", onKeydown);
-
-        // Optional: open if user lands on URL with the hash
         if (window.location.hash === HASH) {
             isOpen = true;
             await tick();
@@ -175,7 +256,62 @@
                                 <p class="text-hint">Log out of your account on this device.</p>
                             </div>
                         </div>
+                        <div class="card card--panel" role="region" aria-label="Delete account">
+                            <div class="section stack">
+                                <button
+                                    type="button"
+                                    class="btn text-fw-semibold"
+                                    class:btn--danger={!showDelete}
+                                    on:click={() => (showDelete = !showDelete)}
+                                >
+                                    <Icon icon={showDelete ? UI_ICONS.close : UI_ICONS.delete} class="btn__icon" />
+                                    <span class="btn__label">{showDelete ? "Cancel" : "Delete account"}</span>
+                                </button>
+
+                                {#if showDelete}
+                                    <input
+                                        type="password"
+                                        placeholder="Current password"
+                                        value={deletePassword}
+                                        on:input={(e) => (deletePassword = e.target.value)}
+                                    />
+
+                                    <input
+                                        placeholder={$expectedPhrase}
+                                        value={deletePhrase}
+                                        on:input={(e) => (deletePhrase = e.target.value)}
+                                    />
+
+                                    <p class="text-hint">
+                                        To confirm, type <strong class="text-no-select">{$expectedPhrase}</strong> above.
+                                    </p>
+
+                                    {#if deleteError}
+                                        <p class="text-danger">{deleteError}</p>
+                                    {/if}
+
+                                    <div class="form__actions">
+                                        <button
+                                            type="button"
+                                            class="btn btn--danger"
+                                            class:is-loading={isDeleting}
+                                            disabled={isDeleting}
+                                            on:click={confirmDeleteAccount}
+                                        >
+                                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+                                            <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                            <span class="btn__label">Delete account</span>
+                                        </button>
+                                    </div>
+                                {/if}
+
+                                <p class="text-hint">
+                                    This permanently deletes your account and data.
+                                </p>
+                            </div>
+                        </div>
                     </div>
+
                 {/if}
 
                 <div class="u-divider" role="separator" aria-hidden="true"></div>

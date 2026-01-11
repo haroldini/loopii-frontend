@@ -11,7 +11,11 @@
 .u-divider {
     width: 100%;
     height: var(--border-width);
+    min-height: var(--border-width);
     background: var(--border-color);
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    align-self: stretch;
 }
 
 .u-space-above {
