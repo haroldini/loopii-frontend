@@ -11,10 +11,10 @@
     let loading = false;
 
     // cursor paging (pages, not infinite append)
-    let currentAfter = null;     // cursor used to load THIS page
-    let nextCursor = null;       // cursor for NEXT page
+    let currentAfter = null;
+    let nextCursor = null;
     let hasMore = false;
-    let cursorStack = [];        // previous cursors for Prev
+    let cursorStack = [];
 
     let total = null;
 
@@ -109,7 +109,6 @@
         apply();
     }
 
-    // initial
     loadPage({ after: null });
 </script>
 
@@ -156,22 +155,12 @@
     <div class="u-divider"></div>
 
     <div class="actionbar">
-        <button
-            type="button"
-            class="btn btn--ghost"
-            on:click={prevPage}
-            disabled={loading || cursorStack.length === 0}
-        >
+        <button type="button" class="btn btn--ghost" on:click={prevPage} disabled={loading || cursorStack.length === 0}>
             <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
             <span class="btn__label">Prev</span>
         </button>
 
-        <button
-            type="button"
-            class="btn btn--ghost"
-            on:click={nextPage}
-            disabled={loading || !hasMore}
-        >
+        <button type="button" class="btn btn--ghost" on:click={nextPage} disabled={loading || !hasMore}>
             <span class="btn__label">Next</span>
             <Icon icon={UI_ICONS.chevronRight} class="btn__icon" />
         </button>
@@ -201,13 +190,24 @@
                                     <div class="admin-row__title">
                                         {row.profile?.name || `@${row.profile?.username || "unknown"}`}
                                     </div>
+
                                     <div class="admin-row__sub">
                                         {#if row.profile?.username}
                                             @{row.profile.username}
                                         {:else}
                                             <span class="text-hint">no username</span>
                                         {/if}
+
+                                        {#if row?.meta?.access?.status}
+                                            · <span class="pill"><span class="pill__label">{row.meta.access.status}</span></span>
+                                        {/if}
+
+                                        {#if row?.meta?.access?.role}
+                                            · <span class="pill"><span class="pill__label">{row.meta.access.role}</span></span>
+                                        {/if}
+
                                         · joined <span title={dtTitle(row.profile?.created_at)} class="admin-code">{dtLabel(row.profile?.created_at)}</span>
+
                                         {#if row.profile?.last_seen_at}
                                             · seen <span title={dtTitle(row.profile.last_seen_at)} class="admin-code">{dtLabel(row.profile.last_seen_at)}</span>
                                         {/if}
@@ -215,13 +215,6 @@
                                 </div>
 
                                 <div class="admin-pillrow">
-                                    {#if row?.meta?.access?.status}
-                                        <span class="pill"><span class="pill__label">{row.meta.access.status}</span></span>
-                                    {/if}
-                                    {#if row?.meta?.access?.role}
-                                        <span class="pill"><span class="pill__label">{row.meta.access.role}</span></span>
-                                    {/if}
-
                                     <span class="pill">
                                         <span class="pill__label">open reports: {row?.meta?.reports_received_open ?? 0}</span>
                                     </span>

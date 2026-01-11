@@ -51,13 +51,21 @@
     let clear_field = "bio";
     let clear_value = "";
 
+    // minimisable sections
+    let showOverview = true;
+    let showStats = true;
+
+    // expansion state
+    let expandedReportsReceived = new Set();
+    let expandedReportsMade = new Set();
+    let expandedActionsReceived = new Set();
+    let expandedActionsMade = new Set();
+
     // ids
     const id_reason = "admin_action_reason";
     const id_public = "admin_action_public";
     const id_internal = "admin_action_internal";
-
     const id_until = "admin_action_until";
-
     const id_clear_field = "admin_clear_field";
     const id_clear_value = "admin_clear_value";
 
@@ -103,6 +111,40 @@
         if (!iso) return "-";
         const title = formatDateTimeShort(iso);
         return relativeTime(iso, true) || title || "-";
+    }
+
+    function keyOf(obj, fallback = "") {
+        if (!obj) return fallback;
+        return (
+            obj.id ||
+            `${obj.created_at || ""}:${obj.reporter_profile_id || ""}:${obj.reportee_profile_id || ""}:${obj.admin_profile_id || ""}:${obj.target_profile_id || ""}` ||
+            fallback
+        );
+    }
+
+    function toggleSet(set, key) {
+        const next = new Set(set);
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+        return next;
+    }
+
+    function toggleReportReceived(k) {
+        expandedReportsReceived = toggleSet(expandedReportsReceived, k);
+    }
+    function toggleReportMade(k) {
+        expandedReportsMade = toggleSet(expandedReportsMade, k);
+    }
+    function toggleActionReceived(k) {
+        expandedActionsReceived = toggleSet(expandedActionsReceived, k);
+    }
+    function toggleActionMade(k) {
+        expandedActionsMade = toggleSet(expandedActionsMade, k);
+    }
+
+    function gotoProfile(id) {
+        if (!id) return;
+        goto(`/admin/profiles/${id}`);
     }
 
     $: profileId = $page.params.profile_id;
@@ -361,64 +403,78 @@
             <div class="stack">
                 <section class="card">
                     <div class="section stack">
-                        <h3>Overview</h3>
+                        <div class="row" style="justify-content:space-between;align-items:center;">
+                            <h3 style="margin:0;">Overview</h3>
+                            <button type="button" class="btn btn--mini btn--ghost" on:click={() => (showOverview = !showOverview)}>
+                                {showOverview ? "Hide" : "Show"}
+                            </button>
+                        </div>
 
-                        <dl class="admin-kv">
-                            <dt>username</dt><dd class="admin-code">@{data?.profile?.username}</dd>
-                            <dt>name</dt><dd>{data?.profile?.name || "-"}</dd>
-                            <dt>age</dt><dd>{data?.profile?.age ?? "-"}</dd>
+                        {#if showOverview}
+                            <dl class="admin-kv">
+                                <dt>username</dt><dd class="admin-code">@{data?.profile?.username}</dd>
+                                <dt>name</dt><dd>{data?.profile?.name || "-"}</dd>
+                                <dt>age</dt><dd>{data?.profile?.age ?? "-"}</dd>
 
-                            <dt>created</dt>
-                            <dd class="admin-code">
-                                <span title={dtTitle(data?.profile?.created_at)}>{dtLabel(data?.profile?.created_at)}</span>
-                            </dd>
+                                <dt>created</dt>
+                                <dd class="admin-code">
+                                    <span title={dtTitle(data?.profile?.created_at)}>{dtLabel(data?.profile?.created_at)}</span>
+                                </dd>
 
-                            <dt>updated</dt>
-                            <dd class="admin-code">
-                                <span title={dtTitle(data?.profile?.updated_at)}>{dtLabel(data?.profile?.updated_at)}</span>
-                            </dd>
+                                <dt>updated</dt>
+                                <dd class="admin-code">
+                                    <span title={dtTitle(data?.profile?.updated_at)}>{dtLabel(data?.profile?.updated_at)}</span>
+                                </dd>
 
-                            <dt>last seen</dt>
-                            <dd class="admin-code">
-                                <span title={dtTitle(data?.profile?.last_seen_at)}>{dtLabel(data?.profile?.last_seen_at)}</span>
-                            </dd>
+                                <dt>last seen</dt>
+                                <dd class="admin-code">
+                                    <span title={dtTitle(data?.profile?.last_seen_at)}>{dtLabel(data?.profile?.last_seen_at)}</span>
+                                </dd>
 
-                            <dt>role</dt><dd>{data?.meta?.access?.role || data?.profile?.access?.role || "-"}</dd>
-                            <dt>status</dt><dd>{data?.meta?.access?.status || data?.profile?.access?.status || "-"}</dd>
+                                <dt>role</dt><dd>{data?.meta?.access?.role || data?.profile?.access?.role || "-"}</dd>
+                                <dt>status</dt><dd>{data?.meta?.access?.status || data?.profile?.access?.status || "-"}</dd>
 
-                            <dt>banned_until</dt>
-                            <dd class="admin-code">
-                                {#if data?.meta?.access?.banned_until || data?.profile?.access?.banned_until}
-                                    {#if data?.meta?.access?.banned_until}
-                                        <span title={dtTitle(data.meta.access.banned_until)}>{dtLabel(data.meta.access.banned_until)}</span>
+                                <dt>banned_until</dt>
+                                <dd class="admin-code">
+                                    {#if data?.meta?.access?.banned_until || data?.profile?.access?.banned_until}
+                                        {#if data?.meta?.access?.banned_until}
+                                            <span title={dtTitle(data.meta.access.banned_until)}>{dtLabel(data.meta.access.banned_until)}</span>
+                                        {:else}
+                                            <span title={dtTitle(data.profile.access.banned_until)}>{dtLabel(data.profile.access.banned_until)}</span>
+                                        {/if}
                                     {:else}
-                                        <span title={dtTitle(data.profile.access.banned_until)}>{dtLabel(data.profile.access.banned_until)}</span>
+                                        -
                                     {/if}
-                                {:else}
-                                    -
-                                {/if}
-                            </dd>
+                                </dd>
 
-                            <dt>public_message</dt><dd>{data?.meta?.access?.public_message || data?.profile?.access?.public_message || "-"}</dd>
-                        </dl>
+                                <dt>public_message</dt><dd>{data?.meta?.access?.public_message || data?.profile?.access?.public_message || "-"}</dd>
+                            </dl>
+                        {/if}
 
                         <div class="u-divider"></div>
 
-                        <h4>Stats</h4>
+                        <div class="row" style="justify-content:space-between;align-items:center;">
+                            <h4 style="margin:0;">Stats</h4>
+                            <button type="button" class="btn btn--mini btn--ghost" on:click={() => (showStats = !showStats)}>
+                                {showStats ? "Hide" : "Show"}
+                            </button>
+                        </div>
 
-                        <dl class="admin-kv">
-                            <dt>storage</dt><dd>{formatBytes(data?.meta?.storage_bytes)}</dd>
-                            <dt>images</dt><dd>{data?.meta?.img_count ?? "-"}</dd>
-                            <dt>loops (total / 30d)</dt><dd>{data?.meta?.loops_total ?? "-"} / {data?.meta?.loops_30d ?? "-"}</dd>
-                            <dt>decisions made (total / 30d)</dt><dd>{data?.meta?.decisions_made_total ?? "-"} / {data?.meta?.decisions_made_30d ?? "-"}</dd>
-                            <dt>decisions received (total / 30d)</dt><dd>{data?.meta?.decisions_received_total ?? "-"} / {data?.meta?.decisions_received_30d ?? "-"}</dd>
-                            <dt>reports received (total / open / 30d)</dt><dd>{data?.meta?.reports_received_total ?? "-"} / {data?.meta?.reports_received_open ?? "-"} / {data?.meta?.reports_received_30d ?? "-"}</dd>
-                            <dt>reports made (total / 30d)</dt><dd>{data?.meta?.reports_made_total ?? "-"} / {data?.meta?.reports_made_30d ?? "-"}</dd>
-                            <dt>dismissed reports</dt><dd>{data?.meta?.reports_made_dismissed_total ?? "-"} ({formatPct(data?.meta?.reports_made_dismissed_pct)})</dd>
-                            <dt>admin actions (total / 30d)</dt><dd>{data?.meta?.actions_received_total ?? "-"} / {data?.meta?.actions_received_30d ?? "-"}</dd>
-                            <dt>socials</dt><dd>{data?.meta?.socials_total ?? "-"}</dd>
-                            <dt>text_len</dt><dd>{data?.meta?.text_len ?? "-"}</dd>
-                        </dl>
+                        {#if showStats}
+                            <dl class="admin-kv">
+                                <dt>storage</dt><dd>{formatBytes(data?.meta?.storage_bytes)}</dd>
+                                <dt>images</dt><dd>{data?.meta?.img_count ?? "-"}</dd>
+                                <dt>loops (total / 30d)</dt><dd>{data?.meta?.loops_total ?? "-"} / {data?.meta?.loops_30d ?? "-"}</dd>
+                                <dt>decisions made (total / 30d)</dt><dd>{data?.meta?.decisions_made_total ?? "-"} / {data?.meta?.decisions_made_30d ?? "-"}</dd>
+                                <dt>decisions received (total / 30d)</dt><dd>{data?.meta?.decisions_received_total ?? "-"} / {data?.meta?.decisions_received_30d ?? "-"}</dd>
+                                <dt>reports received (total / open / 30d)</dt><dd>{data?.meta?.reports_received_total ?? "-"} / {data?.meta?.reports_received_open ?? "-"} / {data?.meta?.reports_received_30d ?? "-"}</dd>
+                                <dt>reports made (total / 30d)</dt><dd>{data?.meta?.reports_made_total ?? "-"} / {data?.meta?.reports_made_30d ?? "-"}</dd>
+                                <dt>dismissed reports</dt><dd>{data?.meta?.reports_made_dismissed_total ?? "-"} ({formatPct(data?.meta?.reports_made_dismissed_pct)})</dd>
+                                <dt>admin actions (total / 30d)</dt><dd>{data?.meta?.actions_received_total ?? "-"} / {data?.meta?.actions_received_30d ?? "-"}</dd>
+                                <dt>socials</dt><dd>{data?.meta?.socials_total ?? "-"}</dd>
+                                <dt>text_len</dt><dd>{data?.meta?.text_len ?? "-"}</dd>
+                            </dl>
+                        {/if}
                     </div>
                 </section>
 
@@ -516,12 +572,7 @@
                                         {#each data.profile.images as img}
                                             <tr>
                                                 <td>
-                                                    <img
-                                                        class="admin-thumb"
-                                                        src={img?.urls?.medium}
-                                                        alt="Thumbnail"
-                                                        loading="lazy"
-                                                    />
+                                                    <img class="admin-thumb" src={img?.urls?.medium} alt="Thumbnail" loading="lazy" />
                                                 </td>
                                                 <td class="admin-code">
                                                     {img?.id}
@@ -573,6 +624,7 @@
                         <div class="u-divider"></div>
 
                         <h3>Reports</h3>
+
                         {#if (data?.reports_received || []).length === 0 && (data?.reports_made || []).length === 0}
                             <p class="text-hint">No reports.</p>
                         {:else}
@@ -580,18 +632,50 @@
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
-                                        <tr><th>created</th><th>reason</th><th>status</th><th>reporter</th></tr>
+                                        <tr><th>created</th><th>reason</th><th>status</th><th>reporter</th><th></th></tr>
                                     </thead>
                                     <tbody>
                                         {#each (data.reports_received || []) as r}
-                                            <tr>
-                                                <td class="admin-code">
-                                                    <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
-                                                </td>
-                                                <td>{r.reason_code}</td>
-                                                <td>{r.status}</td>
-                                                <td class="admin-code">{r.reporter_profile_id}</td>
-                                            </tr>
+                                            {@html ""}
+                                            {#key keyOf(r)}
+                                                <tr>
+                                                    <td class="admin-code">
+                                                        <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
+                                                    </td>
+                                                    <td>{r.reason_code}</td>
+                                                    <td>{r.status}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => gotoProfile(r.reporter_profile_id)}
+                                                            disabled={!r.reporter_profile_id}
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => toggleReportReceived(keyOf(r))}
+                                                        >
+                                                            {expandedReportsReceived.has(keyOf(r)) ? "Hide" : "Details"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                                {#if expandedReportsReceived.has(keyOf(r))}
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <div class="stack" style="gap:var(--space-2);">
+                                                                <div><strong>public_message:</strong> {r.public_message || "-"}</div>
+                                                                <div><strong>internal_note:</strong> {r.internal_note || "-"}</div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {/if}
+                                            {/key}
                                         {/each}
                                     </tbody>
                                 </table>
@@ -601,18 +685,49 @@
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
-                                        <tr><th>created</th><th>reason</th><th>status</th><th>reportee</th></tr>
+                                        <tr><th>created</th><th>reason</th><th>status</th><th>reportee</th><th></th></tr>
                                     </thead>
                                     <tbody>
                                         {#each (data.reports_made || []) as r}
-                                            <tr>
-                                                <td class="admin-code">
-                                                    <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
-                                                </td>
-                                                <td>{r.reason_code}</td>
-                                                <td>{r.status}</td>
-                                                <td class="admin-code">{r.reportee_profile_id}</td>
-                                            </tr>
+                                            {#key keyOf(r)}
+                                                <tr>
+                                                    <td class="admin-code">
+                                                        <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
+                                                    </td>
+                                                    <td>{r.reason_code}</td>
+                                                    <td>{r.status}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => gotoProfile(r.reportee_profile_id)}
+                                                            disabled={!r.reportee_profile_id}
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => toggleReportMade(keyOf(r))}
+                                                        >
+                                                            {expandedReportsMade.has(keyOf(r)) ? "Hide" : "Details"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                                {#if expandedReportsMade.has(keyOf(r))}
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <div class="stack" style="gap:var(--space-2);">
+                                                                <div><strong>public_message:</strong> {r.public_message || "-"}</div>
+                                                                <div><strong>internal_note:</strong> {r.internal_note || "-"}</div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {/if}
+                                            {/key}
                                         {/each}
                                     </tbody>
                                 </table>
@@ -622,6 +737,7 @@
                         <div class="u-divider"></div>
 
                         <h3>Admin actions</h3>
+
                         {#if (data?.actions_received || []).length === 0 && (data?.actions_made || []).length === 0}
                             <p class="text-hint">No admin actions.</p>
                         {:else}
@@ -629,18 +745,58 @@
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
-                                        <tr><th>created</th><th>action</th><th>reason</th><th>admin</th></tr>
+                                        <tr><th>created</th><th>action</th><th>reason</th><th>admin</th><th></th></tr>
                                     </thead>
                                     <tbody>
                                         {#each (data.actions_received || []) as a}
-                                            <tr>
-                                                <td class="admin-code">
-                                                    <span title={dtTitle(a.created_at)}>{dtLabel(a.created_at)}</span>
-                                                </td>
-                                                <td>{a.action}</td>
-                                                <td>{a.reason_code}</td>
-                                                <td class="admin-code">{a.admin_profile_id}</td>
-                                            </tr>
+                                            {#key keyOf(a)}
+                                                <tr>
+                                                    <td class="admin-code">
+                                                        <span title={dtTitle(a.created_at)}>{dtLabel(a.created_at)}</span>
+                                                    </td>
+                                                    <td>{a.action}</td>
+                                                    <td>{a.reason_code}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => gotoProfile(a.admin_profile_id)}
+                                                            disabled={!a.admin_profile_id}
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => toggleActionReceived(keyOf(a))}
+                                                        >
+                                                            {expandedActionsReceived.has(keyOf(a)) ? "Hide" : "Details"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                                {#if expandedActionsReceived.has(keyOf(a))}
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <div class="stack" style="gap:var(--space-2);">
+                                                                <div><strong>public_message:</strong> {a.public_message || "-"}</div>
+                                                                <div><strong>internal_note:</strong> {a.internal_note || "-"}</div>
+                                                                {#if a.until}
+                                                                    <div><strong>until:</strong> <span class="admin-code" title={dtTitle(a.until)}>{dtLabel(a.until)}</span></div>
+                                                                {/if}
+                                                                {#if a.field_key}
+                                                                    <div><strong>field_key:</strong> <span class="admin-code">{a.field_key}</span></div>
+                                                                {/if}
+                                                                {#if a.field_value !== undefined}
+                                                                    <div><strong>field_value:</strong> {a.field_value === null ? "null" : a.field_value}</div>
+                                                                {/if}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {/if}
+                                            {/key}
                                         {/each}
                                     </tbody>
                                 </table>
@@ -650,18 +806,58 @@
                             <div style="width:100%;overflow-x:auto;">
                                 <table class="admin-table">
                                     <thead>
-                                        <tr><th>created</th><th>action</th><th>reason</th><th>target</th></tr>
+                                        <tr><th>created</th><th>action</th><th>reason</th><th>target</th><th></th></tr>
                                     </thead>
                                     <tbody>
                                         {#each (data.actions_made || []) as a}
-                                            <tr>
-                                                <td class="admin-code">
-                                                    <span title={dtTitle(a.created_at)}>{dtLabel(a.created_at)}</span>
-                                                </td>
-                                                <td>{a.action}</td>
-                                                <td>{a.reason_code}</td>
-                                                <td class="admin-code">{a.target_profile_id}</td>
-                                            </tr>
+                                            {#key keyOf(a)}
+                                                <tr>
+                                                    <td class="admin-code">
+                                                        <span title={dtTitle(a.created_at)}>{dtLabel(a.created_at)}</span>
+                                                    </td>
+                                                    <td>{a.action}</td>
+                                                    <td>{a.reason_code}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => gotoProfile(a.target_profile_id)}
+                                                            disabled={!a.target_profile_id}
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn--mini btn--ghost"
+                                                            on:click={() => toggleActionMade(keyOf(a))}
+                                                        >
+                                                            {expandedActionsMade.has(keyOf(a)) ? "Hide" : "Details"}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                                {#if expandedActionsMade.has(keyOf(a))}
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <div class="stack" style="gap:var(--space-2);">
+                                                                <div><strong>public_message:</strong> {a.public_message || "-"}</div>
+                                                                <div><strong>internal_note:</strong> {a.internal_note || "-"}</div>
+                                                                {#if a.until}
+                                                                    <div><strong>until:</strong> <span class="admin-code" title={dtTitle(a.until)}>{dtLabel(a.until)}</span></div>
+                                                                {/if}
+                                                                {#if a.field_key}
+                                                                    <div><strong>field_key:</strong> <span class="admin-code">{a.field_key}</span></div>
+                                                                {/if}
+                                                                {#if a.field_value !== undefined}
+                                                                    <div><strong>field_value:</strong> {a.field_value === null ? "null" : a.field_value}</div>
+                                                                {/if}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {/if}
+                                            {/key}
                                         {/each}
                                     </tbody>
                                 </table>
