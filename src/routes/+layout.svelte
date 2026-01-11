@@ -31,7 +31,7 @@
     import CaptchaOverlay from "$lib/components/CaptchaOverlay.svelte";
 
 
-    const LOADING_TIMEOUT = 5000; // 5 seconds
+    const LOADING_TIMEOUT = 10000; // 10 seconds
     let didPreloadRoutes = false;
     let captchaOverlay = $state(null);
 
@@ -67,7 +67,21 @@
         return isPublic && !appReady;
     });
 
-    let { children } = $props();
+    // ---------------- Admin route gating ---------------- //
+
+    const isAdminRoute = $derived.by(() => {
+        const p = $page?.url?.pathname || "/";
+        return p === "/admin" || p.startsWith("/admin/");
+    });
+
+    const isAdminUser = $derived.by(() => {
+        const role = ($profile?.access?.role || "").toLowerCase();
+        return role === "admin";
+    });
+
+    const isAdminBlocked = $derived.by(() => {
+        return appReady && isAdminRoute && !isAdminUser;
+    });
 
 
     // ---------------- Page metadata ---------------- //
@@ -229,6 +243,8 @@
             ],
         });
     }
+
+    let { children } = $props();
 </script>
 
 
@@ -387,13 +403,45 @@
         </div>
     </div>
 
-{:else if appReady}
-    <div class="app">
-        <Navbar />
-        <div class="app-body">
-            {@render children?.()}
+{:else if isAdminBlocked}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <p class="text-center text-fw-semibold">Not authorized.</p>
+                    <p class="text-hint text-center">You don't have admin access.</p>
+
+                    <div class="actionbar">
+                        <button type="button" class="btn btn--primary btn--block" onclick={() => goto("/")}>
+                            <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />Back
+                        </button>
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
+
+{:else if appReady}
+    {#if isAdminRoute}
+        <div class="app app--no-nav">
+            <div class="app-body">
+                {@render children?.()}
+            </div>
+        </div>
+    {:else}
+        <div class="app">
+            <Navbar />
+            <div class="app-body">
+                {@render children?.()}
+            </div>
+        </div>
+    {/if}
 
 {:else}
     <div class="gate">
