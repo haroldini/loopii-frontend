@@ -4,7 +4,7 @@
     import { goto } from "$app/navigation";
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
-    import { getAvatarUrl } from "$lib/utils/profile.js";
+    import { getAvatarUrl, relativeTime, formatDateTimeShort } from "$lib/utils/profile.js";
     import { adminListProfiles } from "$lib/api/admin.js";
 
     let items = [];
@@ -22,6 +22,34 @@
     let sort = "recent_joined";
 
     $: pageNum = cursorStack.length + 1;
+
+    function toastErr(err, fallback) {
+        addToast({ text: err?.message || fallback || "Request failed.", autoHideMs: 6000 });
+    }
+
+    function formatBytes(bytes) {
+        const n = Number(bytes);
+        if (!isFinite(n) || n < 0) return "-";
+        if (n < 1024) return `${n} B`;
+        const kb = n / 1024;
+        if (kb < 1024) return `${kb.toFixed(kb < 10 ? 2 : 1)} KB`;
+        const mb = kb / 1024;
+        if (mb < 1024) return `${mb.toFixed(mb < 10 ? 2 : 1)} MB`;
+        const gb = mb / 1024;
+        return `${gb.toFixed(gb < 10 ? 2 : 1)} GB`;
+    }
+
+    function dtTitle(iso) {
+        if (!iso) return "";
+        const t = formatDateTimeShort(iso);
+        return t || "";
+    }
+
+    function dtLabel(iso) {
+        if (!iso) return "-";
+        const title = formatDateTimeShort(iso);
+        return relativeTime(iso, true) || title || "-";
+    }
 
     async function loadPage({ after = null } = {}) {
         if (loading) return;
@@ -42,10 +70,7 @@
             total = typeof res?.total === "number" ? res.total : null;
 
         } catch (err) {
-            addToast({
-                text: err?.message || "Failed to load profiles.",
-                autoHideMs: 6000,
-            });
+            toastErr(err, "Failed to load profiles.");
         } finally {
             loading = false;
         }
@@ -110,7 +135,7 @@
                 <option value="recent_updated">Recent updated</option>
                 <option value="most_decisions_30d">Most decisions (30d)</option>
                 <option value="most_loops_30d">Most loops (30d)</option>
-                <option value="storage_bytes">Storage bytes</option>
+                <option value="storage_bytes">Storage</option>
                 <option value="most_reports_open">Most reports open</option>
             </select>
 
@@ -174,10 +199,18 @@
                             <div class="admin-row__main stack" style="gap:var(--space-2);">
                                 <div>
                                     <div class="admin-row__title">
-                                        {row.profile?.name || row.profile?.username || row.profile?.id}
+                                        {row.profile?.name || `@${row.profile?.username || "unknown"}`}
                                     </div>
                                     <div class="admin-row__sub">
-                                        @{row.profile?.username} · <span class="admin-code">{row.profile?.id}</span>
+                                        {#if row.profile?.username}
+                                            @{row.profile.username}
+                                        {:else}
+                                            <span class="text-hint">no username</span>
+                                        {/if}
+                                        · joined <span title={dtTitle(row.profile?.created_at)} class="admin-code">{dtLabel(row.profile?.created_at)}</span>
+                                        {#if row.profile?.last_seen_at}
+                                            · seen <span title={dtTitle(row.profile.last_seen_at)} class="admin-code">{dtLabel(row.profile.last_seen_at)}</span>
+                                        {/if}
                                     </div>
                                 </div>
 
@@ -188,9 +221,32 @@
                                     {#if row?.meta?.access?.role}
                                         <span class="pill"><span class="pill__label">{row.meta.access.role}</span></span>
                                     {/if}
-                                    <span class="pill"><span class="pill__label">open reports: {row?.meta?.reports_received_open ?? 0}</span></span>
-                                    <span class="pill"><span class="pill__label">loops 30d: {row?.meta?.loops_30d ?? 0}</span></span>
-                                    <span class="pill"><span class="pill__label">storage: {row?.meta?.storage_bytes ?? 0}</span></span>
+
+                                    <span class="pill">
+                                        <span class="pill__label">open reports: {row?.meta?.reports_received_open ?? 0}</span>
+                                    </span>
+
+                                    <span class="pill">
+                                        <span class="pill__label">loops: {row?.meta?.loops_total ?? 0} (30d {row?.meta?.loops_30d ?? 0})</span>
+                                    </span>
+
+                                    <span class="pill">
+                                        <span class="pill__label">decisions made: {row?.meta?.decisions_made_total ?? 0} (30d {row?.meta?.decisions_made_30d ?? 0})</span>
+                                    </span>
+
+                                    <span class="pill">
+                                        <span class="pill__label">decisions recv: {row?.meta?.decisions_received_total ?? 0} (30d {row?.meta?.decisions_received_30d ?? 0})</span>
+                                    </span>
+
+                                    <span class="pill">
+                                        <span class="pill__label">storage: {formatBytes(row?.meta?.storage_bytes ?? 0)}</span>
+                                    </span>
+
+                                    {#if row?.meta?.img_count != null}
+                                        <span class="pill">
+                                            <span class="pill__label">images: {row.meta.img_count}</span>
+                                        </span>
+                                    {/if}
                                 </div>
                             </div>
                         </div>

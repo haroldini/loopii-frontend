@@ -5,7 +5,7 @@ const ADMIN_PUBLIC_MESSAGE_MAX_LENGTH = 400;
 const ADMIN_INTERNAL_NOTE_MAX_LENGTH = 1000;
 const ADMIN_REASON_CODE_MAX_LENGTH = 64;
 
-// Used in reports + admin actions (frontend allowlist).
+// Used in reports (frontend allowlist).
 export const REPORT_REASON_CODE_OPTIONS = [
     { value: "sexual_content", label: "Sexual / pornographic content" },
     { value: "ai_generated_photos", label: "AI-generated photos" },
@@ -23,12 +23,15 @@ export const REPORT_REASON_CODE_OPTIONS = [
     { value: "self_harm", label: "Self-harm content" },
     { value: "other", label: "Other" },
 ];
-export const ADMIN_REASON_CODE_OPTIONS = REPORT_REASON_CODE_OPTIONS;
-const _REASON_CODE_SET = new Set(REPORT_REASON_CODE_OPTIONS.map((o) => o.value));
-const _INTERNAL_REASON_CODES = new Set([
-    "admin_delete_media",
-    "admin_clear_content",
-]);
+
+// Admin can use all report reasons + a couple explicitly admin-ish ones.
+export const ADMIN_REASON_CODE_OPTIONS = [
+    ...REPORT_REASON_CODE_OPTIONS,
+    { value: "media_removal", label: "Admin: Media removal" },
+    { value: "content_overwrite", label: "Admin: Content overwrite" },
+];
+
+const _REASON_CODE_SET = new Set(ADMIN_REASON_CODE_OPTIONS.map((o) => o.value));
 
 export function validateReasonCode(reason, { field = "reason_code", required = true } = {}) {
     reason = reason?.trim();
@@ -49,7 +52,7 @@ export function validateReasonCode(reason, { field = "reason_code", required = t
             display: true,
         };
     }
-    if (!_REASON_CODE_SET.has(reason) && !_INTERNAL_REASON_CODES.has(reason)) {
+    if (!_REASON_CODE_SET.has(reason)) {
         return {
             field,
             message: "Reason code is not a supported option.",
@@ -341,6 +344,48 @@ export function validateSocials(socials) {
     });
 
     return errors;
+}
+
+
+// ----- ADMIN: CLEAR CONTENT VALIDATION (reuses existing validators) -----
+
+export const ADMIN_CLEAR_FIELD_OPTIONS = [
+    { value: "bio", label: "bio" },
+    { value: "loop_bio", label: "loop_bio" },
+    { value: "looking_for", label: "looking_for" },
+    { value: "location", label: "location" },
+    { value: "name", label: "name" },
+];
+
+const _CLEAR_FIELD_SET = new Set(ADMIN_CLEAR_FIELD_OPTIONS.map((o) => o.value));
+
+export function validateAdminClearField(fieldKey, { field = "field_key" } = {}) {
+    if (!fieldKey || !_CLEAR_FIELD_SET.has(fieldKey)) {
+        return { field, message: "Invalid field key.", display: true };
+    }
+    return null;
+}
+
+export function validateAdminClearValue(fieldKey, value, { field = "field_value" } = {}) {
+    const eField = validateAdminClearField(fieldKey, { field: "field_key" });
+    if (eField) return eField;
+
+    const v = typeof value === "string" ? value.trim() : value;
+
+    if (v == null || v === "") return null;
+
+    const map = {
+        bio: validateBio,
+        loop_bio: validateLoopBio,
+        looking_for: validateLookingFor,
+        location: validateLocation,
+        name: validateName,
+    };
+
+    const validator = map[fieldKey];
+    if (!validator) return { field, message: "Invalid field key.", display: true };
+
+    return validator(v);
 }
 
 

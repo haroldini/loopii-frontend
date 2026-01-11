@@ -5,22 +5,21 @@
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
     import { REPORT_REASON_CODE_OPTIONS } from "$lib/utils/validators.js";
+    import { relativeTime, formatDateTimeShort } from "$lib/utils/profile.js";
 
     import { adminListReports, adminSetReportStatus } from "$lib/api/admin.js";
 
     let items = [];
     let loading = false;
 
-    // cursor paging (pages, not infinite append)
-    let currentAfter = null;     // the cursor used to load THIS page
-    let nextCursor = null;       // the cursor to load NEXT page
+    let currentAfter = null;
+    let nextCursor = null;
     let hasMore = false;
-    let cursorStack = [];        // stack of previous "after" cursors (for Prev)
+    let cursorStack = [];
 
     let total = null;
     let limit = 50;
 
-    // filters
     let status = "";
     let reason_code = "";
     let reportee_profile_id = "";
@@ -35,6 +34,11 @@
 
     function toastErr(err, fallback) {
         addToast({ text: err?.message || fallback || "Request failed.", autoHideMs: 6000 });
+    }
+
+    function dt(iso) {
+        if (!iso) return { title: "", label: "-" };
+        return { title: formatDateTimeShort(iso), label: relativeTime(iso, true) || formatDateTimeShort(iso) };
     }
 
     async function loadPage({ after = null } = {}) {
@@ -129,7 +133,6 @@
         });
     }
 
-    // initial
     loadPage({ after: null });
 </script>
 
@@ -239,6 +242,8 @@
                 <p class="text-hint">No reports.</p>
             {:else}
                 {#each items as item}
+                    {@const c = dt(item?.report?.created_at)}
+                    {@const u = dt(item?.report?.updated_at)}
                     <div class="card">
                         <div class="section stack">
                             <div class="admin-row">
@@ -274,9 +279,13 @@
                             {/if}
 
                             <div class="admin-pillrow">
-                                <span class="pill"><span class="pill__label">created: {item?.report?.created_at || "-"}</span></span>
+                                <span class="pill">
+                                    <span class="pill__label" title={c.title}>created: {c.label}</span>
+                                </span>
                                 {#if item?.report?.updated_at}
-                                    <span class="pill"><span class="pill__label">updated: {item.report.updated_at}</span></span>
+                                    <span class="pill">
+                                        <span class="pill__label" title={u.title}>updated: {u.label}</span>
+                                    </span>
                                 {/if}
                             </div>
 
