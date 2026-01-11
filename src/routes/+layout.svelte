@@ -7,11 +7,12 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { browser } from "$app/environment";
-    import { preloadData } from "$app/navigation";
+    import { preloadData, goto } from "$app/navigation";
+
+    import { registerCaptchaOverlay } from "$lib/utils/captcha.js";
 
     import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
-    import { registerCaptchaOverlay } from "$lib/utils/captcha.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
     import { initLoopsStore } from "$lib/stores/loops.js";
@@ -23,6 +24,7 @@
 
     import Auth from "$lib/components/Auth.svelte";
     import CreateProfile from "$lib/components/CreateProfile.svelte";
+    import RestrictedGate from "$lib/components/RestrictedGate.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
     import QuickSettings from "$lib/components/QuickSettings.svelte";
@@ -34,14 +36,34 @@
     let captchaOverlay = $state(null);
 
 
+    // ---------------- Account access gating ---------------- //
+
+    const accessStatus = $derived.by(() => {
+        const s = $profile?.access?.status;
+        return (s || "active").toLowerCase();
+    });
+
+    const isAccountRestricted = $derived.by(() => {
+        return (
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded" &&
+            accessStatus !== "active"
+        );
+    });
+
+    const appReady = $derived.by(() => {
+        return (
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded" &&
+            !isAccountRestricted
+        );
+    });
+
     const PUBLIC_ROUTES = new Set(["/privacy", "/terms", "/contact"]);
     const shouldBypassGates = $derived.by(() => {
         const isPublic = PUBLIC_ROUTES.has($page.url.pathname);
-        const appReady =
-            $authState === "authenticated" &&
-            $profileState === "loaded" &&
-            $referencesStatus === "loaded";
-
         return isPublic && !appReady;
     });
 
@@ -143,11 +165,7 @@
 
     // ---------------- App data setup ---------------- //
     $effect(() => {
-        if (
-            $authState === "authenticated" &&
-            $profileState === "loaded" &&
-            $referencesStatus === "loaded"
-        ) {
+        if (appReady) {
             // Initialise stores that need auth + profile
             initPeerStore();
             initLoopsStore();
@@ -233,7 +251,7 @@
 <Popups />
 {#if browser}
     <CaptchaOverlay bind:this={captchaOverlay} />
-    {#if !shouldBypassGates && !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
+    {#if !shouldBypassGates && !appReady}
         <QuickSettings />
     {/if}
 {/if}
@@ -275,11 +293,7 @@
     </div>
 
 <!-- Loading -->
-{:else if 
-        $referencesStatus === "loading" 
-        || $referencesStatus === "unloaded" 
-        || $authState === "loading"
-        || $profileState === "loading"}
+{:else if $referencesStatus === "loading" || $referencesStatus === "unloaded" || $authState === "loading" || $profileState === "loading"}
 
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
@@ -360,7 +374,20 @@
     {/if}
 
 
-{:else if $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded"}
+{:else if isAccountRestricted}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
+            <section class="card">
+                <div class="section stack">
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <RestrictedGate onSignOut={confirmLocalSignOut} />
+                </div>
+            </section>
+        </div>
+    </div>
+
+{:else if appReady}
     <div class="app">
         <Navbar />
         <div class="app-body">

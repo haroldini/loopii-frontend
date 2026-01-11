@@ -53,3 +53,10 @@ export function checkUsernameAvailability(username) {
         method: "GET"
     });
 }
+
+// Acknowledge a warning (no-op if not warned)
+export function ackWarning() {
+    return request("/profile/ack-warning", {
+        method: "POST"
+    });
+}
