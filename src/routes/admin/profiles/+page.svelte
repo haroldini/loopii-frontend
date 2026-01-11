@@ -1,7 +1,6 @@
 
 <script>
     import Icon from "@iconify/svelte";
-    import { goto } from "$app/navigation";
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
     import { getAvatarUrl, relativeTime, formatDateTimeShort } from "$lib/utils/profile.js";
@@ -49,6 +48,11 @@
         if (!iso) return "-";
         const title = formatDateTimeShort(iso);
         return relativeTime(iso, true) || title || "-";
+    }
+
+    function profileHref(id) {
+        if (!id) return null;
+        return `/admin/profiles/${id}`;
     }
 
     async function loadPage({ after = null } = {}) {
@@ -100,11 +104,6 @@
         loadPage({ after: prevAfter });
     }
 
-    function openProfile(id) {
-        if (!id) return;
-        goto(`/admin/profiles/${id}`);
-    }
-
     function onSortChange() {
         apply();
     }
@@ -145,6 +144,7 @@
                 on:click={refresh}
                 disabled={loading}
                 aria-label="Refresh"
+                title="Refresh"
             >
                 <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
@@ -155,12 +155,12 @@
     <div class="u-divider"></div>
 
     <div class="actionbar">
-        <button type="button" class="btn btn--ghost" on:click={prevPage} disabled={loading || cursorStack.length === 0}>
+        <button type="button" class="btn btn--ghost" on:click={prevPage} disabled={loading || cursorStack.length === 0} title="Previous page">
             <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
             <span class="btn__label">Prev</span>
         </button>
 
-        <button type="button" class="btn btn--ghost" on:click={nextPage} disabled={loading || !hasMore}>
+        <button type="button" class="btn btn--ghost" on:click={nextPage} disabled={loading || !hasMore} title="Next page">
             <span class="btn__label">Next</span>
             <Icon icon={UI_ICONS.chevronRight} class="btn__icon" />
         </button>
@@ -245,9 +245,20 @@
                         </div>
 
                         <div class="admin-row__actions">
-                            <button type="button" class="btn btn--primary btn--icon" on:click={() => openProfile(row.profile?.id)}>
-                                <Icon icon={UI_ICONS.eyeOpen} class="btn__icon" />
-                            </button>
+                            {#if profileHref(row.profile?.id)}
+                                <a
+                                    class="btn btn--primary btn--icon"
+                                    href={profileHref(row.profile.id)}
+                                    title="View profile"
+                                    aria-label="View profile"
+                                >
+                                    <Icon icon={UI_ICONS.eyeOpen} class="btn__icon" />
+                                </a>
+                            {:else}
+                                <button type="button" class="btn btn--primary btn--icon" disabled title="No profile id" aria-label="No profile id">
+                                    <Icon icon={UI_ICONS.eyeOpen} class="btn__icon" />
+                                </button>
+                            {/if}
                         </div>
                     </div>
                 </div>

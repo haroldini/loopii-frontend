@@ -2,7 +2,6 @@
 <script>
     import Icon from "@iconify/svelte";
     import { page } from "$app/stores";
-    import { goto } from "$app/navigation";
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
 
@@ -30,6 +29,7 @@
         adminClearContent,
         adminDeleteProfileImage,
         adminDeleteProfileAudio,
+        adminSetReportStatus,
     } from "$lib/api/admin.js";
 
     let loading = false;
@@ -142,9 +142,43 @@
         expandedActionsMade = toggleSet(expandedActionsMade, k);
     }
 
-    function gotoProfile(id) {
-        if (!id) return;
-        goto(`/admin/profiles/${id}`);
+    function profileHref(id) {
+        if (!id) return null;
+        return `/admin/profiles/${id}`;
+    }
+
+    async function setStatus(reportId, nextStatus, { bulk = false } = {}) {
+        if (!reportId) return;
+
+        addToast({
+            variant: "modal",
+            text: bulk ? "Bulk update reports?" : "Update report status?",
+            description: bulk
+                ? "This updates all OPEN reports with the same (reportee, reason_code)."
+                : `Set status to "${nextStatus}".`,
+            autoHideMs: null,
+            actions: [
+                { label: "Cancel", variant: "secondary" },
+                {
+                    label: "Confirm",
+                    variant: bulk ? "danger" : "primary",
+                    onClick: async () => {
+                        try {
+                            await adminSetReportStatus(reportId, {
+                                status: nextStatus,
+                                resolution_note: null,
+                                action_id: null,
+                                bulk,
+                            });
+                            addToast({ text: bulk ? "Bulk updated." : "Updated.", autoHideMs: 2500 });
+                            await load();
+                        } catch (err) {
+                            toastErr(err, "Failed to update report.");
+                        }
+                    },
+                },
+            ],
+        });
     }
 
     $: profileId = $page.params.profile_id;
@@ -376,9 +410,14 @@
         </div>
 
         <div class="toolbar__group">
-            <button type="button" class="btn btn--ghost btn--icon" on:click={() => goto("/admin/profiles")} aria-label="Back">
+            <a
+                class="btn btn--ghost btn--icon"
+                href="/admin/profiles"
+                title="Back to profiles"
+                aria-label="Back to profiles"
+            >
                 <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
-            </button>
+            </a>
 
             <button
                 type="button"
@@ -387,6 +426,7 @@
                 on:click={load}
                 disabled={loading}
                 aria-label="Refresh"
+                title="Refresh"
             >
                 <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
@@ -405,11 +445,17 @@
                     <div class="section stack">
                         <div class="row" style="justify-content:space-between;align-items:center;">
                             <h3 style="margin:0;">Overview</h3>
-                            <button type="button" class="btn btn--ghost btn--icon" on:click={() => (showOverview = !showOverview)}>
+                            <button
+                                type="button"
+                                class="btn btn--ghost btn--icon"
+                                on:click={() => (showOverview = !showOverview)}
+                                title={showOverview ? "Collapse overview" : "Expand overview"}
+                                aria-label={showOverview ? "Collapse overview" : "Expand overview"}
+                            >
                                 {#if showOverview}
-                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                    <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                 {:else}
-                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                    <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                 {/if}
                             </button>
                         </div>
@@ -459,11 +505,17 @@
 
                         <div class="row" style="justify-content:space-between;align-items:center;">
                             <h4 style="margin:0;">Stats</h4>
-                            <button type="button" class="btn btn--ghost btn--icon" on:click={() => (showStats = !showStats)}>
+                            <button
+                                type="button"
+                                class="btn btn--ghost btn--icon"
+                                on:click={() => (showStats = !showStats)}
+                                title={showStats ? "Collapse stats" : "Expand stats"}
+                                aria-label={showStats ? "Collapse stats" : "Expand stats"}
+                            >
                                 {#if showStats}
-                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                    <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                 {:else}
-                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                    <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                 {/if}
                             </button>
                         </div>
@@ -517,17 +569,17 @@
                         <h3>Actions</h3>
 
                         <div class="actionbar">
-                            <button type="button" class="btn btn--danger" on:click={doWarn} disabled={acting || loading}>
+                            <button type="button" class="btn btn--danger" on:click={doWarn} disabled={acting || loading} title="Warn">
                                 <Icon icon={UI_ICONS.alert} class="btn__icon" />
                                 <span class="btn__label">Warn</span>
                             </button>
 
-                            <button type="button" class="btn btn--danger" on:click={doBan} disabled={acting || loading}>
+                            <button type="button" class="btn btn--danger" on:click={doBan} disabled={acting || loading} title="Ban">
                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
                                 <span class="btn__label">Ban</span>
                             </button>
 
-                            <button type="button" class="btn btn--success" on:click={doUnban} disabled={acting || loading}>
+                            <button type="button" class="btn btn--success" on:click={doUnban} disabled={acting || loading} title="Unban">
                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
                                 <span class="btn__label">Unban</span>
                             </button>
@@ -542,7 +594,7 @@
                             <input id={id_until} type="datetime-local" bind:value={until_local} disabled={acting} />
                         </div>
 
-                        <button type="button" class="btn btn--danger" on:click={doTempBan} disabled={acting || loading}>
+                        <button type="button" class="btn btn--danger" on:click={doTempBan} disabled={acting || loading} title="Apply temp ban">
                             <Icon icon={UI_ICONS.close} class="btn__icon" />
                             <span class="btn__label">Apply temp ban</span>
                         </button>
@@ -565,7 +617,7 @@
                             <textarea id={id_clear_value} bind:value={clear_value} disabled={acting}></textarea>
                         </div>
 
-                        <button type="button" class="btn btn--danger" on:click={doClearContent} disabled={acting || loading}>
+                        <button type="button" class="btn btn--danger" on:click={doClearContent} disabled={acting || loading} title="Apply overwrite">
                             <Icon icon={UI_ICONS.swap} class="btn__icon" />
                             <span class="btn__label">Apply overwrite</span>
                         </button>
@@ -598,6 +650,8 @@
                                                         class="btn btn--danger btn--icon"
                                                         on:click={() => confirmDeleteImage(img.id)}
                                                         disabled={acting || loading}
+                                                        title="Delete image"
+                                                        aria-label="Delete image"
                                                     >
                                                         <Icon icon={UI_ICONS.delete} class="btn__icon" />
                                                     </button>
@@ -617,6 +671,7 @@
                                 class="btn btn--danger"
                                 on:click={() => confirmDeleteAudio(data.profile.audio.id)}
                                 disabled={acting || loading}
+                                title="Delete audio"
                             >
                                 <Icon icon={UI_ICONS.delete} class="btn__icon" />
                                 <span class="btn__label">Delete audio</span>
@@ -658,25 +713,33 @@
                                                     <td>{r.reason_code}</td>
                                                     <td>{r.status}</td>
                                                     <td>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn--ghost btn--icon"
-                                                            on:click={() => gotoProfile(r.reporter_profile_id)}
-                                                            disabled={!r.reporter_profile_id}
-                                                        >
-                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                        </button>
+                                                        {#if profileHref(r.reporter_profile_id)}
+                                                            <a
+                                                                class="btn btn--ghost btn--icon"
+                                                                href={profileHref(r.reporter_profile_id)}
+                                                                title="View reporter profile"
+                                                                aria-label="View reporter profile"
+                                                            >
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </a>
+                                                        {:else}
+                                                            <button type="button" class="btn btn--ghost btn--icon" disabled title="No reporter">
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </button>
+                                                        {/if}
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportReceived(keyOf(r))}
+                                                            title={expandedReportsReceived.has(keyOf(r)) ? "Collapse report" : "Expand report"}
+                                                            aria-label={expandedReportsReceived.has(keyOf(r)) ? "Collapse report" : "Expand report"}
                                                         >
                                                             {#if expandedReportsReceived.has(keyOf(r))}
-                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
-                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                                             {/if}
                                                         </button>
                                                     </td>
@@ -687,7 +750,52 @@
                                                         <td colspan="5">
                                                             <div class="stack" style="gap:var(--space-2);">
                                                                 <div><strong>details:</strong> {r.details || "-"}</div>
-                                                                <div><strong>internal_note:</strong> {r.internal_note || "-"}</div>
+
+                                                                {#if r.resolved_at}
+                                                                    <div>
+                                                                        <strong>resolved_at:</strong>
+                                                                        <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                                    </div>
+                                                                {/if}
+
+                                                                {#if r.resolution_note}
+                                                                    <div><strong>resolution_note:</strong> {r.resolution_note}</div>
+                                                                {/if}
+
+                                                                {#if r.resolved_by_profile_id}
+                                                                    <div>
+                                                                        <strong>resolved_by:</strong>
+                                                                        <a
+                                                                            class="btn btn--ghost btn--icon"
+                                                                            href={profileHref(r.resolved_by_profile_id)}
+                                                                            title="View resolving admin profile"
+                                                                            aria-label="View resolving admin profile"
+                                                                        >
+                                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                                        </a>
+                                                                    </div>
+                                                                {/if}
+
+                                                                <div class="actionbar">
+                                                                    <button type="button" class="btn btn--ghost" on:click={() => setStatus(r.id, "open", { bulk: false })}>
+                                                                        Open
+                                                                    </button>
+                                                                    <button type="button" class="btn btn--success" on:click={() => setStatus(r.id, "actioned", { bulk: false })}>
+                                                                        Actioned
+                                                                    </button>
+                                                                    <button type="button" class="btn btn--danger" on:click={() => setStatus(r.id, "dismissed", { bulk: false })}>
+                                                                        Dismiss
+                                                                    </button>
+                                                                </div>
+
+                                                                <div class="actions actions--end">
+                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "actioned", { bulk: true })}>
+                                                                        Bulk action
+                                                                    </button>
+                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "dismissed", { bulk: true })}>
+                                                                        Bulk dismiss
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -714,25 +822,33 @@
                                                     <td>{r.reason_code}</td>
                                                     <td>{r.status}</td>
                                                     <td>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn--ghost btn--icon"
-                                                            on:click={() => gotoProfile(r.reportee_profile_id)}
-                                                            disabled={!r.reportee_profile_id}
-                                                        >
-                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                        </button>
+                                                        {#if profileHref(r.reportee_profile_id)}
+                                                            <a
+                                                                class="btn btn--ghost btn--icon"
+                                                                href={profileHref(r.reportee_profile_id)}
+                                                                title="View reportee profile"
+                                                                aria-label="View reportee profile"
+                                                            >
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </a>
+                                                        {:else}
+                                                            <button type="button" class="btn btn--ghost btn--icon" disabled title="No reportee">
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </button>
+                                                        {/if}
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportMade(keyOf(r))}
+                                                            title={expandedReportsMade.has(keyOf(r)) ? "Collapse report" : "Expand report"}
+                                                            aria-label={expandedReportsMade.has(keyOf(r)) ? "Collapse report" : "Expand report"}
                                                         >
                                                             {#if expandedReportsMade.has(keyOf(r))}
-                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
-                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                                             {/if}
                                                         </button>
                                                     </td>
@@ -742,8 +858,55 @@
                                                     <tr>
                                                         <td colspan="5">
                                                             <div class="stack" style="gap:var(--space-2);">
-                                                                <div><strong>public_message:</strong> {r.public_message || "-"}</div>
-                                                                <div><strong>internal_note:</strong> {r.internal_note || "-"}</div>
+                                                                <div><strong>details:</strong> {r.details || "-"}</div>
+
+                                                                {#if r.resolved_at}
+                                                                    <div>
+                                                                        <strong>resolved_at:</strong>
+                                                                        <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                                    </div>
+                                                                {/if}
+
+                                                                {#if r.resolution_note}
+                                                                    <div><strong>resolution_note:</strong> {r.resolution_note}</div>
+                                                                {/if}
+
+                                                                {#if r.resolved_by_profile_id}
+                                                                    <div>
+                                                                        <strong>resolved_by:</strong>
+                                                                        <a
+                                                                            class="btn btn--ghost btn--icon"
+                                                                            href={profileHref(r.resolved_by_profile_id)}
+                                                                            title="View resolving admin profile"
+                                                                            aria-label="View resolving admin profile"
+                                                                        >
+                                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                                        </a>
+                                                                    </div>
+                                                                {/if}
+
+                                                                <div class="actionbar">
+                                                                    <button type="button" class="btn btn--ghost" on:click={() => setStatus(r.id, "open", { bulk: false })}>
+                                                                        Open
+                                                                    </button>
+                                                                    <button type="button" class="btn btn--success" on:click={() => setStatus(r.id, "actioned", { bulk: false })}>
+                                                                        Actioned
+                                                                    </button>
+                                                                    <button type="button" class="btn btn--danger" on:click={() => setStatus(r.id, "dismissed", { bulk: false })}>
+                                                                        Dismiss
+                                                                    </button>
+                                                                </div>
+
+                                                                <div class="actions actions--end">
+                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "actioned", { bulk: true })}>
+                                                                        Bulk action
+                                                                    </button>
+                                                                </div>
+                                                                <div class="actions actions--end">
+                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "dismissed", { bulk: true })}>
+                                                                        Bulk dismiss
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -778,25 +941,33 @@
                                                     <td>{a.action}</td>
                                                     <td>{a.reason_code}</td>
                                                     <td>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn--ghost btn--icon"
-                                                            on:click={() => gotoProfile(a.admin_profile_id)}
-                                                            disabled={!a.admin_profile_id}
-                                                        >
-                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                        </button>
+                                                        {#if profileHref(a.admin_profile_id)}
+                                                            <a
+                                                                class="btn btn--ghost btn--icon"
+                                                                href={profileHref(a.admin_profile_id)}
+                                                                title="View admin profile"
+                                                                aria-label="View admin profile"
+                                                            >
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </a>
+                                                        {:else}
+                                                            <button type="button" class="btn btn--ghost btn--icon" disabled title="No admin">
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </button>
+                                                        {/if}
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleActionReceived(keyOf(a))}
+                                                            title={expandedActionsReceived.has(keyOf(a)) ? "Collapse action" : "Expand action"}
+                                                            aria-label={expandedActionsReceived.has(keyOf(a)) ? "Collapse action" : "Expand action"}
                                                         >
                                                             {#if expandedActionsReceived.has(keyOf(a))}
-                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
-                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                                             {/if}
                                                         </button>
                                                     </td>
@@ -808,9 +979,16 @@
                                                             <div class="stack" style="gap:var(--space-2);">
                                                                 <div><strong>public_message:</strong> {a.public_message || "-"}</div>
                                                                 <div><strong>internal_note:</strong> {a.internal_note || "-"}</div>
-                                                                {#if a.until}
-                                                                    <div><strong>until:</strong> <span class="admin-code" title={dtTitle(a.until)}>{dtLabel(a.until)}</span></div>
+
+                                                                {#if a.effective_until || a.until}
+                                                                    <div>
+                                                                        <strong>effective_until:</strong>
+                                                                        <span class="admin-code" title={dtTitle(a.effective_until || a.until)}>
+                                                                            {dtLabel(a.effective_until || a.until)}
+                                                                        </span>
+                                                                    </div>
                                                                 {/if}
+
                                                                 {#if a.field_key}
                                                                     <div><strong>field_key:</strong> <span class="admin-code">{a.field_key}</span></div>
                                                                 {/if}
@@ -843,25 +1021,33 @@
                                                     <td>{a.action}</td>
                                                     <td>{a.reason_code}</td>
                                                     <td>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn--ghost btn--icon"
-                                                            on:click={() => gotoProfile(a.target_profile_id)}
-                                                            disabled={!a.target_profile_id}
-                                                        >
-                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                        </button>
+                                                        {#if profileHref(a.target_profile_id)}
+                                                            <a
+                                                                class="btn btn--ghost btn--icon"
+                                                                href={profileHref(a.target_profile_id)}
+                                                                title="View target profile"
+                                                                aria-label="View target profile"
+                                                            >
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </a>
+                                                        {:else}
+                                                            <button type="button" class="btn btn--ghost btn--icon" disabled title="No target">
+                                                                <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                            </button>
+                                                        {/if}
                                                     </td>
                                                     <td>
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleActionMade(keyOf(a))}
+                                                            title={expandedActionsMade.has(keyOf(a)) ? "Collapse action" : "Expand action"}
+                                                            aria-label={expandedActionsMade.has(keyOf(a)) ? "Collapse action" : "Expand action"}
                                                         >
                                                             {#if expandedActionsMade.has(keyOf(a))}
-                                                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
-                                                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                                                <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
                                                             {/if}
                                                         </button>
                                                     </td>
@@ -873,9 +1059,16 @@
                                                             <div class="stack" style="gap:var(--space-2);">
                                                                 <div><strong>public_message:</strong> {a.public_message || "-"}</div>
                                                                 <div><strong>internal_note:</strong> {a.internal_note || "-"}</div>
-                                                                {#if a.until}
-                                                                    <div><strong>until:</strong> <span class="admin-code" title={dtTitle(a.until)}>{dtLabel(a.until)}</span></div>
+
+                                                                {#if a.effective_until || a.until}
+                                                                    <div>
+                                                                        <strong>effective_until:</strong>
+                                                                        <span class="admin-code" title={dtTitle(a.effective_until || a.until)}>
+                                                                            {dtLabel(a.effective_until || a.until)}
+                                                                        </span>
+                                                                    </div>
                                                                 {/if}
+
                                                                 {#if a.field_key}
                                                                     <div><strong>field_key:</strong> <span class="admin-code">{a.field_key}</span></div>
                                                                 {/if}

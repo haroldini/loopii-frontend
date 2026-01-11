@@ -1,7 +1,6 @@
 
 <script>
     import Icon from "@iconify/svelte";
-    import { goto } from "$app/navigation";
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
     import { REPORT_REASON_CODE_OPTIONS } from "$lib/utils/validators.js";
@@ -39,6 +38,11 @@
     function dt(iso) {
         if (!iso) return { title: "", label: "-" };
         return { title: formatDateTimeShort(iso), label: relativeTime(iso, true) || formatDateTimeShort(iso) };
+    }
+
+    function profileHref(id) {
+        if (!id) return null;
+        return `/admin/profiles/${id}`;
     }
 
     async function loadPage({ after = null } = {}) {
@@ -160,6 +164,7 @@
                 on:click={refresh}
                 disabled={loading}
                 aria-label="Refresh"
+                title="Refresh"
             >
                 <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
@@ -215,6 +220,7 @@
                         class="btn btn--ghost"
                         on:click={prevPage}
                         disabled={loading || cursorStack.length === 0}
+                        title="Previous page"
                     >
                         <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
                         <span class="btn__label">Prev</span>
@@ -225,6 +231,7 @@
                         class="btn btn--ghost"
                         on:click={nextPage}
                         disabled={loading || !hasMore}
+                        title="Next page"
                     >
                         <span class="btn__label">Next</span>
                         <Icon icon={UI_ICONS.chevronRight} class="btn__icon" />
@@ -242,8 +249,6 @@
                 <p class="text-hint text-center">No reports.</p>
             {:else}
                 {#each items as item}
-                    {@const c = dt(item?.report?.created_at)}
-                    {@const u = dt(item?.report?.updated_at)}
                     <div class="card">
                         <div class="section stack">
                             <div class="admin-row">
@@ -257,22 +262,27 @@
                                 </div>
 
                                 <div class="admin-row__actions">
-                                    <button
-                                        type="button"
-                                        class="btn btn--mini btn--primary"
-                                        on:click={() => goto(`/admin/profiles/${item?.report?.reportee_profile_id}`)}
-                                    >
-                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                        <span class="btn__label">Reportee</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="btn btn--mini btn--ghost"
-                                        on:click={() => goto(`/admin/profiles/${item?.report?.reporter_profile_id}`)}
-                                    >
-                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                        <span class="btn__label">Reporter</span>
-                                    </button>
+                                    {#if profileHref(item?.report?.reportee_profile_id)}
+                                        <a
+                                            class="btn btn--mini btn--primary"
+                                            href={profileHref(item?.report?.reportee_profile_id)}
+                                            title="Open reportee profile"
+                                        >
+                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                            <span class="btn__label">Reportee</span>
+                                        </a>
+                                    {/if}
+
+                                    {#if profileHref(item?.report?.reporter_profile_id)}
+                                        <a
+                                            class="btn btn--mini btn--ghost"
+                                            href={profileHref(item?.report?.reporter_profile_id)}
+                                            title="Open reporter profile"
+                                        >
+                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                            <span class="btn__label">Reporter</span>
+                                        </a>
+                                    {/if}
                                 </div>
                             </div>
 
@@ -280,13 +290,47 @@
                                 <p>{item.report.details}</p>
                             {/if}
 
+                            {#if item?.report?.resolution_note}
+                                <p class="text-hint">{item.report.resolution_note}</p>
+                            {/if}
+
                             <div class="admin-pillrow">
-                                <span class="pill">
-                                    <span class="pill__label" title={c.title}>created: {c.label}</span>
-                                </span>
+                                {#if item?.report?.created_at}
+                                    <span class="pill">
+                                        <span class="pill__label" title={dt(item.report.created_at).title}>
+                                            created: {dt(item.report.created_at).label}
+                                        </span>
+                                    </span>
+                                {/if}
+
                                 {#if item?.report?.updated_at}
                                     <span class="pill">
-                                        <span class="pill__label" title={u.title}>updated: {u.label}</span>
+                                        <span class="pill__label" title={dt(item.report.updated_at).title}>
+                                            updated: {dt(item.report.updated_at).label}
+                                        </span>
+                                    </span>
+                                {/if}
+
+                                {#if item?.report?.resolved_at}
+                                    <span class="pill">
+                                        <span class="pill__label" title={dt(item.report.resolved_at).title}>
+                                            resolved: {dt(item.report.resolved_at).label}
+                                        </span>
+                                    </span>
+                                {/if}
+
+                                {#if profileHref(item?.report?.resolved_by_profile_id)}
+                                    <span class="pill">
+                                        <span class="pill__label">
+                                            resolved_by:
+                                            <a
+                                                class="text-link"
+                                                href={profileHref(item.report.resolved_by_profile_id)}
+                                                title="Open resolving admin profile"
+                                            >
+                                                view
+                                            </a>
+                                        </span>
                                     </span>
                                 {/if}
                             </div>
