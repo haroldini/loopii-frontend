@@ -3,23 +3,26 @@
     import { onDestroy, onMount, tick } from "svelte";
     import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
+    import { get } from "svelte/store";
 
     import Overlay from "$lib/components/Overlay.svelte";
     import { UI_ICONS, theme, themeOptions, setTheme, style, styleOptions, setStyle } from "$lib/stores/app.js";
     import { user, authState, signOut, deleteAccount, expectedPhrase } from "$lib/stores/auth.js";
     import { addToast } from "$lib/stores/popups.js";
 
+    export let showTrigger = true;
+
     const HASH = "#quick-settings";
 
     let overlay;
     let isOpen = false;
 
-    function open() {
+    export function open() {
         isOpen = true;
         overlay?.openOverlay();
     }
 
-    function close() {
+    export function close() {
         isOpen = false;
         overlay?.closeOverlay();
     }
@@ -100,7 +103,6 @@
                 return;
             }
 
-            // Success: close overlay then sign out locally
             close();
             await tick();
             await signOut();
@@ -138,6 +140,7 @@
 
     onMount(async () => {
         window.addEventListener("keydown", onKeydown);
+
         if (window.location.hash === HASH) {
             isOpen = true;
             await tick();
@@ -148,23 +151,21 @@
     onDestroy(() => {
         window.removeEventListener("keydown", onKeydown);
     });
-
-    $: isAuthed = $authState === "authenticated" && !!$user;
-    $: email = $user?.email || "";
 </script>
 
 
-<!-- Fixed trigger -->
-<button
-    type="button"
-    class="quick-settings__trigger btn btn--icon"
-    aria-label="Open settings"
-    aria-haspopup="dialog"
-    aria-expanded={isOpen}
-    on:click={() => (isOpen ? close() : open())}
->
-    <Icon icon={UI_ICONS.settings} class="btn__icon" />
-</button>
+{#if showTrigger}
+    <button
+        type="button"
+        class="quick-settings__trigger btn btn--icon"
+        aria-label="Open settings"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        on:click={() => (isOpen ? close() : open())}
+    >
+        <Icon icon={UI_ICONS.settings} class="btn__icon" />
+    </button>
+{/if}
 
 
 <Overlay
@@ -192,8 +193,8 @@
                 <div class="bar__inner">
                     <div class="bar__title">
                         <h3>Settings</h3>
-                        {#if isAuthed}
-                            <p class="text-hint">Signed in as <strong>{email}</strong></p>
+                        {#if $authState === "authenticated" && $user}
+                            <p class="text-hint">Signed in as <strong>{$user?.email || ""}</strong></p>
                         {/if}
                     </div>
                 </div>
@@ -235,11 +236,12 @@
                     </div>
                 </div>
 
-                {#if isAuthed}
+                {#if $authState === "authenticated" && $user}
                     <div class="u-divider" role="separator" aria-hidden="true"></div>
 
                     <div class="section stack">
                         <h3>Account</h3>
+
                         <div class="card card--panel" role="region" aria-label="Log out">
                             <div class="section stack">
                                 <div class="form__actions">
@@ -256,6 +258,7 @@
                                 <p class="text-hint">Log out of your account on this device.</p>
                             </div>
                         </div>
+
                         <div class="card card--panel" role="region" aria-label="Delete account">
                             <div class="section stack">
                                 <button
@@ -305,13 +308,10 @@
                                     </div>
                                 {/if}
 
-                                <p class="text-hint">
-                                    This permanently deletes your account and data.
-                                </p>
+                                <p class="text-hint">This permanently deletes your account and data.</p>
                             </div>
                         </div>
                     </div>
-
                 {/if}
 
                 <div class="u-divider" role="separator" aria-hidden="true"></div>

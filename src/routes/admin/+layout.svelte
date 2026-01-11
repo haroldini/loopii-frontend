@@ -4,13 +4,27 @@
     import Icon from "@iconify/svelte";
     import { page } from "$app/stores";
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
+
     import { UI_ICONS } from "$lib/stores/app.js";
+    import QuickSettings from "$lib/components/QuickSettings.svelte";
 
     let { children } = $props();
 
+    let qs;
+
     function isActive(path) {
         const p = $page.url.pathname;
+
+        if (path === "/admin") {
+            return p === "/admin";
+        }
+
         return p === path || p.startsWith(path + "/");
+    }
+
+    function openQuickSettings() {
+        qs?.open?.();
     }
 </script>
 
@@ -29,23 +43,48 @@
             </div>
 
             <div class="bar__actions">
-                <button type="button" class="btn btn--ghost btn--icon" onclick={() => goto("/")}>
+                {#if browser}
+                    <button
+                        type="button"
+                        class="btn btn--ghost btn--icon"
+                        aria-label="Quick settings"
+                        onclick={openQuickSettings}
+                    >
+                        <Icon icon={UI_ICONS.settings} class="btn__icon" />
+                    </button>
+
+                    <QuickSettings bind:this={qs} showTrigger={false} />
+                {/if}
+
+                <button
+                    type="button"
+                    class="btn btn--ghost btn--icon"
+                    aria-label="Back to app"
+                    onclick={() => goto("/")}
+                >
                     <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
                 </button>
             </div>
         </div>
     </header>
 
-    <div class="content content--full stack admin-wrap">
-        <nav class="segmented">
-            <a href="/admin/profiles" aria-current={isActive("/admin/profiles") ? "page" : undefined}>
-                Profiles
-            </a>
-            <a href="/admin/reports" aria-current={isActive("/admin/reports") ? "page" : undefined}>
-                Reports
-            </a>
-        </nav>
+    <div class="content content--full admin-wrap">
+        <section class="card admin-shell">
+            <nav class="segmented admin-tabs" aria-label="Admin navigation">
+                <a href="/admin" aria-current={isActive("/admin") ? "page" : undefined}>
+                    Dashboard
+                </a>
+                <a href="/admin/profiles" aria-current={isActive("/admin/profiles") ? "page" : undefined}>
+                    Profiles
+                </a>
+                <a href="/admin/reports" aria-current={isActive("/admin/reports") ? "page" : undefined}>
+                    Reports
+                </a>
+            </nav>
 
-        {@render children?.()}
+            <div class="admin-shell__body">
+                {@render children?.()}
+            </div>
+        </section>
     </div>
 </div>

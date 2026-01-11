@@ -54,12 +54,12 @@
 
             <div class="grid grid-2">
                 <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/profiles")}>
-                    <Icon icon={UI_ICONS.users ?? UI_ICONS.profile ?? UI_ICONS.eyeOpen} class="btn__icon" />
+                    <Icon icon={UI_ICONS.accountAction} class="btn__icon" />
                     <span class="btn__label">Profiles</span>
                 </button>
 
                 <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/reports")}>
-                    <Icon icon={UI_ICONS.flag ?? UI_ICONS.warning ?? UI_ICONS.animFailed} class="btn__icon" />
+                    <Icon icon={UI_ICONS.alert} class="btn__icon" />
                     <span class="btn__label">Reports</span>
                 </button>
             </div>

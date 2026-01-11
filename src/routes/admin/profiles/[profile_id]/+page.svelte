@@ -18,11 +18,13 @@
         adminDeleteProfileImage,
         adminDeleteProfileAudio,
     } from "$lib/api/admin.js";
+    import { profile } from "$lib/stores/profile";
 
     let loading = false;
     let data = null;
 
-    const profileId = $page.params.profile_id;
+    let profileId;
+    let lastProfileId = null;
 
     // form state
     let warn_reason = "";
@@ -45,14 +47,38 @@
     let clear_field = "bio";
     let clear_value = "";
 
+    // ids for labels
+    const id_warn_reason = "admin_warn_reason";
+    const id_warn_public = "admin_warn_public";
+    const id_warn_internal = "admin_warn_internal";
+
+    const id_ban_reason = "admin_ban_reason";
+    const id_ban_public = "admin_ban_public";
+    const id_ban_internal = "admin_ban_internal";
+
+    const id_temp_reason = "admin_temp_reason";
+    const id_temp_until = "admin_temp_until";
+    const id_temp_public = "admin_temp_public";
+    const id_temp_internal = "admin_temp_internal";
+
+    const id_unban_reason = "admin_unban_reason";
+    const id_unban_internal = "admin_unban_internal";
+
+    const id_clear_reason = "admin_clear_reason";
+    const id_clear_field = "admin_clear_field";
+    const id_clear_value = "admin_clear_value";
+
+    $: profileId = $page.params.profile_id;
+
     function toastErr(err, fallback) {
         addToast({ text: err?.message || fallback || "Request failed.", autoHideMs: 6000 });
     }
 
     async function load() {
+        if (!profileId) return;
         if (loading) return;
-        loading = true;
 
+        loading = true;
         try {
             data = await adminGetProfile(profileId);
         } catch (err) {
@@ -62,7 +88,11 @@
         }
     }
 
-    load();
+    $: if (profileId && profileId !== lastProfileId) {
+        lastProfileId = profileId;
+        data = null;
+        load();
+    }
 
     async function doWarn() {
         try {
@@ -200,172 +230,196 @@
 
 
 <svelte:head>
-    <title>loopii • Admin • Profile</title>
+    {#if data?.profile?.username}
+        <title>loopii • Admin • @{data?.profile?.username}</title>
+    {:else}
+        <title>loopii • Admin</title>
+    {/if}
 </svelte:head>
 
 
-<div class="page">
-    <header class="bar bar--header">
-        <div class="bar__inner">
-            <div class="bar__title">
-                <h2 class="text-heading">Profile</h2>
-                <p class="text-hint" style="overflow-wrap:anywhere;">{profileId}</p>
-            </div>
-
-            <div class="bar__actions">
-                <button type="button" class="btn btn--ghost btn--icon" on:click={() => goto("/admin/profiles")}>
-                    <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
-                </button>
-                <button type="button" class="btn btn--ghost btn--icon" class:is-loading={loading} on:click={load} disabled={loading}>
-                    <Icon icon={UI_ICONS.refresh} class="btn__icon" />
-                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
-                </button>
-            </div>
+<div class="stack">
+    <div class="toolbar">
+        <div class="toolbar__group">
+            <h3>Profile</h3>
+            <span class="pill"><span class="pill__label">{profileId}</span></span>
         </div>
-    </header>
 
-    <div class="content admin-wrap stack">
-        {#if !data}
-            <div class="page__center">
-                <Icon icon={UI_ICONS.animLoading} class="page__icon" />
-            </div>
-        {:else}
-            <div class="admin-grid">
-                <section class="card">
-                    <div class="section stack">
-                        <h3>Overview</h3>
+        <div class="toolbar__group">
+            <button type="button" class="btn btn--ghost" on:click={() => goto("/admin/profiles")}>
+                <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
+                <span class="btn__label">Back</span>
+            </button>
 
-                        <dl class="admin-kv">
-                            <dt>username</dt><dd class="admin-code">@{data?.profile?.username}</dd>
-                            <dt>name</dt><dd>{data?.profile?.name || "-"}</dd>
-                            <dt>role</dt><dd>{data?.meta?.access?.role || "-"}</dd>
-                            <dt>status</dt><dd>{data?.meta?.access?.status || "-"}</dd>
-                            <dt>banned_until</dt><dd class="admin-code">{data?.meta?.access?.banned_until || "-"}</dd>
-                            <dt>public_message</dt><dd>{data?.meta?.access?.public_message || "-"}</dd>
-                        </dl>
+            <button type="button" class="btn btn--ghost btn--icon" class:is-loading={loading} on:click={load} disabled={loading} aria-label="Refresh">
+                <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
+            </button>
+        </div>
+    </div>
 
-                        <div class="u-divider"></div>
+    {#if !data}
+        <div class="page__center">
+            <Icon icon={UI_ICONS.animLoading} class="page__icon" />
+        </div>
+    {:else}
+        <div class="admin-grid">
+            <section class="card">
+                <div class="section stack">
+                    <h3>Overview</h3>
 
-                        <h3>Actions</h3>
+                    <dl class="admin-kv">
+                        <dt>username</dt><dd class="admin-code">@{data?.profile?.username}</dd>
+                        <dt>name</dt><dd>{data?.profile?.name || "-"}</dd>
+                        <dt>role</dt><dd>{data?.meta?.access?.role || "-"}</dd>
+                        <dt>status</dt><dd>{data?.meta?.access?.status || "-"}</dd>
+                        <dt>banned_until</dt><dd class="admin-code">{data?.meta?.access?.banned_until || "-"}</dd>
+                        <dt>public_message</dt><dd>{data?.meta?.access?.public_message || "-"}</dd>
+                    </dl>
 
-                        <div class="stack">
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Warn</h4>
-                                    <div class="field">
-                                        <label class="field__label">reason_code</label>
-                                        <input bind:value={warn_reason} placeholder="required" />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">public_message</label>
-                                        <textarea bind:value={warn_public} placeholder="optional"></textarea>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">internal_note</label>
-                                        <textarea bind:value={warn_internal} placeholder="optional"></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn--primary" on:click={doWarn}>
-                                        <Icon icon={UI_ICONS.check} class="btn__icon" />
-                                        <span class="btn__label">Warn</span>
-                                    </button>
+                    <div class="u-divider"></div>
+
+                    <h3>Actions</h3>
+
+                    <div class="stack">
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Warn</h4>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_warn_reason}>reason_code</label>
+                                    <input id={id_warn_reason} bind:value={warn_reason} placeholder="required" />
                                 </div>
-                            </div>
 
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Ban</h4>
-                                    <div class="field">
-                                        <label class="field__label">reason_code</label>
-                                        <input bind:value={ban_reason} placeholder="required" />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">public_message</label>
-                                        <textarea bind:value={ban_public} placeholder="optional"></textarea>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">internal_note</label>
-                                        <textarea bind:value={ban_internal} placeholder="optional"></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn--danger" on:click={doBan}>
-                                        <span class="btn__label">Ban</span>
-                                    </button>
+                                <div class="field">
+                                    <label class="field__label" for={id_warn_public}>public_message</label>
+                                    <textarea id={id_warn_public} bind:value={warn_public} placeholder="optional"></textarea>
                                 </div>
-                            </div>
 
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Temp ban</h4>
-                                    <div class="field">
-                                        <label class="field__label">reason_code</label>
-                                        <input bind:value={temp_reason} placeholder="required" />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">until</label>
-                                        <input type="datetime-local" bind:value={temp_until_local} />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">public_message</label>
-                                        <textarea bind:value={temp_public} placeholder="optional"></textarea>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">internal_note</label>
-                                        <textarea bind:value={temp_internal} placeholder="optional"></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn--danger" on:click={doTempBan}>
-                                        <span class="btn__label">Temp ban</span>
-                                    </button>
+                                <div class="field">
+                                    <label class="field__label" for={id_warn_internal}>internal_note</label>
+                                    <textarea id={id_warn_internal} bind:value={warn_internal} placeholder="optional"></textarea>
                                 </div>
-                            </div>
 
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Unban / clear warning</h4>
-                                    <div class="field">
-                                        <label class="field__label">reason_code</label>
-                                        <input bind:value={unban_reason} placeholder="required" />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">internal_note</label>
-                                        <textarea bind:value={unban_internal} placeholder="optional"></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn--success" on:click={doUnban}>
-                                        <span class="btn__label">Clear restrictions</span>
-                                    </button>
+                                <button type="button" class="btn btn--primary" on:click={doWarn}>
+                                    <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                    <span class="btn__label">Warn</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Ban</h4>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_ban_reason}>reason_code</label>
+                                    <input id={id_ban_reason} bind:value={ban_reason} placeholder="required" />
                                 </div>
-                            </div>
 
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Clear / overwrite content</h4>
-                                    <div class="field">
-                                        <label class="field__label">reason_code</label>
-                                        <input bind:value={clear_reason} placeholder="required" />
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">field</label>
-                                        <select bind:value={clear_field}>
-                                            <option value="bio">bio</option>
-                                            <option value="loop_bio">loop_bio</option>
-                                            <option value="looking_for">looking_for</option>
-                                            <option value="location">location</option>
-                                            <option value="name">name</option>
-                                        </select>
-                                    </div>
-                                    <div class="field">
-                                        <label class="field__label">value (empty = null)</label>
-                                        <textarea bind:value={clear_value}></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn--primary" on:click={doClearContent}>
-                                        <span class="btn__label">Apply</span>
-                                    </button>
+                                <div class="field">
+                                    <label class="field__label" for={id_ban_public}>public_message</label>
+                                    <textarea id={id_ban_public} bind:value={ban_public} placeholder="optional"></textarea>
                                 </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_ban_internal}>internal_note</label>
+                                    <textarea id={id_ban_internal} bind:value={ban_internal} placeholder="optional"></textarea>
+                                </div>
+
+                                <button type="button" class="btn btn--danger" on:click={doBan}>
+                                    <span class="btn__label">Ban</span>
+                                </button>
                             </div>
+                        </div>
 
-                            <div class="card">
-                                <div class="section stack">
-                                    <h4>Media</h4>
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Temp ban</h4>
 
-                                    {#if data?.profile?.images?.length}
+                                <div class="field">
+                                    <label class="field__label" for={id_temp_reason}>reason_code</label>
+                                    <input id={id_temp_reason} bind:value={temp_reason} placeholder="required" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_temp_until}>until</label>
+                                    <input id={id_temp_until} type="datetime-local" bind:value={temp_until_local} />
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_temp_public}>public_message</label>
+                                    <textarea id={id_temp_public} bind:value={temp_public} placeholder="optional"></textarea>
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_temp_internal}>internal_note</label>
+                                    <textarea id={id_temp_internal} bind:value={temp_internal} placeholder="optional"></textarea>
+                                </div>
+
+                                <button type="button" class="btn btn--danger" on:click={doTempBan}>
+                                    <span class="btn__label">Temp ban</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Unban / clear warning</h4>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_unban_reason}>reason_code</label>
+                                    <input id={id_unban_reason} bind:value={unban_reason} placeholder="required" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_unban_internal}>internal_note</label>
+                                    <textarea id={id_unban_internal} bind:value={unban_internal} placeholder="optional"></textarea>
+                                </div>
+
+                                <button type="button" class="btn btn--success" on:click={doUnban}>
+                                    <span class="btn__label">Clear restrictions</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Clear / overwrite content</h4>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_clear_reason}>reason_code</label>
+                                    <input id={id_clear_reason} bind:value={clear_reason} placeholder="required" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_clear_field}>field</label>
+                                    <select id={id_clear_field} bind:value={clear_field}>
+                                        <option value="bio">bio</option>
+                                        <option value="loop_bio">loop_bio</option>
+                                        <option value="looking_for">looking_for</option>
+                                        <option value="location">location</option>
+                                        <option value="name">name</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label class="field__label" for={id_clear_value}>value (empty = null)</label>
+                                    <textarea id={id_clear_value} bind:value={clear_value}></textarea>
+                                </div>
+
+                                <button type="button" class="btn btn--primary" on:click={doClearContent}>
+                                    <span class="btn__label">Apply</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section stack">
+                                <h4>Media</h4>
+
+                                {#if data?.profile?.images?.length}
+                                    <div style="width:100%;overflow-x:auto;">
                                         <table class="admin-table">
                                             <thead>
                                                 <tr><th>image_id</th><th></th></tr>
@@ -383,35 +437,37 @@
                                                 {/each}
                                             </tbody>
                                         </table>
-                                    {:else}
-                                        <p class="text-hint">No images.</p>
-                                    {/if}
+                                    </div>
+                                {:else}
+                                    <p class="text-hint">No images.</p>
+                                {/if}
 
-                                    {#if data?.profile?.audio?.id}
-                                        <button type="button" class="btn btn--danger" on:click={() => confirmDeleteAudio(data.profile.audio.id)}>
-                                            Delete audio
-                                        </button>
-                                    {:else}
-                                        <p class="text-hint">No audio.</p>
-                                    {/if}
-                                </div>
+                                {#if data?.profile?.audio?.id}
+                                    <button type="button" class="btn btn--danger" on:click={() => confirmDeleteAudio(data.profile.audio.id)}>
+                                        Delete audio
+                                    </button>
+                                {:else}
+                                    <p class="text-hint">No audio.</p>
+                                {/if}
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <section class="card">
-                    <div class="section stack">
-                        <h3>Profile view</h3>
-                        <ProfileCardExpanded profile={data.profile} />
+            <section class="card">
+                <div class="section stack">
+                    <h3>Profile view</h3>
+                    <ProfileCardExpanded profile={data.profile} />
 
-                        <div class="u-divider"></div>
+                    <div class="u-divider"></div>
 
-                        <h3>Reports</h3>
-                        {#if (data?.reports_received || []).length === 0 && (data?.reports_made || []).length === 0}
-                            <p class="text-hint">No reports.</p>
-                        {:else}
-                            <h4>Received</h4>
+                    <h3>Reports</h3>
+                    {#if (data?.reports_received || []).length === 0 && (data?.reports_made || []).length === 0}
+                        <p class="text-hint">No reports.</p>
+                    {:else}
+                        <h4>Received</h4>
+                        <div style="width:100%;overflow-x:auto;">
                             <table class="admin-table">
                                 <thead>
                                     <tr><th>created</th><th>reason</th><th>status</th><th>reporter</th></tr>
@@ -427,8 +483,10 @@
                                     {/each}
                                 </tbody>
                             </table>
+                        </div>
 
-                            <h4>Made</h4>
+                        <h4>Made</h4>
+                        <div style="width:100%;overflow-x:auto;">
                             <table class="admin-table">
                                 <thead>
                                     <tr><th>created</th><th>reason</th><th>status</th><th>reportee</th></tr>
@@ -444,15 +502,17 @@
                                     {/each}
                                 </tbody>
                             </table>
-                        {/if}
+                        </div>
+                    {/if}
 
-                        <div class="u-divider"></div>
+                    <div class="u-divider"></div>
 
-                        <h3>Admin actions</h3>
-                        {#if (data?.actions_received || []).length === 0 && (data?.actions_made || []).length === 0}
-                            <p class="text-hint">No admin actions.</p>
-                        {:else}
-                            <h4>Received</h4>
+                    <h3>Admin actions</h3>
+                    {#if (data?.actions_received || []).length === 0 && (data?.actions_made || []).length === 0}
+                        <p class="text-hint">No admin actions.</p>
+                    {:else}
+                        <h4>Received</h4>
+                        <div style="width:100%;overflow-x:auto;">
                             <table class="admin-table">
                                 <thead>
                                     <tr><th>created</th><th>action</th><th>reason</th><th>admin</th></tr>
@@ -468,8 +528,10 @@
                                     {/each}
                                 </tbody>
                             </table>
+                        </div>
 
-                            <h4>Made</h4>
+                        <h4>Made</h4>
+                        <div style="width:100%;overflow-x:auto;">
                             <table class="admin-table">
                                 <thead>
                                     <tr><th>created</th><th>action</th><th>reason</th><th>target</th></tr>
@@ -485,10 +547,10 @@
                                     {/each}
                                 </tbody>
                             </table>
-                        {/if}
-                    </div>
-                </section>
-            </div>
-        {/if}
-    </div>
+                        </div>
+                    {/if}
+                </div>
+            </section>
+        </div>
+    {/if}
 </div>
