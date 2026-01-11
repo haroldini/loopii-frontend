@@ -489,3 +489,20 @@
     flex-direction: column;
     gap: var(--space-3);
 }
+
+
+/* ===== Report overlay ===== */
+
+.overlay--windowed .report-overlay__panel {
+    max-width: 32rem;
+    width: min(32rem, calc(100% - var(--space-4)));
+    max-height: min(92vh, 900px);
+    height: fit-content;
+    margin: 0 auto;
+}
+
+.report-overlay__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}

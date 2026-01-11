@@ -3,7 +3,7 @@
 
 const ADMIN_PUBLIC_MESSAGE_MAX_LENGTH = 400;
 const ADMIN_INTERNAL_NOTE_MAX_LENGTH = 1000;
-const ADMIN_REASON_CODE_MAX_LENGTH = 64;
+const REPORT_DETAILS_MAX_LENGTH = 2000;
 
 // Used in reports (frontend allowlist).
 export const REPORT_REASON_CODE_OPTIONS = [
@@ -24,38 +24,47 @@ export const REPORT_REASON_CODE_OPTIONS = [
     { value: "other", label: "Other" },
 ];
 
-// Admin can use all report reasons + a couple explicitly admin-ish ones.
+// Admin can use all report reasons + admin ones
 export const ADMIN_REASON_CODE_OPTIONS = [
     ...REPORT_REASON_CODE_OPTIONS,
     { value: "media_removal", label: "Admin: Media removal" },
     { value: "content_overwrite", label: "Admin: Content overwrite" },
 ];
 
-const _REASON_CODE_SET = new Set(ADMIN_REASON_CODE_OPTIONS.map((o) => o.value));
+const _REPORT_REASON_CODE_SET = new Set(REPORT_REASON_CODE_OPTIONS.map((o) => o.value));
+const _ADMIN_REASON_CODE_SET = new Set(ADMIN_REASON_CODE_OPTIONS.map((o) => o.value));
 
-export function validateReasonCode(reason, { field = "reason_code", required = true } = {}) {
-    reason = reason?.trim();
+export function validateReportReasonCode(reason, { field = "reason_code", required = true } = {}) {
+    reason = typeof reason === "string" ? reason.trim() : "";
     if (!reason) {
         return required ? { field, message: "Reason code is required.", display: false } : null;
     }
-    if (reason.length > ADMIN_REASON_CODE_MAX_LENGTH) {
-        return {
-            field,
-            message: `Reason code must be ${ADMIN_REASON_CODE_MAX_LENGTH} characters or fewer.`,
-            display: true,
-        };
+    if (!_REPORT_REASON_CODE_SET.has(reason)) {
+        return { field, message: "Reason code is not a supported option.", display: true };
     }
-    if (!/^[a-z0-9_]+$/.test(reason)) {
-        return {
-            field,
-            message: "Reason code may only contain lowercase letters, numbers, and underscores.",
-            display: true,
-        };
+    return null;
+}
+
+export function validateAdminReasonCode(reason, { field = "reason_code", required = true } = {}) {
+    reason = typeof reason === "string" ? reason.trim() : "";
+    if (!reason) {
+        return required ? { field, message: "Reason code is required.", display: false } : null;
     }
-    if (!_REASON_CODE_SET.has(reason)) {
+    if (!_ADMIN_REASON_CODE_SET.has(reason)) {
+        return { field, message: "Reason code is not a supported option.", display: true };
+    }
+    return null;
+}
+
+export function validateReportDetails(details, { field = "details", required = false } = {}) {
+    details = typeof details === "string" ? details.trim() : "";
+    if (!details) {
+        return required ? { field, message: "Details are required.", display: false } : null;
+    }
+    if (details.length > REPORT_DETAILS_MAX_LENGTH) {
         return {
             field,
-            message: "Reason code is not a supported option.",
+            message: `Details must be ${REPORT_DETAILS_MAX_LENGTH} characters or fewer.`,
             display: true,
         };
     }

@@ -10,12 +10,12 @@
     import {
         ADMIN_REASON_CODE_OPTIONS,
         ADMIN_CLEAR_FIELD_OPTIONS,
-        validateReasonCode,
         validatePublicMessage,
         validateInternalNote,
         validateUntil,
         validateAdminClearField,
         validateAdminClearValue,
+        validateAdminReasonCode,
     } from "$lib/utils/validators.js";
 
     import { relativeTime, formatDateTimeShort } from "$lib/utils/profile.js";
@@ -205,7 +205,7 @@
 
     function validateContext({ requireReason = true } = {}) {
         return firstError([
-            validateReasonCode(reason_code, { field: "reason_code", required: requireReason }),
+            validateAdminReasonCode(reason_code, { field: "reason_code", required: requireReason }),
             validatePublicMessage(public_message, { field: "public_message", required: false }),
             validateInternalNote(internal_note, { field: "internal_note", required: false }),
         ]);
@@ -285,7 +285,7 @@
 
     async function doUnban() {
         const e = firstError([
-            validateReasonCode(reason_code, { field: "reason_code", required: true }),
+            validateAdminReasonCode(reason_code, { field: "reason_code", required: true }),
             validateInternalNote(internal_note, { field: "internal_note", required: false }),
         ]);
         if (e) return toastValidation(e);
