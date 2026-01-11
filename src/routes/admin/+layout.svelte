@@ -11,7 +11,7 @@
 
     let { children } = $props();
 
-    let qs;
+    let qs = $state(null);
 
     function isActive(path) {
         const p = $page.url.pathname;

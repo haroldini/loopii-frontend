@@ -28,6 +28,13 @@
     border-bottom: var(--border-width) solid var(--border-color);
 }
 
+.page__icon {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    contain: paint;
+}
+
 .admin-grid {
     display: grid;
     gap: var(--space-3);
@@ -36,9 +43,19 @@
 
 @media (min-width: 900px) {
     .admin-grid {
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: 440px 1fr;
         align-items: start;
     }
+}
+
+.admin-thumb {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-2);
+    object-fit: cover;
+    border: var(--border-width) solid var(--border-color);
+    background: var(--bg-surface-alt);
+    display: block;
 }
 
 .admin-avatar {

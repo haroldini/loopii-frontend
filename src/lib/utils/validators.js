@@ -1,4 +1,109 @@
 
+// ----- MODERATION / ADMIN CONSTANTS -----
+
+const ADMIN_PUBLIC_MESSAGE_MAX_LENGTH = 400;
+const ADMIN_INTERNAL_NOTE_MAX_LENGTH = 1000;
+const ADMIN_REASON_CODE_MAX_LENGTH = 64;
+
+// Used in reports + admin actions (frontend allowlist).
+export const REPORT_REASON_CODE_OPTIONS = [
+    { value: "sexual_content", label: "Sexual / pornographic content" },
+    { value: "ai_generated_photos", label: "AI-generated photos" },
+    { value: "adult_platform_promo", label: "Promotion of adult platforms" },
+    { value: "hate_or_harassment", label: "Hate / harassment / targeted abuse" },
+    { value: "threats_or_violence", label: "Threats / violence" },
+    { value: "illegal_activity", label: "Illegal content / encouragement" },
+    { value: "impersonation", label: "Impersonation / misleading identity" },
+    { value: "spam_or_scam", label: "Spam / scam / phishing" },
+    { value: "marketing_or_leadgen", label: "Advertising / lead-gen / “DM me for…”" },
+    { value: "bot_or_automation", label: "Bots / automation / manipulation" },
+    { value: "data_scraping", label: "Scraping / harvesting / exporting user data" },
+    { value: "ban_evasion", label: "Ban evasion / multiple accounts" },
+    { value: "minor_suspected", label: "Underage suspected" },
+    { value: "self_harm", label: "Self-harm content" },
+    { value: "other", label: "Other" },
+];
+export const ADMIN_REASON_CODE_OPTIONS = REPORT_REASON_CODE_OPTIONS;
+const _REASON_CODE_SET = new Set(REPORT_REASON_CODE_OPTIONS.map((o) => o.value));
+const _INTERNAL_REASON_CODES = new Set([
+    "admin_delete_media",
+    "admin_clear_content",
+]);
+
+export function validateReasonCode(reason, { field = "reason_code", required = true } = {}) {
+    reason = reason?.trim();
+    if (!reason) {
+        return required ? { field, message: "Reason code is required.", display: false } : null;
+    }
+    if (reason.length > ADMIN_REASON_CODE_MAX_LENGTH) {
+        return {
+            field,
+            message: `Reason code must be ${ADMIN_REASON_CODE_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    if (!/^[a-z0-9_]+$/.test(reason)) {
+        return {
+            field,
+            message: "Reason code may only contain lowercase letters, numbers, and underscores.",
+            display: true,
+        };
+    }
+    if (!_REASON_CODE_SET.has(reason) && !_INTERNAL_REASON_CODES.has(reason)) {
+        return {
+            field,
+            message: "Reason code is not a supported option.",
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validatePublicMessage(message, { field = "public_message", required = false } = {}) {
+    message = message?.trim();
+    if (!message) {
+        return required ? { field, message: "Public message is required.", display: false } : null;
+    }
+    if (message.length > ADMIN_PUBLIC_MESSAGE_MAX_LENGTH) {
+        return {
+            field,
+            message: `Public message must be ${ADMIN_PUBLIC_MESSAGE_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validateInternalNote(note, { field = "internal_note", required = false } = {}) {
+    note = note?.trim();
+    if (!note) {
+        return required ? { field, message: "Internal note is required.", display: false } : null;
+    }
+    if (note.length > ADMIN_INTERNAL_NOTE_MAX_LENGTH) {
+        return {
+            field,
+            message: `Internal note must be ${ADMIN_INTERNAL_NOTE_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validateUntil(until, { field = "until", required = true } = {}) {
+    if (!until) {
+        return required ? { field, message: "Until is required.", display: false } : null;
+    }
+    const d = new Date(until);
+    if (isNaN(d.getTime())) {
+        return { field, message: "Invalid date/time.", display: true };
+    }
+    if (d.getTime() <= Date.now()) {
+        return { field, message: "Until must be in the future.", display: true };
+    }
+    return null;
+}
+
+
 // ----- CONFIG CONSTANTS -----
 
 const MIN_AGE_YEARS = 18;

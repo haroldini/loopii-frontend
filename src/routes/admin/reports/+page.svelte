@@ -4,6 +4,7 @@
     import { goto } from "$app/navigation";
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
+    import { REPORT_REASON_CODE_OPTIONS } from "$lib/utils/validators.js";
 
     import { adminListReports, adminSetReportStatus } from "$lib/api/admin.js";
 
@@ -180,7 +181,12 @@
 
                 <div class="field">
                     <label class="field__label" for={id_reason}>reason_code</label>
-                    <input id={id_reason} bind:value={reason_code} placeholder="optional" />
+                    <select id={id_reason} bind:value={reason_code}>
+                        <option value="">(any)</option>
+                        {#each REPORT_REASON_CODE_OPTIONS as opt}
+                            <option value={opt.value}>{opt.label}</option>
+                        {/each}
+                    </select>
                 </div>
 
                 <div class="field">
