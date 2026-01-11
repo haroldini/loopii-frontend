@@ -1,6 +1,7 @@
 
 import request from "$lib/utils/request.js";
 
+
 // List profiles for moderation (cursor-paginated, sortable)
 export function adminListProfiles({ limit = 50, after_id = null, sort = "recent_joined" } = {}) {
     const q = new URLSearchParams();
@@ -11,10 +12,12 @@ export function adminListProfiles({ limit = 50, after_id = null, sort = "recent_
     return request(`/admin/profiles?${q.toString()}`, { method: "GET" });
 }
 
+
 // Get a single profile with full admin detail (meta + reports + admin actions)
 export function adminGetProfile(profile_id) {
     return request(`/admin/profiles/${profile_id}`, { method: "GET" });
 }
+
 
 // List reports for moderation (cursor-paginated, filterable)
 export function adminListReports({
@@ -36,6 +39,7 @@ export function adminListReports({
     return request(`/admin/reports?${q.toString()}`, { method: "GET" });
 }
 
+
 // Update a report status (optionally bulk-update matching open reports)
 export function adminSetReportStatus(report_id, data) {
     return request(`/admin/reports/${report_id}/set-status`, {
@@ -43,6 +47,7 @@ export function adminSetReportStatus(report_id, data) {
         data,
     });
 }
+
 
 // Warn a profile (sets access.status="warning" + optional public_message)
 export function adminWarnProfile(profile_id, data) {
@@ -52,6 +57,7 @@ export function adminWarnProfile(profile_id, data) {
     });
 }
 
+
 // Permanently ban a profile (sets access.status="banned")
 export function adminBanProfile(profile_id, data) {
     return request(`/admin/profiles/${profile_id}/ban`, {
@@ -59,6 +65,7 @@ export function adminBanProfile(profile_id, data) {
         data,
     });
 }
+
 
 // Temporarily ban a profile (sets access.status="temp_banned" until ISO datetime)
 export function adminTempBanProfile(profile_id, data) {
@@ -68,6 +75,7 @@ export function adminTempBanProfile(profile_id, data) {
     });
 }
 
+
 // Clear bans/warnings (sets access.status="active" and clears restriction fields)
 export function adminUnbanProfile(profile_id, data) {
     return request(`/admin/profiles/${profile_id}/unban`, {
@@ -75,6 +83,7 @@ export function adminUnbanProfile(profile_id, data) {
         data,
     });
 }
+
 
 // Clear or overwrite a specific profile text field (bio, loop_bio, etc.)
 export function adminClearContent(profile_id, data) {
@@ -84,6 +93,7 @@ export function adminClearContent(profile_id, data) {
     });
 }
 
+
 // Delete a profile image row (DB only; storage handled elsewhere)
 export function adminDeleteProfileImage(profile_id, image_id, data) {
     return request(`/admin/profiles/${profile_id}/delete-image/${image_id}`, {
@@ -91,6 +101,7 @@ export function adminDeleteProfileImage(profile_id, image_id, data) {
         data,
     });
 }
+
 
 // Delete a profile audio row (DB only; storage handled elsewhere)
 export function adminDeleteProfileAudio(profile_id, audio_id, data) {
