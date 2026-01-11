@@ -8,7 +8,7 @@
     import { UI_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
 
-    import { createProfileReport } from "$lib/api/reports.js";
+    import { createProfileReport } from "$lib/api/report.js";
     import {
         REPORT_REASON_CODE_OPTIONS,
         validateReportReasonCode,

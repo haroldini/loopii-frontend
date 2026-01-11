@@ -147,6 +147,10 @@
         return `/admin/profiles/${id}`;
     }
 
+    function isOpenStatus(s) {
+        return (s || "") === "open";
+    }
+
     async function setStatus(reportId, nextStatus, { bulk = false } = {}) {
         if (!reportId) return;
 
@@ -706,6 +710,8 @@
                                         {#each (data.reports_received || []) as r}
                                             {@html ""}
                                             {#key keyOf(r)}
+                                                {@const k = keyOf(r)}
+                                                {@const open = isOpenStatus(r?.status)}
                                                 <tr>
                                                     <td class="admin-code">
                                                         <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
@@ -732,11 +738,11 @@
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
-                                                            on:click={() => toggleReportReceived(keyOf(r))}
-                                                            title={expandedReportsReceived.has(keyOf(r)) ? "Collapse report" : "Expand report"}
-                                                            aria-label={expandedReportsReceived.has(keyOf(r)) ? "Collapse report" : "Expand report"}
+                                                            on:click={() => toggleReportReceived(k)}
+                                                            title={expandedReportsReceived.has(k) ? "Collapse report" : "Expand report"}
+                                                            aria-label={expandedReportsReceived.has(k) ? "Collapse report" : "Expand report"}
                                                         >
-                                                            {#if expandedReportsReceived.has(keyOf(r))}
+                                                            {#if expandedReportsReceived.has(k)}
                                                                 <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
                                                                 <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
@@ -745,56 +751,109 @@
                                                     </td>
                                                 </tr>
 
-                                                {#if expandedReportsReceived.has(keyOf(r))}
+                                                {#if expandedReportsReceived.has(k)}
                                                     <tr>
                                                         <td colspan="5">
-                                                            <div class="stack" style="gap:var(--space-2);">
-                                                                <div><strong>details:</strong> {r.details || "-"}</div>
-
-                                                                {#if r.resolved_at}
-                                                                    <div>
-                                                                        <strong>resolved_at:</strong>
-                                                                        <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                            <div class="stack" style="gap:var(--space-3);">
+                                                                <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                    <div class="section stack" style="gap:var(--space-2);">
+                                                                        <h4 style="margin:0;">Report</h4>
+                                                                        <div><strong>details:</strong> {r.details || "-"}</div>
                                                                     </div>
-                                                                {/if}
-
-                                                                {#if r.resolution_note}
-                                                                    <div><strong>resolution_note:</strong> {r.resolution_note}</div>
-                                                                {/if}
-
-                                                                {#if r.resolved_by_profile_id}
-                                                                    <div>
-                                                                        <strong>resolved_by:</strong>
-                                                                        <a
-                                                                            class="btn btn--ghost btn--icon"
-                                                                            href={profileHref(r.resolved_by_profile_id)}
-                                                                            title="View resolving admin profile"
-                                                                            aria-label="View resolving admin profile"
-                                                                        >
-                                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                                        </a>
-                                                                    </div>
-                                                                {/if}
-
-                                                                <div class="actionbar">
-                                                                    <button type="button" class="btn btn--ghost" on:click={() => setStatus(r.id, "open", { bulk: false })}>
-                                                                        Open
-                                                                    </button>
-                                                                    <button type="button" class="btn btn--success" on:click={() => setStatus(r.id, "actioned", { bulk: false })}>
-                                                                        Actioned
-                                                                    </button>
-                                                                    <button type="button" class="btn btn--danger" on:click={() => setStatus(r.id, "dismissed", { bulk: false })}>
-                                                                        Dismiss
-                                                                    </button>
                                                                 </div>
 
-                                                                <div class="actions actions--end">
-                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "actioned", { bulk: true })}>
-                                                                        Bulk action
-                                                                    </button>
-                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "dismissed", { bulk: true })}>
-                                                                        Bulk dismiss
-                                                                    </button>
+                                                                {#if r.resolved_at || r.resolution_note || r.resolved_by_profile_id}
+                                                                    <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                        <div class="section stack" style="gap:var(--space-2);">
+                                                                            <h4 style="margin:0;">Resolution</h4>
+
+                                                                            {#if r.resolved_at}
+                                                                                <div>
+                                                                                    <strong>resolved_at:</strong>
+                                                                                    <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                                                </div>
+                                                                            {/if}
+
+                                                                            {#if r.resolved_by_profile_id}
+                                                                                <div>
+                                                                                    <strong>resolved_by:</strong>
+                                                                                    <a
+                                                                                        class="btn btn--ghost btn--icon"
+                                                                                        href={profileHref(r.resolved_by_profile_id)}
+                                                                                        title="View resolving admin profile"
+                                                                                        aria-label="View resolving admin profile"
+                                                                                    >
+                                                                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                                                    </a>
+                                                                                </div>
+                                                                            {/if}
+
+                                                                            {#if r.resolution_note}
+                                                                                <div><strong>resolution_note:</strong> {r.resolution_note}</div>
+                                                                            {/if}
+                                                                        </div>
+                                                                    </div>
+                                                                {/if}
+
+                                                                <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                    <div class="section stack" style="gap:var(--space-2);">
+                                                                        <h4 style="margin:0;">Actions</h4>
+
+                                                                        <div class="actionbar">
+                                                                            {#if !open}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    class="btn btn--ghost"
+                                                                                    on:click={() => setStatus(r.id, "open", { bulk: false })}
+                                                                                >
+                                                                                    <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                                                                                    <span class="btn__label">Open</span>
+                                                                                </button>
+                                                                            {/if}
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--success"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "actioned", { bulk: false })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <span class="btn__label">Actioned</span>
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--danger"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "dismissed", { bulk: false })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <span class="btn__label">Dismissed</span>
+                                                                            </button>
+                                                                        </div>
+
+                                                                        <div class="actionbar">
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--ghost"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "actioned", { bulk: true })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <span class="btn__label">Bulk action</span>
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--ghost"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "dismissed", { bulk: true })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <span class="btn__label">Bulk dismiss</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -815,6 +874,8 @@
                                     <tbody>
                                         {#each (data.reports_made || []) as r}
                                             {#key keyOf(r)}
+                                                {@const k = keyOf(r)}
+                                                {@const open = isOpenStatus(r?.status)}
                                                 <tr>
                                                     <td class="admin-code">
                                                         <span title={dtTitle(r.created_at)}>{dtLabel(r.created_at)}</span>
@@ -841,11 +902,11 @@
                                                         <button
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
-                                                            on:click={() => toggleReportMade(keyOf(r))}
-                                                            title={expandedReportsMade.has(keyOf(r)) ? "Collapse report" : "Expand report"}
-                                                            aria-label={expandedReportsMade.has(keyOf(r)) ? "Collapse report" : "Expand report"}
+                                                            on:click={() => toggleReportMade(k)}
+                                                            title={expandedReportsMade.has(k) ? "Collapse report" : "Expand report"}
+                                                            aria-label={expandedReportsMade.has(k) ? "Collapse report" : "Expand report"}
                                                         >
-                                                            {#if expandedReportsMade.has(keyOf(r))}
+                                                            {#if expandedReportsMade.has(k)}
                                                                 <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                                             {:else}
                                                                 <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
@@ -854,58 +915,109 @@
                                                     </td>
                                                 </tr>
 
-                                                {#if expandedReportsMade.has(keyOf(r))}
+                                                {#if expandedReportsMade.has(k)}
                                                     <tr>
                                                         <td colspan="5">
-                                                            <div class="stack" style="gap:var(--space-2);">
-                                                                <div><strong>details:</strong> {r.details || "-"}</div>
+                                                            <div class="stack" style="gap:var(--space-3);">
+                                                                <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                    <div class="section stack" style="gap:var(--space-2);">
+                                                                        <h4 style="margin:0;">Report</h4>
+                                                                        <div><strong>details:</strong> {r.details || "-"}</div>
+                                                                    </div>
+                                                                </div>
 
-                                                                {#if r.resolved_at}
-                                                                    <div>
-                                                                        <strong>resolved_at:</strong>
-                                                                        <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                                {#if r.resolved_at || r.resolution_note || r.resolved_by_profile_id}
+                                                                    <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                        <div class="section stack" style="gap:var(--space-2);">
+                                                                            <h4 style="margin:0;">Resolution</h4>
+
+                                                                            {#if r.resolved_at}
+                                                                                <div>
+                                                                                    <strong>resolved_at:</strong>
+                                                                                    <span class="admin-code" title={dtTitle(r.resolved_at)}>{dtLabel(r.resolved_at)}</span>
+                                                                                </div>
+                                                                            {/if}
+
+                                                                            {#if r.resolved_by_profile_id}
+                                                                                <div>
+                                                                                    <strong>resolved_by:</strong>
+                                                                                    <a
+                                                                                        class="btn btn--ghost btn--icon"
+                                                                                        href={profileHref(r.resolved_by_profile_id)}
+                                                                                        title="View resolving admin profile"
+                                                                                        aria-label="View resolving admin profile"
+                                                                                    >
+                                                                                        <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
+                                                                                    </a>
+                                                                                </div>
+                                                                            {/if}
+
+                                                                            {#if r.resolution_note}
+                                                                                <div><strong>resolution_note:</strong> {r.resolution_note}</div>
+                                                                            {/if}
+                                                                        </div>
                                                                     </div>
                                                                 {/if}
 
-                                                                {#if r.resolution_note}
-                                                                    <div><strong>resolution_note:</strong> {r.resolution_note}</div>
-                                                                {/if}
+                                                                <div class="card card--panel" style="background: var(--bg-surface-alt);">
+                                                                    <div class="section stack" style="gap:var(--space-2);">
+                                                                        <h4 style="margin:0;">Actions</h4>
 
-                                                                {#if r.resolved_by_profile_id}
-                                                                    <div>
-                                                                        <strong>resolved_by:</strong>
-                                                                        <a
-                                                                            class="btn btn--ghost btn--icon"
-                                                                            href={profileHref(r.resolved_by_profile_id)}
-                                                                            title="View resolving admin profile"
-                                                                            aria-label="View resolving admin profile"
-                                                                        >
-                                                                            <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
-                                                                        </a>
+                                                                        <div class="actionbar">
+                                                                            {#if !open}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    class="btn btn--ghost"
+                                                                                    on:click={() => setStatus(r.id, "open", { bulk: false })}
+                                                                                >
+                                                                                    <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                                                                                    <span class="btn__label">Open</span>
+                                                                                </button>
+                                                                            {/if}
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--success"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "actioned", { bulk: false })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <span class="btn__label">Actioned</span>
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--danger"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "dismissed", { bulk: false })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <span class="btn__label">Dismissed</span>
+                                                                            </button>
+                                                                        </div>
+
+                                                                        <div class="actionbar">
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--ghost"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "actioned", { bulk: true })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <span class="btn__label">Bulk action</span>
+                                                                            </button>
+
+                                                                            <button
+                                                                                type="button"
+                                                                                class="btn btn--ghost"
+                                                                                disabled={!open}
+                                                                                on:click={() => setStatus(r.id, "dismissed", { bulk: true })}
+                                                                            >
+                                                                                <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <span class="btn__label">Bulk dismiss</span>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
-                                                                {/if}
-
-                                                                <div class="actionbar">
-                                                                    <button type="button" class="btn btn--ghost" on:click={() => setStatus(r.id, "open", { bulk: false })}>
-                                                                        Open
-                                                                    </button>
-                                                                    <button type="button" class="btn btn--success" on:click={() => setStatus(r.id, "actioned", { bulk: false })}>
-                                                                        Actioned
-                                                                    </button>
-                                                                    <button type="button" class="btn btn--danger" on:click={() => setStatus(r.id, "dismissed", { bulk: false })}>
-                                                                        Dismiss
-                                                                    </button>
-                                                                </div>
-
-                                                                <div class="actions actions--end">
-                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "actioned", { bulk: true })}>
-                                                                        Bulk action
-                                                                    </button>
-                                                                </div>
-                                                                <div class="actions actions--end">
-                                                                    <button type="button" class="text-link" on:click={() => setStatus(r.id, "dismissed", { bulk: true })}>
-                                                                        Bulk dismiss
-                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </td>
