@@ -72,6 +72,9 @@
             <section class="card admin-shell">
                 <nav class="segmented admin-tabs" aria-label="Admin navigation">
                     <a href="/admin" aria-current={isActive("/admin") ? "page" : undefined}>
+                        Home
+                    </a>
+                    <a href="/admin/dashboard" aria-current={isActive("/admin/dashboard") ? "page" : undefined}>
                         Dashboard
                     </a>
                     <a href="/admin/profiles" aria-current={isActive("/admin/profiles") ? "page" : undefined}>
