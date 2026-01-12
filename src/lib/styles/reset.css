@@ -109,7 +109,6 @@ html.overlay-open .page > .content {
 
 /* All scrollbars (Firefox) */
 * {
-    scrollbar-width: thin;
     scrollbar-color: var(--border-color) var(--bg-app);
 }
 

@@ -39,7 +39,7 @@
         </div>
     </header>
 
-    <div class="content stack gutter">
+    <div class="content stack">
         <div class="section stack">
             <h3>1) Basics</h3>
             <div class="card card--panel" role="region" aria-label="Basics">
