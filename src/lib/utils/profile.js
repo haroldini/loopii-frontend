@@ -1,8 +1,8 @@
 
 // Get the avatar URL from a profile object
 export function getAvatarUrl(profile, size = "medium") {
-    if (!profile || typeof profile !== "object") return null; 
-    const avatar = profile.images?.find?.(img => img?.is_avatar);
+    if (!profile || typeof profile !== "object") return null;
+    const avatar = profile.images?.find?.((img) => img?.is_avatar);
     return avatar?.urls?.[size] || null;
 }
 
@@ -26,10 +26,10 @@ export function timeAgo(date, short = false) {
     const divisions = [
         { amount: 60, name: "second", short: "s" },
         { amount: 60, name: "minute", short: "m" },
-        { amount: 24, name: "hour",   short: "h" },
-        { amount: 7,  name: "day",    short: "d" },
-        { amount: 4.34524, name: "week",  short: "w" },
-        { amount: 12, name: "month",  short: "mo" },
+        { amount: 24, name: "hour", short: "h" },
+        { amount: 7, name: "day", short: "d" },
+        { amount: 4.34524, name: "week", short: "w" },
+        { amount: 12, name: "month", short: "mo" },
         { amount: Infinity, name: "year", short: "y" },
     ];
 
@@ -49,6 +49,64 @@ export function timeAgo(date, short = false) {
 
         duration /= division.amount;
     }
+}
+
+
+// Relative time that handles past + future correctly.
+// short=true -> "5m ago" / "in 5m"
+export function relativeTime(date, short = false) {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+
+    const seconds = Math.floor((d.getTime() - Date.now()) / 1000);
+
+    const divisions = [
+        { amount: 60, name: "second", short: "s" },
+        { amount: 60, name: "minute", short: "m" },
+        { amount: 24, name: "hour", short: "h" },
+        { amount: 7, name: "day", short: "d" },
+        { amount: 4.34524, name: "week", short: "w" },
+        { amount: 12, name: "month", short: "mo" },
+        { amount: Infinity, name: "year", short: "y" },
+    ];
+
+    let duration = seconds;
+
+    for (const division of divisions) {
+        if (Math.abs(duration) < division.amount) {
+            const value = Math.round(duration);
+
+            if (short) {
+                if (value === 0) return "now";
+                if (value < 0) return `${Math.abs(value)}${division.short} ago`;
+                return `in ${value}${division.short}`;
+            }
+
+            const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+            return rtf.format(value, division.name);
+        }
+
+        duration /= division.amount;
+    }
+
+    return "";
+}
+
+
+export function formatDateTimeShort(date, { withSeconds = false } = {}) {
+    if (!date) return "";
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d.getTime())) return "";
+
+    return d.toLocaleString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        ...(withSeconds ? { second: "2-digit" } : null),
+    });
 }
 
 

@@ -7,11 +7,12 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { browser } from "$app/environment";
-    import { preloadData } from "$app/navigation";
+    import { preloadData, goto } from "$app/navigation";
+
+    import { registerCaptchaOverlay } from "$lib/utils/captcha.js";
 
     import { initReferences, retryReferences, referencesStatus, UI_ICONS, theme } from "$lib/stores/app.js";
     import { initAuth, user, signOut, authState } from "$lib/stores/auth.js";
-    import { registerCaptchaOverlay } from "$lib/utils/captcha.js";
     import { initProfile, profile, profileState } from "$lib/stores/profile.js";
     import { initNotificationSub, clearNotificationSub } from "$lib/stores/notifications.js";
     import { initLoopsStore } from "$lib/stores/loops.js";
@@ -23,29 +24,64 @@
 
     import Auth from "$lib/components/Auth.svelte";
     import CreateProfile from "$lib/components/CreateProfile.svelte";
+    import RestrictedGate from "$lib/components/RestrictedGate.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
     import Popups from "$lib/components/Popups.svelte";
     import QuickSettings from "$lib/components/QuickSettings.svelte";
     import CaptchaOverlay from "$lib/components/CaptchaOverlay.svelte";
 
 
-    const LOADING_TIMEOUT = 5000; // 5 seconds
+    const LOADING_TIMEOUT = 10000; // 10 seconds
     let didPreloadRoutes = false;
     let captchaOverlay = $state(null);
 
 
+    // ---------------- Account access gating ---------------- //
+
+    const accessStatus = $derived.by(() => {
+        const s = $profile?.access?.status;
+        return (s || "active").toLowerCase();
+    });
+
+    const isAccountRestricted = $derived.by(() => {
+        return (
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded" &&
+            accessStatus !== "active"
+        );
+    });
+
+    const appReady = $derived.by(() => {
+        return (
+            $authState === "authenticated" &&
+            $profileState === "loaded" &&
+            $referencesStatus === "loaded" &&
+            !isAccountRestricted
+        );
+    });
+
     const PUBLIC_ROUTES = new Set(["/privacy", "/terms", "/contact"]);
     const shouldBypassGates = $derived.by(() => {
         const isPublic = PUBLIC_ROUTES.has($page.url.pathname);
-        const appReady =
-            $authState === "authenticated" &&
-            $profileState === "loaded" &&
-            $referencesStatus === "loaded";
-
         return isPublic && !appReady;
     });
 
-    let { children } = $props();
+    // ---------------- Admin route gating ---------------- //
+
+    const isAdminRoute = $derived.by(() => {
+        const p = $page?.url?.pathname || "/";
+        return p === "/admin" || p.startsWith("/admin/");
+    });
+
+    const isAdminUser = $derived.by(() => {
+        const role = ($profile?.access?.role || "").toLowerCase();
+        return role === "admin";
+    });
+
+    const isAdminBlocked = $derived.by(() => {
+        return appReady && isAdminRoute && !isAdminUser;
+    });
 
 
     // ---------------- Page metadata ---------------- //
@@ -143,11 +179,7 @@
 
     // ---------------- App data setup ---------------- //
     $effect(() => {
-        if (
-            $authState === "authenticated" &&
-            $profileState === "loaded" &&
-            $referencesStatus === "loaded"
-        ) {
+        if (appReady) {
             // Initialise stores that need auth + profile
             initPeerStore();
             initLoopsStore();
@@ -211,6 +243,8 @@
             ],
         });
     }
+
+    let { children } = $props();
 </script>
 
 
@@ -233,7 +267,7 @@
 <Popups />
 {#if browser}
     <CaptchaOverlay bind:this={captchaOverlay} />
-    {#if !shouldBypassGates && !($authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded")}
+    {#if !shouldBypassGates && !appReady}
         <QuickSettings />
     {/if}
 {/if}
@@ -275,11 +309,7 @@
     </div>
 
 <!-- Loading -->
-{:else if 
-        $referencesStatus === "loading" 
-        || $referencesStatus === "unloaded" 
-        || $authState === "loading"
-        || $profileState === "loading"}
+{:else if $referencesStatus === "loading" || $referencesStatus === "unloaded" || $authState === "loading" || $profileState === "loading"}
 
     <div class="gate">
         <div class="gate__inner content content--narrow stack">
@@ -360,13 +390,58 @@
     {/if}
 
 
-{:else if $authState === "authenticated" && $profileState === "loaded" && $referencesStatus === "loaded"}
-    <div class="app">
-        <Navbar />
-        <div class="app-body">
-            {@render children?.()}
+{:else if isAccountRestricted}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
+            <section class="card">
+                <div class="section stack">
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <RestrictedGate onSignOut={confirmLocalSignOut} />
+                </div>
+            </section>
         </div>
     </div>
+
+{:else if isAdminBlocked}
+    <div class="gate">
+        <div class="gate__inner content content--narrow stack">
+            <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
+
+            <section class="card">
+                <div class="section stack">
+                    <Icon icon={UI_ICONS.animFailed} class="icon--large" />
+                    <p class="text-center text-fw-semibold">Not authorized.</p>
+                    <p class="text-hint text-center">You don't have admin access.</p>
+
+                    <div class="actionbar">
+                        <button type="button" class="btn btn--primary btn--block" onclick={() => goto("/")}>
+                            <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />Back
+                        </button>
+                        <button type="button" class="btn btn--danger btn--block" onclick={confirmLocalSignOut}>
+                            <Icon icon={UI_ICONS.logout} class="btn__icon" />Log out
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+{:else if appReady}
+    {#if isAdminRoute}
+        <div class="app app--no-nav">
+            <div class="app-body">
+                {@render children?.()}
+            </div>
+        </div>
+    {:else}
+        <div class="app">
+            <Navbar />
+            <div class="app-body">
+                {@render children?.()}
+            </div>
+        </div>
+    {/if}
 
 {:else}
     <div class="gate">

@@ -177,6 +177,7 @@ export const UI_ICONS = {
     "terms": "mdi:file-document-outline",
     "privacy": "mdi:shield-lock-outline",
     "email": "mdi:email-outline",
+    "report": "mdi:flag-outline",
     
     "delete": "mdi:delete",
     "minus": "mdi:minus",

@@ -223,7 +223,7 @@
                     class:is-loading={$usernameAvailability.state === "checking"}
                     disabled={!$readyToSubmit || $usernameAvailability.state === "checking"}
                     on:click={handlePage0Continue}
-                    >
+                >
                     <span class="btn__label">Continue</span>
                     <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
                     <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />

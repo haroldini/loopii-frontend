@@ -2,17 +2,24 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
     import Icon from "@iconify/svelte";
+    import { profile as viewer_profile } from "$lib/stores/profile.js";
     import { UI_ICONS, platformMap, interestMap } from "$lib/stores/app.js";
     import { getAvatarUrl, timeAgo, buildSocialLink } from "$lib/utils/profile.js";
 
     import ProfileMediaCarousel from "$lib/components/ProfileMediaCarousel.svelte";
     import ProfileHeader from "$lib/components/ProfileHeader.svelte";
+    import ReportProfileOverlay from "$lib/components/ReportProfileOverlay.svelte";
 
     import { addToast } from "$lib/stores/popups.js";
     
     export let profile;
     export let loop = null;
     export let request = null;
+
+    $: isSelf =
+        $viewer_profile?.id != null &&
+        profile?.id != null &&
+        String($viewer_profile?.id) === String(profile.id);
 
     // Event dispatcher
 
@@ -24,6 +31,13 @@
 
     function unloop() {
         dispatch("unloop", { loopId: loop.id });
+    }
+
+    let reportOverlay;
+
+    function openReport() {
+        if (!profile?.id) return;
+        reportOverlay?.openForProfile(profile);
     }
 
     // ===== Dynamic height adjustment for media carousel ======
@@ -308,5 +322,23 @@
                 <p class="text-muted text-center">Requested {timeAgo(request.created_at)}</p>
             </div>
         {/if}
+
+        {#if !isSelf}
+            <div class="profile-block profile-section">
+                <div class="actions actions--center">
+                    <button
+                        type="button"
+                        class="btn btn--ghost"
+                        on:click={openReport}
+                        aria-label="Report this user"
+                        title="Report this user"
+                    >
+                        <Icon icon={UI_ICONS.report} class="btn__icon" />
+                        <span class="btn__label">Report</span>
+                    </button>
+                </div>
+            </div>
+        {/if}
+        <ReportProfileOverlay bind:this={reportOverlay} />
     </div>        
 </div>

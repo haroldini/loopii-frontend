@@ -1,5 +1,5 @@
 
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 
 import { getProfile } from "$lib/api/profile.js";
 import { authState, forceUnauth } from "$lib/stores/auth.js";
@@ -22,6 +22,34 @@ authState.subscribe((state) => {
     }
 });
 
+// Refresh profile when account_restricted error occurs
+let _refreshInFlight = false;
+
+export async function refreshProfileSilently() {
+    if (_refreshInFlight) return;
+    _refreshInFlight = true;
+
+    try {
+        const data = await getProfile();
+        if (data) {
+            profile.set(data);
+            if (get(profileState) !== "loaded") {
+                profileState.set("loaded");
+            }
+        }
+    } catch (err) {
+        if (isDev) console.warn("refreshProfileSilently failed:", err);
+    } finally {
+        _refreshInFlight = false;
+    }
+}
+
+if (typeof window !== "undefined") {
+    window.addEventListener("account_restricted", () => {
+        refreshProfileSilently();
+    });
+}
+
 
 // Initialize the profile by fetching it from the API.
 export async function initProfile() {
@@ -39,7 +67,7 @@ export async function initProfile() {
         }
 
     } catch (err) {
-        if (err.status === 401 || err.status === 403) {
+        if (err.status === 401) {
             // Force unauth if auth error
             forceUnauth();
             profile.set(null);

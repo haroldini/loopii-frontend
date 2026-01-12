@@ -1,4 +1,125 @@
 
+// ----- MODERATION / ADMIN CONSTANTS -----
+
+const ADMIN_PUBLIC_MESSAGE_MAX_LENGTH = 400;
+const ADMIN_INTERNAL_NOTE_MAX_LENGTH = 1000;
+const REPORT_DETAILS_MAX_LENGTH = 2000;
+
+// Used in reports (frontend allowlist).
+export const REPORT_REASON_CODE_OPTIONS = [
+    { value: "sexual_content", label: "Sexual / pornographic content" },
+    { value: "ai_generated_content", label: "AI-generated or misleading content" },
+    { value: "adult_platform_promo", label: "Promotion of adult platforms" },
+    { value: "hate_or_harassment", label: "Hate / harassment / targeted abuse" },
+    { value: "threats_or_violence", label: "Threats / violence" },
+    { value: "illegal_activity", label: "Illegal content / solicitation" },
+    { value: "fake_socials", label: "Fake socials / socials aren't theirs" },
+    { value: "impersonation", label: "Impersonation / misleading identity" },
+    { value: "scam_or_phishing", label: "Scam / phishing / fraud" },
+    { value: "marketing_or_leadgen", label: "Advertising / lead-gen / “DM me for…”" },
+    { value: "bot_or_automation", label: "Bots / automation / manipulation" },
+    { value: "minor_suspected", label: "Underage suspected" },
+    { value: "self_harm", label: "Self-harm content" },
+    { value: "multiple_accounts", label: "Multiple accounts" },
+    { value: "other", label: "Other" },
+];
+
+// Admin can use all report reasons + admin ones
+export const ADMIN_REASON_CODE_OPTIONS = [
+    ...REPORT_REASON_CODE_OPTIONS,
+    { value: "data_scraping", label: "Admin: Data scraping" },
+    { value: "ban_evasion", label: "Admin: Ban evasion" },
+    { value: "revert_action", label: "Admin: Revert previous action" },
+    { value: "appeal_granted", label: "Admin: Appeal granted / reinstated" },
+    { value: "safety_review", label: "Admin: Safety review" },
+    { value: "testing", label: "Admin: Testing" },
+];
+
+const _REPORT_REASON_CODE_SET = new Set(REPORT_REASON_CODE_OPTIONS.map((o) => o.value));
+const _ADMIN_REASON_CODE_SET = new Set(ADMIN_REASON_CODE_OPTIONS.map((o) => o.value));
+
+export function validateReportReasonCode(reason, { field = "reason_code", required = true } = {}) {
+    reason = typeof reason === "string" ? reason.trim() : "";
+    if (!reason) {
+        return required ? { field, message: "Reason code is required.", display: false } : null;
+    }
+    if (!_REPORT_REASON_CODE_SET.has(reason)) {
+        return { field, message: "Reason code is not a supported option.", display: true };
+    }
+    return null;
+}
+
+export function validateAdminReasonCode(reason, { field = "reason_code", required = true } = {}) {
+    reason = typeof reason === "string" ? reason.trim() : "";
+    if (!reason) {
+        return required ? { field, message: "Reason code is required.", display: false } : null;
+    }
+    if (!_ADMIN_REASON_CODE_SET.has(reason)) {
+        return { field, message: "Reason code is not a supported option.", display: true };
+    }
+    return null;
+}
+
+export function validateReportDetails(details, { field = "details", required = false } = {}) {
+    details = typeof details === "string" ? details.trim() : "";
+    if (!details) {
+        return required ? { field, message: "Details are required.", display: false } : null;
+    }
+    if (details.length > REPORT_DETAILS_MAX_LENGTH) {
+        return {
+            field,
+            message: `Details must be ${REPORT_DETAILS_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validatePublicMessage(message, { field = "public_message", required = false } = {}) {
+    message = message?.trim();
+    if (!message) {
+        return required ? { field, message: "Public message is required.", display: false } : null;
+    }
+    if (message.length > ADMIN_PUBLIC_MESSAGE_MAX_LENGTH) {
+        return {
+            field,
+            message: `Public message must be ${ADMIN_PUBLIC_MESSAGE_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validateInternalNote(note, { field = "internal_note", required = false } = {}) {
+    note = note?.trim();
+    if (!note) {
+        return required ? { field, message: "Internal note is required.", display: false } : null;
+    }
+    if (note.length > ADMIN_INTERNAL_NOTE_MAX_LENGTH) {
+        return {
+            field,
+            message: `Internal note must be ${ADMIN_INTERNAL_NOTE_MAX_LENGTH} characters or fewer.`,
+            display: true,
+        };
+    }
+    return null;
+}
+
+export function validateUntil(until, { field = "until", required = true } = {}) {
+    if (!until) {
+        return required ? { field, message: "Until is required.", display: false } : null;
+    }
+    const d = new Date(until);
+    if (isNaN(d.getTime())) {
+        return { field, message: "Invalid date/time.", display: true };
+    }
+    if (d.getTime() <= Date.now()) {
+        return { field, message: "Until must be in the future.", display: true };
+    }
+    return null;
+}
+
+
 // ----- CONFIG CONSTANTS -----
 
 const MIN_AGE_YEARS = 18;
@@ -236,6 +357,48 @@ export function validateSocials(socials) {
     });
 
     return errors;
+}
+
+
+// ----- ADMIN: CLEAR CONTENT VALIDATION (reuses existing validators) -----
+
+export const ADMIN_CLEAR_FIELD_OPTIONS = [
+    { value: "bio", label: "bio" },
+    { value: "loop_bio", label: "loop_bio" },
+    { value: "looking_for", label: "looking_for" },
+    { value: "location", label: "location" },
+    { value: "name", label: "name" },
+];
+
+const _CLEAR_FIELD_SET = new Set(ADMIN_CLEAR_FIELD_OPTIONS.map((o) => o.value));
+
+export function validateAdminClearField(fieldKey, { field = "field_key" } = {}) {
+    if (!fieldKey || !_CLEAR_FIELD_SET.has(fieldKey)) {
+        return { field, message: "Invalid field key.", display: true };
+    }
+    return null;
+}
+
+export function validateAdminClearValue(fieldKey, value, { field = "field_value" } = {}) {
+    const eField = validateAdminClearField(fieldKey, { field: "field_key" });
+    if (eField) return eField;
+
+    const v = typeof value === "string" ? value.trim() : value;
+
+    if (v == null || v === "") return null;
+
+    const map = {
+        bio: validateBio,
+        loop_bio: validateLoopBio,
+        looking_for: validateLookingFor,
+        location: validateLocation,
+        name: validateName,
+    };
+
+    const validator = map[fieldKey];
+    if (!validator) return { field, message: "Invalid field key.", display: true };
+
+    return validator(v);
 }
 
 

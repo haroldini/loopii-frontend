@@ -124,9 +124,7 @@ async function request(endpoint, { method = "GET", data, body } = {}) {
     }
 
     if (!res.ok) {
-        const message = parseErrorMessage(payload, res.statusText);
-
-        const err = new Error(message);
+        const err = new Error(parseErrorMessage(payload, res.statusText));
         err.status = res.status;
         err.data = payload;
 
@@ -139,6 +137,14 @@ async function request(endpoint, { method = "GET", data, body } = {}) {
                 requestBody: data ?? (isFormData ? "[FormData]" : null),
                 response: payload ?? (text ? "[non-json]" : null),
             });
+        }
+
+        if (
+            typeof window !== "undefined"
+            && res.status === 403
+            && payload?.detail?.code === "account_restricted"
+        ) {
+            window.dispatchEvent(new CustomEvent("account_restricted", { detail: payload.detail }));
         }
 
         throw err;
