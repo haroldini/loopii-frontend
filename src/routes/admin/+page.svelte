@@ -1,6 +1,4 @@
 
-<!-- /admin (root) -->
-
 <script>
     import Icon from "@iconify/svelte";
     import { goto } from "$app/navigation";

@@ -1,6 +1,4 @@
 
-<!-- /admin/reports -->
-
 <script>
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js";

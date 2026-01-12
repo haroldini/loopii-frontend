@@ -1,6 +1,4 @@
 
-<!-- /admin/profiles/[profile_id] -->
-
 <script>
     import Icon from "@iconify/svelte";
     import { page } from "$app/stores";
