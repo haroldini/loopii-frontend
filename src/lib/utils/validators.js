@@ -8,27 +8,31 @@ const REPORT_DETAILS_MAX_LENGTH = 2000;
 // Used in reports (frontend allowlist).
 export const REPORT_REASON_CODE_OPTIONS = [
     { value: "sexual_content", label: "Sexual / pornographic content" },
-    { value: "ai_generated_photos", label: "AI-generated photos" },
+    { value: "ai_generated_content", label: "AI-generated or misleading content" },
     { value: "adult_platform_promo", label: "Promotion of adult platforms" },
     { value: "hate_or_harassment", label: "Hate / harassment / targeted abuse" },
     { value: "threats_or_violence", label: "Threats / violence" },
-    { value: "illegal_activity", label: "Illegal content / encouragement" },
+    { value: "illegal_activity", label: "Illegal content / solicitation" },
+    { value: "fake_socials", label: "Fake socials / socials aren't theirs" },
     { value: "impersonation", label: "Impersonation / misleading identity" },
-    { value: "spam_or_scam", label: "Spam / scam / phishing" },
+    { value: "scam_or_phishing", label: "Scam / phishing / fraud" },
     { value: "marketing_or_leadgen", label: "Advertising / lead-gen / “DM me for…”" },
     { value: "bot_or_automation", label: "Bots / automation / manipulation" },
-    { value: "data_scraping", label: "Scraping / harvesting / exporting user data" },
-    { value: "ban_evasion", label: "Ban evasion / multiple accounts" },
     { value: "minor_suspected", label: "Underage suspected" },
     { value: "self_harm", label: "Self-harm content" },
+    { value: "multiple_accounts", label: "Multiple accounts" },
     { value: "other", label: "Other" },
 ];
 
 // Admin can use all report reasons + admin ones
 export const ADMIN_REASON_CODE_OPTIONS = [
     ...REPORT_REASON_CODE_OPTIONS,
-    { value: "media_removal", label: "Admin: Media removal" },
-    { value: "content_overwrite", label: "Admin: Content overwrite" },
+    { value: "data_scraping", label: "Admin: Data scraping" },
+    { value: "ban_evasion", label: "Admin: Ban evasion" },
+    { value: "revert_action", label: "Admin: Revert previous action" },
+    { value: "appeal_granted", label: "Admin: Appeal granted / reinstated" },
+    { value: "safety_review", label: "Admin: Safety review" },
+    { value: "testing", label: "Admin: Testing" },
 ];
 
 const _REPORT_REASON_CODE_SET = new Set(REPORT_REASON_CODE_OPTIONS.map((o) => o.value));
