@@ -1,4 +1,6 @@
 
+<!-- /admin (root) -->
+
 <script>
     import Icon from "@iconify/svelte";
     import { goto } from "$app/navigation";
@@ -53,12 +55,12 @@
             </div>
 
             <div class="grid grid-2">
-                <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/profiles")}>
+                <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/profiles")} disabled={loading}>
                     <Icon icon={UI_ICONS.accountAction} class="btn__icon" />
                     <span class="btn__label">Profiles</span>
                 </button>
 
-                <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/reports")}>
+                <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/reports")} disabled={loading}>
                     <Icon icon={UI_ICONS.alert} class="btn__icon" />
                     <span class="btn__label">Reports</span>
                 </button>

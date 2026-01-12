@@ -1,4 +1,6 @@
 
+<!-- /admin/profiles/[profile_id] -->
+
 <script>
     import Icon from "@iconify/svelte";
     import { page } from "$app/stores";
@@ -34,6 +36,8 @@
 
     let loading = false;
     let acting = false;
+    $: busy = loading || acting;
+
     let data = null;
 
     let profileId;
@@ -167,6 +171,8 @@
                     label: "Confirm",
                     variant: bulk ? "danger" : "primary",
                     onClick: async () => {
+                        if (acting) return;
+                        acting = true;
                         try {
                             await adminSetReportStatus(reportId, {
                                 status: nextStatus,
@@ -178,6 +184,8 @@
                             await load();
                         } catch (err) {
                             toastErr(err, "Failed to update report.");
+                        } finally {
+                            acting = false;
                         }
                     },
                 },
@@ -426,9 +434,9 @@
             <button
                 type="button"
                 class="btn btn--ghost btn--icon"
-                class:is-loading={loading}
+                class:is-loading={busy}
                 on:click={load}
-                disabled={loading}
+                disabled={busy}
                 aria-label="Refresh"
                 title="Refresh"
             >
@@ -453,6 +461,7 @@
                                 type="button"
                                 class="btn btn--ghost btn--icon"
                                 on:click={() => (showOverview = !showOverview)}
+                                disabled={busy}
                                 title={showOverview ? "Collapse overview" : "Expand overview"}
                                 aria-label={showOverview ? "Collapse overview" : "Expand overview"}
                             >
@@ -513,6 +522,7 @@
                                 type="button"
                                 class="btn btn--ghost btn--icon"
                                 on:click={() => (showStats = !showStats)}
+                                disabled={busy}
                                 title={showStats ? "Collapse stats" : "Expand stats"}
                                 aria-label={showStats ? "Collapse stats" : "Expand stats"}
                             >
@@ -548,7 +558,7 @@
 
                         <div class="field">
                             <label class="field__label" for={id_reason}>reason_code</label>
-                            <select id={id_reason} bind:value={reason_code} disabled={acting}>
+                            <select id={id_reason} bind:value={reason_code} disabled={busy}>
                                 <option value="">(select)</option>
                                 {#each ADMIN_REASON_CODE_OPTIONS as opt}
                                     <option value={opt.value}>{opt.label}</option>
@@ -558,12 +568,12 @@
 
                         <div class="field">
                             <label class="field__label" for={id_public}>public_message</label>
-                            <textarea id={id_public} bind:value={public_message} placeholder="optional" disabled={acting}></textarea>
+                            <textarea id={id_public} bind:value={public_message} placeholder="optional" disabled={busy}></textarea>
                         </div>
 
                         <div class="field">
                             <label class="field__label" for={id_internal}>internal_note</label>
-                            <textarea id={id_internal} bind:value={internal_note} placeholder="optional" disabled={acting}></textarea>
+                            <textarea id={id_internal} bind:value={internal_note} placeholder="optional" disabled={busy}></textarea>
                         </div>
                     </div>
                 </section>
@@ -573,18 +583,42 @@
                         <h3>Actions</h3>
 
                         <div class="actionbar">
-                            <button type="button" class="btn btn--danger" on:click={doWarn} disabled={acting || loading} title="Warn">
+                            <button
+                                type="button"
+                                class="btn btn--danger"
+                                class:is-loading={acting}
+                                on:click={doWarn}
+                                disabled={busy}
+                                title="Warn"
+                            >
                                 <Icon icon={UI_ICONS.alert} class="btn__icon" />
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                 <span class="btn__label">Warn</span>
                             </button>
 
-                            <button type="button" class="btn btn--danger" on:click={doBan} disabled={acting || loading} title="Ban">
+                            <button
+                                type="button"
+                                class="btn btn--danger"
+                                class:is-loading={acting}
+                                on:click={doBan}
+                                disabled={busy}
+                                title="Ban"
+                            >
                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                 <span class="btn__label">Ban</span>
                             </button>
 
-                            <button type="button" class="btn btn--success" on:click={doUnban} disabled={acting || loading} title="Unban">
+                            <button
+                                type="button"
+                                class="btn btn--success"
+                                class:is-loading={acting}
+                                on:click={doUnban}
+                                disabled={busy}
+                                title="Unban"
+                            >
                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                 <span class="btn__label">Unban</span>
                             </button>
                         </div>
@@ -595,11 +629,19 @@
 
                         <div class="field">
                             <label class="field__label" for={id_until}>until</label>
-                            <input id={id_until} type="datetime-local" bind:value={until_local} disabled={acting} />
+                            <input id={id_until} type="datetime-local" bind:value={until_local} disabled={busy} />
                         </div>
 
-                        <button type="button" class="btn btn--danger" on:click={doTempBan} disabled={acting || loading} title="Apply temp ban">
+                        <button
+                            type="button"
+                            class="btn btn--danger"
+                            class:is-loading={acting}
+                            on:click={doTempBan}
+                            disabled={busy}
+                            title="Apply temp ban"
+                        >
                             <Icon icon={UI_ICONS.close} class="btn__icon" />
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                             <span class="btn__label">Apply temp ban</span>
                         </button>
 
@@ -609,7 +651,7 @@
 
                         <div class="field">
                             <label class="field__label" for={id_clear_field}>field</label>
-                            <select id={id_clear_field} bind:value={clear_field} disabled={acting}>
+                            <select id={id_clear_field} bind:value={clear_field} disabled={busy}>
                                 {#each ADMIN_CLEAR_FIELD_OPTIONS as opt}
                                     <option value={opt.value}>{opt.label}</option>
                                 {/each}
@@ -618,11 +660,19 @@
 
                         <div class="field">
                             <label class="field__label" for={id_clear_value}>value (empty = null)</label>
-                            <textarea id={id_clear_value} bind:value={clear_value} disabled={acting}></textarea>
+                            <textarea id={id_clear_value} bind:value={clear_value} disabled={busy}></textarea>
                         </div>
 
-                        <button type="button" class="btn btn--danger" on:click={doClearContent} disabled={acting || loading} title="Apply overwrite">
+                        <button
+                            type="button"
+                            class="btn btn--danger"
+                            class:is-loading={acting}
+                            on:click={doClearContent}
+                            disabled={busy}
+                            title="Apply overwrite"
+                        >
                             <Icon icon={UI_ICONS.swap} class="btn__icon" />
+                            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                             <span class="btn__label">Apply overwrite</span>
                         </button>
 
@@ -652,12 +702,14 @@
                                                     <button
                                                         type="button"
                                                         class="btn btn--danger btn--icon"
+                                                        class:is-loading={acting}
                                                         on:click={() => confirmDeleteImage(img.id)}
-                                                        disabled={acting || loading}
+                                                        disabled={busy}
                                                         title="Delete image"
                                                         aria-label="Delete image"
                                                     >
                                                         <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                                        <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                     </button>
                                                 </td>
                                             </tr>
@@ -673,11 +725,13 @@
                             <button
                                 type="button"
                                 class="btn btn--danger"
+                                class:is-loading={acting}
                                 on:click={() => confirmDeleteAudio(data.profile.audio.id)}
-                                disabled={acting || loading}
+                                disabled={busy}
                                 title="Delete audio"
                             >
                                 <Icon icon={UI_ICONS.delete} class="btn__icon" />
+                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                 <span class="btn__label">Delete audio</span>
                             </button>
                         {:else}
@@ -737,6 +791,7 @@
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportReceived(k)}
+                                                            disabled={busy}
                                                             title={expandedReportsReceived.has(k) ? "Collapse report" : "Expand report"}
                                                             aria-label={expandedReportsReceived.has(k) ? "Collapse report" : "Expand report"}
                                                         >
@@ -802,9 +857,12 @@
                                                                                 <button
                                                                                     type="button"
                                                                                     class="btn btn--ghost"
+                                                                                    class:is-loading={acting}
+                                                                                    disabled={busy}
                                                                                     on:click={() => setStatus(r.id, "open", { bulk: false })}
                                                                                 >
                                                                                     <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                                                                                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                     <span class="btn__label">Open</span>
                                                                                 </button>
                                                                             {/if}
@@ -812,20 +870,24 @@
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--success"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "actioned", { bulk: false })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Actioned</span>
                                                                             </button>
 
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--danger"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "dismissed", { bulk: false })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Dismissed</span>
                                                                             </button>
                                                                         </div>
@@ -834,20 +896,24 @@
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--ghost"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "actioned", { bulk: true })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Bulk action</span>
                                                                             </button>
 
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--ghost"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "dismissed", { bulk: true })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Bulk dismiss</span>
                                                                             </button>
                                                                         </div>
@@ -905,6 +971,7 @@
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleReportMade(k)}
+                                                            disabled={busy}
                                                             title={expandedReportsMade.has(k) ? "Collapse report" : "Expand report"}
                                                             aria-label={expandedReportsMade.has(k) ? "Collapse report" : "Expand report"}
                                                         >
@@ -969,9 +1036,12 @@
                                                                                 <button
                                                                                     type="button"
                                                                                     class="btn btn--ghost"
+                                                                                    class:is-loading={acting}
+                                                                                    disabled={busy}
                                                                                     on:click={() => setStatus(r.id, "open", { bulk: false })}
                                                                                 >
                                                                                     <Icon icon={UI_ICONS.refresh} class="btn__icon" />
+                                                                                    <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                     <span class="btn__label">Open</span>
                                                                                 </button>
                                                                             {/if}
@@ -979,20 +1049,24 @@
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--success"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "actioned", { bulk: false })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Actioned</span>
                                                                             </button>
 
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--danger"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "dismissed", { bulk: false })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Dismissed</span>
                                                                             </button>
                                                                         </div>
@@ -1001,20 +1075,24 @@
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--ghost"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "actioned", { bulk: true })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.check} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Bulk action</span>
                                                                             </button>
 
                                                                             <button
                                                                                 type="button"
                                                                                 class="btn btn--ghost"
-                                                                                disabled={!open}
+                                                                                class:is-loading={acting}
+                                                                                disabled={!open || busy}
                                                                                 on:click={() => setStatus(r.id, "dismissed", { bulk: true })}
                                                                             >
                                                                                 <Icon icon={UI_ICONS.close} class="btn__icon" />
+                                                                                <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
                                                                                 <span class="btn__label">Bulk dismiss</span>
                                                                             </button>
                                                                         </div>
@@ -1073,6 +1151,7 @@
                                                             type="button"
                                                             class="btn btn--ghost btn--icon"
                                                             on:click={() => toggleActionReceived(keyOf(a))}
+                                                            disabled={busy}
                                                             title={expandedActionsReceived.has(keyOf(a)) ? "Collapse action" : "Expand action"}
                                                             aria-label={expandedActionsReceived.has(keyOf(a)) ? "Collapse action" : "Expand action"}
                                                         >

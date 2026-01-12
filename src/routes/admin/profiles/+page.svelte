@@ -1,4 +1,6 @@
 
+<!-- /admin/profiles -->
+
 <script>
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js";
@@ -128,7 +130,7 @@
         </div>
 
         <div class="toolbar__group">
-            <select bind:value={sort} on:change={onSortChange} aria-label="Sort profiles">
+            <select bind:value={sort} on:change={onSortChange} aria-label="Sort profiles" disabled={loading}>
                 <option value="recent_joined">Recent joined</option>
                 <option value="recent_updated">Recent updated</option>
                 <option value="most_decisions_30d">Most decisions (30d)</option>
@@ -155,14 +157,30 @@
     <div class="u-divider"></div>
 
     <div class="actionbar">
-        <button type="button" class="btn btn--ghost" on:click={prevPage} disabled={loading || cursorStack.length === 0} title="Previous page">
+        <button
+            type="button"
+            class="btn btn--ghost"
+            class:is-loading={loading}
+            on:click={prevPage}
+            disabled={loading || cursorStack.length === 0}
+            title="Previous page"
+        >
             <Icon icon={UI_ICONS.chevronLeft} class="btn__icon" />
+            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
             <span class="btn__label">Prev</span>
         </button>
 
-        <button type="button" class="btn btn--ghost" on:click={nextPage} disabled={loading || !hasMore} title="Next page">
+        <button
+            type="button"
+            class="btn btn--ghost"
+            class:is-loading={loading}
+            on:click={nextPage}
+            disabled={loading || !hasMore}
+            title="Next page"
+        >
             <span class="btn__label">Next</span>
             <Icon icon={UI_ICONS.chevronRight} class="btn__icon" />
+            <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
         </button>
     </div>
 
