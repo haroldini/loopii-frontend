@@ -107,25 +107,120 @@
     gap: 0.4rem;
 }
 
+/* ---------- Tables ---------- */
+
+.admin-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* base table */
 .admin-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
+/* common cells */
 .admin-table th,
 .admin-table td {
     padding: var(--space-2);
     border-bottom: var(--border-width) solid var(--border-color);
     vertical-align: top;
     text-align: left;
+    min-width: 0;
 }
 
 .admin-table th {
     color: var(--text-muted);
     font-weight: var(--font-weight-semibold);
     font-size: 0.85rem;
+    white-space: nowrap;
 }
 
+/* default body text */
+.admin-table td {
+    color: var(--text-secondary);
+}
+
+/* metrics tables: metric / value / description */
+.admin-table--metrics {
+    min-width: 980px;
+}
+
+.admin-table--metrics th:nth-child(1) { width: 320px; }
+.admin-table--metrics th:nth-child(2) { width: 180px; }
+
+.admin-table--metrics td:nth-child(1),
+.admin-table--metrics td:nth-child(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-table--metrics td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+/* percentiles table */
+.admin-table--percentiles {
+    min-width: 720px;
+}
+
+.admin-table--percentiles th:nth-child(2),
+.admin-table--percentiles th:nth-child(3),
+.admin-table--percentiles th:nth-child(4),
+.admin-table--percentiles th:nth-child(5) {
+    width: 140px;
+}
+
+.admin-table--percentiles td:nth-child(2),
+.admin-table--percentiles td:nth-child(3),
+.admin-table--percentiles td:nth-child(4),
+.admin-table--percentiles td:nth-child(5) {
+    white-space: nowrap;
+}
+
+/* countries table */
+.admin-table--countries {
+    min-width: 760px;
+}
+
+.admin-table--countries th:nth-child(1) { width: 70px; }
+.admin-table--countries th:nth-child(2) { width: 220px; }
+.admin-table--countries th:nth-child(4) { width: 120px; }
+
+.admin-table--countries td:nth-child(1) {
+    text-align: center;
+}
+
+.admin-table--countries td:nth-child(4) {
+    white-space: nowrap;
+}
+
+/* genders table */
+.admin-table--genders {
+    min-width: 420px;
+}
+
+.admin-table--genders th:nth-child(1) { width: 70px; }
+.admin-table--genders th:nth-child(3) { width: 120px; }
+
+.admin-table--genders td:nth-child(3) {
+    white-space: nowrap;
+}
+
+/* code-ish cells */
+.admin-code {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+/* keep admin-kv as-is */
 .admin-kv {
     display: grid;
     grid-template-columns: 160px 1fr;
@@ -139,13 +234,6 @@
 }
 
 .admin-kv dd {
-    color: var(--text-secondary);
-    overflow-wrap: anywhere;
-}
-
-.admin-code {
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
     color: var(--text-secondary);
     overflow-wrap: anywhere;
 }

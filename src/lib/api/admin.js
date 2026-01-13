@@ -2,6 +2,16 @@
 import request from "$lib/utils/request.js";
 
 
+// Get admin dashboard stats (timeseries + aggregates)
+export function adminGetDashboard({ weeks = 12 } = {}) {
+    const q = new URLSearchParams();
+    if (weeks) q.set("weeks", String(weeks));
+
+    const qs = q.toString();
+    return request(`/admin/dashboard${qs ? `?${qs}` : ""}`, { method: "GET" });
+}
+
+
 // List profiles for moderation (cursor-paginated, sortable)
 export function adminListProfiles({ limit = 50, after_id = null, sort = "recent_joined" } = {}) {
     const q = new URLSearchParams();

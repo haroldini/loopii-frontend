@@ -1,6 +1,4 @@
 
-<!-- /admin (root) -->
-
 <script>
     import Icon from "@iconify/svelte";
     import { goto } from "$app/navigation";
@@ -43,7 +41,7 @@
 <div class="stack">
     <section class="card">
         <div class="section stack">
-            <h3>Moderation</h3>
+            <h3>Navigation</h3>
 
             <div class="admin-pillrow">
                 {#if typeof openReports === "number"}
@@ -55,6 +53,11 @@
             </div>
 
             <div class="grid grid-2">
+                <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/dashboard")} disabled={loading}>
+                    <Icon icon={UI_ICONS.chart || UI_ICONS.activity || UI_ICONS.refresh} class="btn__icon" />
+                    <span class="btn__label">Dashboard</span>
+                </button>
+
                 <button type="button" class="btn btn--primary btn--block" on:click={() => goto("/admin/profiles")} disabled={loading}>
                     <Icon icon={UI_ICONS.accountAction} class="btn__icon" />
                     <span class="btn__label">Profiles</span>
