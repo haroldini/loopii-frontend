@@ -31,6 +31,7 @@
     let cvMonthlyEvents;
     let cvDailyActivity;
     let cvWeeklyActions;
+    let cvWeeklyReportsReasons;
     let cvEloByGender;
 
     let charts = [];
@@ -81,6 +82,13 @@
         return isFinite(n) ? n : fallback;
     }
 
+    // For charts: preserve gaps (null => gap)
+    function numOrNull(v) {
+        if (v == null) return null;
+        const n = Number(v);
+        return isFinite(n) ? n : null;
+    }
+
     function displayIntOrDash(v) {
         if (v == null) return "-";
         const n = Number(v);
@@ -89,9 +97,7 @@
 
     function destroyCharts() {
         for (const c of charts) {
-            try {
-                c?.destroy?.();
-            } catch {}
+            try { c?.destroy?.(); } catch {}
         }
         charts = [];
     }
@@ -157,42 +163,12 @@
                     data: {
                         labels: dLabels,
                         datasets: [
-                            {
-                                label: "profiles created",
-                                data: daily.map((r) => num(r?.events?.profiles_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "decisions",
-                                data: daily.map((r) => num(r?.events?.decisions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "connect decisions",
-                                data: daily.map((r) => num(r?.events?.decisions_connect, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "loops",
-                                data: daily.map((r) => num(r?.events?.loops_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "reports",
-                                data: daily.map((r) => num(r?.events?.reports_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "admin actions",
-                                data: daily.map((r) => num(r?.events?.admin_actions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
+                            { label: "profiles created", data: daily.map((r) => numOrNull(r?.events?.profiles_created)), borderWidth: 2, tension: 0.25 },
+                            { label: "decisions", data: daily.map((r) => numOrNull(r?.events?.decisions_total)), borderWidth: 2, tension: 0.25 },
+                            { label: "connect decisions", data: daily.map((r) => numOrNull(r?.events?.decisions_connect)), borderWidth: 2, tension: 0.25 },
+                            { label: "loops", data: daily.map((r) => numOrNull(r?.events?.loops_created)), borderWidth: 2, tension: 0.25 },
+                            { label: "reports", data: daily.map((r) => numOrNull(r?.events?.reports_created)), borderWidth: 2, tension: 0.25 },
+                            { label: "admin actions", data: daily.map((r) => numOrNull(r?.events?.admin_actions_total)), borderWidth: 2, tension: 0.25 },
                         ],
                     },
                     options: {
@@ -212,42 +188,12 @@
                     data: {
                         labels: wLabels,
                         datasets: [
-                            {
-                                label: "profiles created",
-                                data: weekly.map((r) => num(r?.events?.profiles_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "decisions",
-                                data: weekly.map((r) => num(r?.events?.decisions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "connect decisions",
-                                data: weekly.map((r) => num(r?.events?.decisions_connect, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "loops",
-                                data: weekly.map((r) => num(r?.events?.loops_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "reports",
-                                data: weekly.map((r) => num(r?.events?.reports_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "admin actions",
-                                data: weekly.map((r) => num(r?.events?.admin_actions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
+                            { label: "profiles created", data: weekly.map((r) => num(r?.events?.profiles_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "decisions", data: weekly.map((r) => num(r?.events?.decisions_total, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "connect decisions", data: weekly.map((r) => num(r?.events?.decisions_connect, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "loops", data: weekly.map((r) => num(r?.events?.loops_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "reports", data: weekly.map((r) => num(r?.events?.reports_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "admin actions", data: weekly.map((r) => num(r?.events?.admin_actions_total, 0)), borderWidth: 2, tension: 0.25 },
                         ],
                     },
                     options: {
@@ -267,42 +213,12 @@
                     data: {
                         labels: mLabels,
                         datasets: [
-                            {
-                                label: "profiles created",
-                                data: monthly.map((r) => num(r?.events?.profiles_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "decisions",
-                                data: monthly.map((r) => num(r?.events?.decisions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "connect decisions",
-                                data: monthly.map((r) => num(r?.events?.decisions_connect, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "loops",
-                                data: monthly.map((r) => num(r?.events?.loops_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "reports",
-                                data: monthly.map((r) => num(r?.events?.reports_created, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "admin actions",
-                                data: monthly.map((r) => num(r?.events?.admin_actions_total, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
+                            { label: "profiles created", data: monthly.map((r) => num(r?.events?.profiles_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "decisions", data: monthly.map((r) => num(r?.events?.decisions_total, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "connect decisions", data: monthly.map((r) => num(r?.events?.decisions_connect, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "loops", data: monthly.map((r) => num(r?.events?.loops_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "reports", data: monthly.map((r) => num(r?.events?.reports_created, 0)), borderWidth: 2, tension: 0.25 },
+                            { label: "admin actions", data: monthly.map((r) => num(r?.events?.admin_actions_total, 0)), borderWidth: 2, tension: 0.25 },
                         ],
                     },
                     options: {
@@ -322,24 +238,9 @@
                     data: {
                         labels: dLabels,
                         datasets: [
-                            {
-                                label: "DAU",
-                                data: daily.map((r) => num(r?.activity?.dau, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "WAU",
-                                data: daily.map((r) => num(r?.activity?.wau, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
-                            {
-                                label: "MAU",
-                                data: daily.map((r) => num(r?.activity?.mau, 0)),
-                                borderWidth: 2,
-                                tension: 0.25,
-                            },
+                            { label: "DAU", data: daily.map((r) => numOrNull(r?.activity?.dau)), borderWidth: 2, tension: 0.25 },
+                            { label: "WAU", data: daily.map((r) => numOrNull(r?.activity?.wau)), borderWidth: 2, tension: 0.25 },
+                            { label: "MAU", data: daily.map((r) => numOrNull(r?.activity?.mau)), borderWidth: 2, tension: 0.25 },
                         ],
                     },
                     options: {
@@ -375,10 +276,36 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { legend: { display: true } },
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true },
-                        },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    },
+                })
+            );
+        }
+
+        if (showModeration && cvWeeklyReportsReasons) {
+            const reasonSet = new Set();
+            for (const r of weekly) {
+                const m = r?.reports_by_reason || {};
+                for (const k of Object.keys(m)) reasonSet.add(k);
+            }
+            const reasons = Array.from(reasonSet).sort();
+
+            charts.push(
+                new Chart(cvWeeklyReportsReasons, {
+                    type: "bar",
+                    data: {
+                        labels: wLabels,
+                        datasets: reasons.map((rc) => ({
+                            label: rc,
+                            data: weekly.map((r) => num((r?.reports_by_reason || {})[rc], 0)),
+                            borderWidth: 1,
+                        })),
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
                     },
                 })
             );
@@ -400,10 +327,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { legend: { display: true } },
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true },
-                        },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
                     },
                 })
             );
@@ -416,7 +340,6 @@
 
         try {
             const payload = { days };
-
             if (startDay) payload.start_day = startDay;
             if (endDay) payload.end_day = endDay;
 
@@ -461,13 +384,8 @@
         await renderCharts();
     }
 
-    onMount(() => {
-        load();
-    });
-
-    onDestroy(() => {
-        destroyCharts();
-    });
+    onMount(() => { load(); });
+    onDestroy(() => { destroyCharts(); });
 
     $: snapshot = data?.snapshot || null;
 
@@ -491,9 +409,9 @@
 
         { k: "open_reports_total", v: displayIntOrDash(snapshotTotals?.open_reports_total), d: "Open reports as of snapshot day." },
 
-        { k: "DAU", v: displayIntOrDash(snapshotActivity?.dau), d: "Active (last_seen) in the last 24 hours at snapshot time." },
-        { k: "WAU", v: displayIntOrDash(snapshotActivity?.wau), d: "Active (last_seen) in the last 7 days at snapshot time." },
-        { k: "MAU", v: displayIntOrDash(snapshotActivity?.mau), d: "Active (last_seen) in the last 30 days at snapshot time." },
+        { k: "DAU", v: displayIntOrDash(snapshotActivity?.dau), d: "Daily active users at snapshot time." },
+        { k: "WAU", v: displayIntOrDash(snapshotActivity?.wau), d: "Weekly active users at snapshot time." },
+        { k: "MAU", v: displayIntOrDash(snapshotActivity?.mau), d: "Monthly active users at snapshot time." },
     ];
 
     $: completenessRows = [
@@ -514,14 +432,24 @@
 
     $: genderKeys = data?.breakdowns?.gender_keys || [];
 
-    $: countriesByGender = (data?.breakdowns?.countries_by_gender || [])
-        .map(countryRowDecor);
-
-    $: eloBucketsByGender = data?.breakdowns?.elo_buckets_by_gender || [];
+    $: countriesByGender = (data?.breakdowns?.countries_by_gender || []).map(countryRowDecor);
 
     function countryCount(r, g) {
         return num((r?.counts || {})[g], 0);
     }
+
+    $: countryTotalsByGender = (() => {
+        const out = {};
+        for (const g of genderKeys) out[g] = 0;
+        for (const c of countriesByGender) {
+            for (const g of genderKeys) out[g] += countryCount(c, g);
+        }
+        return out;
+    })();
+
+    $: countryGrandTotal = countriesByGender.reduce((a, c) => a + num(c?.total, 0), 0);
+
+    $: eloBucketsByGender = data?.breakdowns?.elo_buckets_by_gender || [];
 
     function sumDaily(fieldKey) {
         return (data?.timeseries?.daily || []).reduce((a, r) => a + num(r?.events?.[fieldKey], 0), 0);
@@ -556,41 +484,18 @@
                 <option value="3650" selected={days === 3650}>10y</option>
             </select>
 
-            <input
-                type="date"
-                class="input"
-                disabled={busy}
-                bind:value={startDay}
-                on:change={onStartDayChange}
-                aria-label="Start day"
-                title="Start day"
-                style="max-width: 10.5rem;"
-            />
+            <input type="date" class="input" disabled={busy} bind:value={startDay} on:change={onStartDayChange}
+                aria-label="Start day" title="Start day" style="max-width: 10.5rem;" />
 
-            <input
-                type="date"
-                class="input"
-                disabled={busy}
-                bind:value={endDay}
-                on:change={onEndDayChange}
-                aria-label="End day"
-                title="End day"
-                style="max-width: 10.5rem;"
-            />
+            <input type="date" class="input" disabled={busy} bind:value={endDay} on:change={onEndDayChange}
+                aria-label="End day" title="End day" style="max-width: 10.5rem;" />
 
             <button type="button" class="btn btn--ghost btn--icon" on:click={clearDates} disabled={busy}>
                 <Icon icon={UI_ICONS.close} class="btn__icon" />
             </button>
 
-            <button
-                type="button"
-                class="btn btn--ghost btn--icon"
-                class:is-loading={busy}
-                on:click={load}
-                disabled={busy}
-                aria-label="Refresh"
-                title="Refresh"
-            >
+            <button type="button" class="btn btn--ghost btn--icon" class:is-loading={busy}
+                on:click={load} disabled={busy} aria-label="Refresh" title="Refresh">
                 <Icon icon={UI_ICONS.refresh} class="btn__icon" />
                 <Icon icon={UI_ICONS.animSpinner} class="btn__icon btn__spinner" />
             </button>
@@ -606,7 +511,7 @@
             <section class="card">
                 <div class="section stack">
                     <h3 style="margin:0;">No metrics available</h3>
-                    <p class="text-hint">No MetricsDaily rows exist for the requested date range. Distributions still show live from Profile.</p>
+                    <p class="text-hint">No snapshot rows exist for the requested date range. Distributions still show live from Profile.</p>
                 </div>
             </section>
         {/if}
@@ -616,14 +521,10 @@
             <div class="section stack">
                 <div class="row" style="justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Totals</h3>
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
+                    <button type="button" class="btn btn--ghost btn--icon"
                         on:click={() => toggleAndRerender(() => (showTotals = !showTotals))}
-                        disabled={busy}
-                        title={showTotals ? "Collapse totals" : "Expand totals"}
-                        aria-label={showTotals ? "Collapse totals" : "Expand totals"}
-                    >
+                        disabled={busy} title={showTotals ? "Collapse totals" : "Expand totals"}
+                        aria-label={showTotals ? "Collapse totals" : "Expand totals"}>
                         {#if showTotals}
                             <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                         {:else}
@@ -634,7 +535,7 @@
 
                 {#if showTotals}
                     {#if !snapshot}
-                        <p class="text-hint">No snapshot available (metrics_daily empty for this range).</p>
+                        <p class="text-hint">No snapshot available.</p>
                     {:else}
                         <p class="text-hint">Snapshot values from the latest available day inside the requested range.</p>
 
@@ -668,14 +569,10 @@
             <div class="section stack">
                 <div class="row" style="justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Trends</h3>
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
+                    <button type="button" class="btn btn--ghost btn--icon"
                         on:click={() => toggleAndRerender(() => (showTrends = !showTrends))}
-                        disabled={busy}
-                        title={showTrends ? "Collapse trends" : "Expand trends"}
-                        aria-label={showTrends ? "Collapse trends" : "Expand trends"}
-                    >
+                        disabled={busy} title={showTrends ? "Collapse trends" : "Expand trends"}
+                        aria-label={showTrends ? "Collapse trends" : "Expand trends"}>
                         {#if showTrends}
                             <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                         {:else}
@@ -686,16 +583,14 @@
 
                 {#if showTrends}
                     {#if !snapshot}
-                        <p class="text-hint">No metrics_daily rows in range, so trend charts are empty.</p>
+                        <p class="text-hint">No snapshot in range, so some panels are empty.</p>
                     {:else}
                         <div class="stack" style="gap:var(--space-4);">
                             {#if !canShowDailyCharts}
-                                <p class="text-hint">
-                                    Daily charts are hidden for large ranges (>{400} days) to avoid heavy rendering. Weekly/monthly remain available.
-                                </p>
+                                <p class="text-hint">Daily charts are hidden for large ranges (&gt;{400} days). Weekly/monthly remain available.</p>
                             {:else}
                                 <div>
-                                    <p class="text-hint">Daily events (all event counters).</p>
+                                    <p class="text-hint">Daily events.</p>
                                     <div style="height:320px;">
                                         <canvas bind:this={cvDailyEvents}></canvas>
                                     </div>
@@ -712,14 +607,14 @@
                             {/if}
 
                             <div>
-                                <p class="text-hint">Weekly events (aggregated from daily rows).</p>
+                                <p class="text-hint">Weekly events.</p>
                                 <div style="height:320px;">
                                     <canvas bind:this={cvWeeklyEvents}></canvas>
                                 </div>
                             </div>
 
                             <div>
-                                <p class="text-hint">Monthly events (aggregated from daily rows).</p>
+                                <p class="text-hint">Monthly events.</p>
                                 <div style="height:320px;">
                                     <canvas bind:this={cvMonthlyEvents}></canvas>
                                 </div>
@@ -735,14 +630,10 @@
             <div class="section stack">
                 <div class="row" style="justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Profile quality</h3>
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
+                    <button type="button" class="btn btn--ghost btn--icon"
                         on:click={() => toggleAndRerender(() => (showQuality = !showQuality))}
-                        disabled={busy}
-                        title={showQuality ? "Collapse profile quality" : "Expand profile quality"}
-                        aria-label={showQuality ? "Collapse profile quality" : "Expand profile quality"}
-                    >
+                        disabled={busy} title={showQuality ? "Collapse profile quality" : "Expand profile quality"}
+                        aria-label={showQuality ? "Collapse profile quality" : "Expand profile quality"}>
                         {#if showQuality}
                             <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                         {:else}
@@ -753,7 +644,7 @@
 
                 {#if showQuality}
                     {#if !snapshot}
-                        <p class="text-hint">No snapshot available (metrics_daily empty for this range).</p>
+                        <p class="text-hint">No snapshot available.</p>
                     {:else}
                         <div class="stack" style="gap:var(--space-4);">
                             <div>
@@ -793,6 +684,9 @@
                                         <thead>
                                             <tr>
                                                 <th>type</th>
+                                                <th>p25</th>
+                                                <th>p50</th>
+                                                <th>p75</th>
                                                 <th>p90</th>
                                                 <th>p99</th>
                                             </tr>
@@ -800,13 +694,19 @@
                                         <tbody>
                                             <tr>
                                                 <td>image</td>
-                                                <td>{formatBytes(snapshotPercentiles?.image_size_p90 ?? 0)}</td>
-                                                <td>{formatBytes(snapshotPercentiles?.image_size_p99 ?? 0)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_bytes?.p25)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_bytes?.p50)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_bytes?.p75)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_bytes?.p90)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_bytes?.p99)}</td>
                                             </tr>
                                             <tr>
                                                 <td>audio</td>
-                                                <td>{formatBytes(snapshotPercentiles?.audio_size_p90 ?? 0)}</td>
-                                                <td>{formatBytes(snapshotPercentiles?.audio_size_p99 ?? 0)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_bytes?.p25)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_bytes?.p50)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_bytes?.p75)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_bytes?.p90)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_bytes?.p99)}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -823,14 +723,10 @@
             <div class="section stack">
                 <div class="row" style="justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Distributions</h3>
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
+                    <button type="button" class="btn btn--ghost btn--icon"
                         on:click={() => toggleAndRerender(() => (showDistributions = !showDistributions))}
-                        disabled={busy}
-                        title={showDistributions ? "Collapse distributions" : "Expand distributions"}
-                        aria-label={showDistributions ? "Collapse distributions" : "Expand distributions"}
-                    >
+                        disabled={busy} title={showDistributions ? "Collapse distributions" : "Expand distributions"}
+                        aria-label={showDistributions ? "Collapse distributions" : "Expand distributions"}>
                         {#if showDistributions}
                             <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                         {:else}
@@ -845,14 +741,10 @@
                         <div>
                             <div class="row" style="justify-content:space-between;align-items:center;">
                                 <h4 style="margin:0;">Profiles by country and gender</h4>
-                                <button
-                                    type="button"
-                                    class="btn btn--ghost btn--icon"
+                                <button type="button" class="btn btn--ghost btn--icon"
                                     on:click={() => toggleAndRerender(() => (showCountryGender = !showCountryGender))}
-                                    disabled={busy}
-                                    title={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}
-                                    aria-label={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}
-                                >
+                                    disabled={busy} title={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}
+                                    aria-label={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}>
                                     {#if showCountryGender}
                                         <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                     {:else}
@@ -883,6 +775,18 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            {#if genderKeys.length}
+                                                <tr style="font-weight:600;">
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>Total</td>
+                                                    {#each genderKeys as g}
+                                                        <td>{countryTotalsByGender[g] ?? 0}</td>
+                                                    {/each}
+                                                    <td>{countryGrandTotal}</td>
+                                                </tr>
+                                            {/if}
+
                                             {#each countriesByGender as c}
                                                 <tr>
                                                     <td>
@@ -912,14 +816,10 @@
                         <div>
                             <div class="row" style="justify-content:space-between;align-items:center;">
                                 <h4 style="margin:0;">Elo buckets by gender</h4>
-                                <button
-                                    type="button"
-                                    class="btn btn--ghost btn--icon"
+                                <button type="button" class="btn btn--ghost btn--icon"
                                     on:click={() => toggleAndRerender(() => (showEloGender = !showEloGender))}
-                                    disabled={busy}
-                                    title={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}
-                                    aria-label={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}
-                                >
+                                    disabled={busy} title={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}
+                                    aria-label={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}>
                                     {#if showEloGender}
                                         <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                                     {:else}
@@ -950,14 +850,10 @@
             <div class="section stack">
                 <div class="row" style="justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Moderation</h3>
-                    <button
-                        type="button"
-                        class="btn btn--ghost btn--icon"
+                    <button type="button" class="btn btn--ghost btn--icon"
                         on:click={() => toggleAndRerender(() => (showModeration = !showModeration))}
-                        disabled={busy}
-                        title={showModeration ? "Collapse moderation" : "Expand moderation"}
-                        aria-label={showModeration ? "Collapse moderation" : "Expand moderation"}
-                    >
+                        disabled={busy} title={showModeration ? "Collapse moderation" : "Expand moderation"}
+                        aria-label={showModeration ? "Collapse moderation" : "Expand moderation"}>
                         {#if showModeration}
                             <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
                         {:else}
@@ -968,13 +864,20 @@
 
                 {#if showModeration}
                     {#if !snapshot}
-                        <p class="text-hint">No metrics_daily rows in range, so moderation trends are empty.</p>
+                        <p class="text-hint">No snapshot available.</p>
                     {:else}
                         <div class="stack" style="gap:var(--space-4);">
                             <div>
                                 <p class="text-hint">Weekly admin actions by type (stacked).</p>
                                 <div style="height:340px;">
                                     <canvas bind:this={cvWeeklyActions}></canvas>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-hint">Weekly reports by reason_code (stacked).</p>
+                                <div style="height:340px;">
+                                    <canvas bind:this={cvWeeklyReportsReasons}></canvas>
                                 </div>
                             </div>
 
