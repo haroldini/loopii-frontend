@@ -474,61 +474,17 @@
     $: mau = data?.activity?.mau ?? data?.totals?.mau ?? null;
 
     $: totalsRows = [
-        {
-            k: "profiles_total",
-            v: data?.totals?.profiles_total ?? "-",
-            d: "Total profiles in the database.",
-        },
-        {
-            k: "profiles_active_total",
-            v: data?.totals?.profiles_active_total ?? "-",
-            d: "Profiles that pass current access gating.",
-        },
-        {
-            k: "DAU",
-            v: displayIntOrDash(dau),
-            d: "Profiles seen in the last 24 hours.",
-        },
-        {
-            k: "WAU",
-            v: displayIntOrDash(wau),
-            d: "Profiles seen in the last 7 days.",
-        },
-        {
-            k: "MAU",
-            v: displayIntOrDash(mau),
-            d: "Profiles seen in the last 30 days.",
-        },
-        {
-            k: "open_reports_total",
-            v: data?.totals?.open_reports_total ?? "-",
-            d: "Reports with status open.",
-        },
-        {
-            k: "loops_total",
-            v: data?.totals?.loops_total ?? "-",
-            d: "Total loops created.",
-        },
-        {
-            k: "decisions_total",
-            v: data?.totals?.decisions_total ?? "-",
-            d: "Total decisions stored.",
-        },
-        {
-            k: "connect_decisions_total",
-            v: data?.totals?.connect_decisions_total ?? "-",
-            d: "Decisions where connect is true.",
-        },
-        {
-            k: "profiles_invisible_total",
-            v: data?.totals?.profiles_invisible_total ?? "-",
-            d: "Profiles with is_visible set to false.",
-        },
-        {
-            k: "profiles_invisible_pct",
-            v: formatPct(data?.totals?.profiles_invisible_pct ?? 0),
-            d: "Invisible profiles as a percent of total.",
-        },
+        { k: "profiles_total", v: data?.totals?.profiles_total ?? "-", d: "Total profiles in the database." },
+        { k: "profiles_active_total", v: data?.totals?.profiles_active_total ?? "-", d: "Profiles that pass current access gating." },
+        { k: "DAU", v: displayIntOrDash(dau), d: "Profiles seen in the last 24 hours." },
+        { k: "WAU", v: displayIntOrDash(wau), d: "Profiles seen in the last 7 days." },
+        { k: "MAU", v: displayIntOrDash(mau), d: "Profiles seen in the last 30 days." },
+        { k: "open_reports_total", v: data?.totals?.open_reports_total ?? "-", d: "Reports with status open." },
+        { k: "loops_total", v: data?.totals?.loops_total ?? "-", d: "Total loops created." },
+        { k: "decisions_total", v: data?.totals?.decisions_total ?? "-", d: "Total decisions stored." },
+        { k: "connect_decisions_total", v: data?.totals?.connect_decisions_total ?? "-", d: "Decisions where connect is true." },
+        { k: "profiles_invisible_total", v: data?.totals?.profiles_invisible_total ?? "-", d: "Profiles with is_visible set to false." },
+        { k: "profiles_invisible_pct", v: formatPct(data?.totals?.profiles_invisible_pct ?? 0), d: "Invisible profiles as a percent of total." },
     ];
 
     $: completenessRows = [
@@ -548,16 +504,8 @@
     ];
 
     $: engagementRows = [
-        {
-            k: "elo_games_zero_total",
-            v: data?.engagement?.elo_games_zero_total ?? "-",
-            d: "Profiles with elo_games equal to 0.",
-        },
-        {
-            k: "elo_games_zero_pct",
-            v: formatPct(data?.engagement?.elo_games_zero_pct ?? 0),
-            d: "elo_games equal to 0 as a percent of total.",
-        },
+        { k: "elo_games_zero_total", v: data?.engagement?.elo_games_zero_total ?? "-", d: "Profiles with elo_games equal to 0." },
+        { k: "elo_games_zero_pct", v: formatPct(data?.engagement?.elo_games_zero_pct ?? 0), d: "elo_games equal to 0 as a percent of total." },
         {
             k: "decisions per new profile (7d)",
             v: num(data?.engagement?.decisions_per_new_profile?.d7?.avg_decisions_per_profile, 0).toFixed(2),
@@ -595,11 +543,7 @@
     $: genders = (data?.breakdowns?.profiles_by_gender || []).map((r) => {
         const g = (r?.gender || "other").toString().toLowerCase();
         const icon = GENDER_ICONS[g] || GENDER_ICONS.other;
-        return {
-            gender: g,
-            icon,
-            count: num(r?.count, 0),
-        };
+        return { gender: g, icon, count: num(r?.count, 0) };
     });
 
     function titleCase(s) {
@@ -609,11 +553,9 @@
     }
 </script>
 
-
 <svelte:head>
     <title>loopii • Admin • Dashboard</title>
 </svelte:head>
-
 
 <div class="stack">
     <div class="toolbar">
@@ -674,25 +616,23 @@
                 </div>
 
                 {#if showTotals}
-                    <p class="text-hint">
-                        Snapshot totals and active counts.
-                    </p>
+                    <p class="text-hint">Snapshot totals and active counts.</p>
 
-                    <div style="width:100%;overflow-x:auto;">
-                        <table class="admin-table" style="table-layout:fixed;">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table admin-table--metrics">
                             <thead>
                                 <tr>
-                                    <th style="width:320px;">metric</th>
-                                    <th style="width:180px;">value</th>
+                                    <th>metric</th>
+                                    <th>value</th>
                                     <th>description</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {#each totalsRows as r}
                                     <tr>
-                                        <td class="admin-code" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{r.k}</td>
-                                        <td style="white-space:nowrap;">{r.v}</td>
-                                        <td style="overflow-wrap:anywhere;">{r.d}</td>
+                                        <td class="admin-code">{r.k}</td>
+                                        <td>{r.v}</td>
+                                        <td>{r.d}</td>
                                     </tr>
                                 {/each}
                             </tbody>
@@ -726,18 +666,14 @@
                 {#if showEngagement}
                     <div class="stack" style="gap:var(--space-4);">
                         <div>
-                            <p class="text-hint">
-                                Weekly activity for decisions, connect decisions, and loops.
-                            </p>
+                            <p class="text-hint">Weekly activity for decisions, connect decisions, and loops.</p>
                             <div style="height:280px;">
                                 <canvas bind:this={cvWeeklyActivity}></canvas>
                             </div>
                         </div>
 
                         <div>
-                            <p class="text-hint">
-                                Weekly mutual connect percent for connect decisions.
-                            </p>
+                            <p class="text-hint">Weekly mutual connect percent for connect decisions.</p>
                             <div style="height:240px;">
                                 <canvas bind:this={cvWeeklyMutual}></canvas>
                             </div>
@@ -747,25 +683,23 @@
 
                         <div>
                             <h4 style="margin:0;">Activation</h4>
-                            <p class="text-hint">
-                                New profile behavior windows.
-                            </p>
+                            <p class="text-hint">New profile behavior windows.</p>
 
-                            <div style="width:100%;overflow-x:auto;">
-                                <table class="admin-table" style="table-layout:fixed;">
+                            <div class="admin-table-wrap">
+                                <table class="admin-table admin-table--metrics">
                                     <thead>
                                         <tr>
-                                            <th style="width:320px;">metric</th>
-                                            <th style="width:180px;">value</th>
+                                            <th>metric</th>
+                                            <th>value</th>
                                             <th>description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {#each engagementRows as r}
                                             <tr>
-                                                <td class="admin-code" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{r.k}</td>
-                                                <td style="white-space:nowrap;">{r.v}</td>
-                                                <td style="overflow-wrap:anywhere;">{r.d}</td>
+                                                <td class="admin-code">{r.k}</td>
+                                                <td>{r.v}</td>
+                                                <td>{r.d}</td>
                                             </tr>
                                         {/each}
                                     </tbody>
@@ -804,21 +738,21 @@
                             <h4 style="margin:0;">Completeness</h4>
                             <p class="text-hint">Coverage metrics and averages.</p>
 
-                            <div style="width:100%;overflow-x:auto;">
-                                <table class="admin-table" style="table-layout:fixed;">
+                            <div class="admin-table-wrap">
+                                <table class="admin-table admin-table--metrics">
                                     <thead>
                                         <tr>
-                                            <th style="width:320px;">metric</th>
-                                            <th style="width:180px;">value</th>
+                                            <th>metric</th>
+                                            <th>value</th>
                                             <th>description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {#each completenessRows as r}
                                             <tr>
-                                                <td class="admin-code" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{r.k}</td>
-                                                <td style="white-space:nowrap;">{r.v}</td>
-                                                <td style="overflow-wrap:anywhere;">{r.d}</td>
+                                                <td class="admin-code">{r.k}</td>
+                                                <td>{r.v}</td>
+                                                <td>{r.d}</td>
                                             </tr>
                                         {/each}
                                     </tbody>
@@ -832,15 +766,15 @@
                             <h4 style="margin:0;">Media size percentiles</h4>
                             <p class="text-hint">Global percentiles for image and audio sizes.</p>
 
-                            <div style="width:100%;overflow-x:auto;">
-                                <table class="admin-table">
+                            <div class="admin-table-wrap">
+                                <table class="admin-table admin-table--percentiles">
                                     <thead>
                                         <tr>
                                             <th>type</th>
-                                            <th style="width:140px;">p50</th>
-                                            <th style="width:140px;">p75</th>
-                                            <th style="width:140px;">p90</th>
-                                            <th style="width:140px;">p99</th>
+                                            <th>p50</th>
+                                            <th>p75</th>
+                                            <th>p90</th>
+                                            <th>p99</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -891,18 +825,14 @@
                 {#if showGrowth}
                     <div class="stack" style="gap:var(--space-4);">
                         <div>
-                            <p class="text-hint">
-                                Monthly profiles created for all and active now.
-                            </p>
+                            <p class="text-hint">Monthly profiles created for all and active now.</p>
                             <div style="height:260px;">
                                 <canvas bind:this={cvMonthlyProfiles}></canvas>
                             </div>
                         </div>
 
                         <div>
-                            <p class="text-hint">
-                                Monthly cumulative created totals across the window.
-                            </p>
+                            <p class="text-hint">Monthly cumulative created totals across the window.</p>
                             <div style="height:260px;">
                                 <canvas bind:this={cvMonthlyCumulative}></canvas>
                             </div>
@@ -936,18 +866,14 @@
                 {#if showRecency}
                     <div class="stack" style="gap:var(--space-4);">
                         <div>
-                            <p class="text-hint">
-                                Monthly last seen distribution using each profile's current last_seen_at.
-                            </p>
+                            <p class="text-hint">Monthly last seen distribution using each profile's current last_seen_at.</p>
                             <div style="height:240px;">
                                 <canvas bind:this={cvMonthlyLastSeen}></canvas>
                             </div>
                         </div>
 
                         <div>
-                            <p class="text-hint">
-                                Reverse cumulative view of the last seen distribution.
-                            </p>
+                            <p class="text-hint">Reverse cumulative view of the last seen distribution.</p>
                             <div style="height:240px;">
                                 <canvas bind:this={cvRecencyDecay}></canvas>
                             </div>
@@ -1031,18 +957,16 @@
                             </div>
 
                             {#if showCountries}
-                                <p class="text-hint">
-                                    Distribution by country_id with reference data when available.
-                                </p>
+                                <p class="text-hint">Distribution by country_id with reference data when available.</p>
 
-                                <div style="width:100%;overflow-x:auto;">
-                                    <table class="admin-table">
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table admin-table--countries">
                                         <thead>
                                             <tr>
-                                                <th style="width:70px;">flag</th>
-                                                <th style="width:220px;">sub_region</th>
+                                                <th>flag</th>
+                                                <th>sub_region</th>
                                                 <th>country</th>
-                                                <th style="width:120px;">count</th>
+                                                <th>count</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1057,7 +981,7 @@
                                                     </td>
                                                     <td>{c.sub_region}</td>
                                                     <td>{c.name}</td>
-                                                    <td style="white-space:nowrap;">{c.count}</td>
+                                                    <td>{c.count}</td>
                                                 </tr>
                                             {/each}
                                         </tbody>
@@ -1091,13 +1015,13 @@
                             {#if showGenders}
                                 <p class="text-hint">Distribution by profiles.gender.</p>
 
-                                <div style="width:100%;overflow-x:auto;">
-                                    <table class="admin-table">
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table admin-table--genders">
                                         <thead>
                                             <tr>
-                                                <th style="width:70px;">icon</th>
+                                                <th>icon</th>
                                                 <th>gender</th>
-                                                <th style="width:120px;">count</th>
+                                                <th>count</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1105,7 +1029,7 @@
                                                 <tr>
                                                     <td><Icon icon={g.icon} /></td>
                                                     <td>{titleCase(g.gender)}</td>
-                                                    <td style="white-space:nowrap;">{g.count}</td>
+                                                    <td>{g.count}</td>
                                                 </tr>
                                             {/each}
                                         </tbody>
