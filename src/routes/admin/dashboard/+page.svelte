@@ -4,7 +4,7 @@
     import { browser } from "$app/environment";
     import { onDestroy, onMount, tick } from "svelte";
 
-    import { UI_ICONS } from "$lib/stores/app.js";
+    import { UI_ICONS, countryMap, GENDER_ICONS } from "$lib/stores/app.js";
     import { addToast } from "$lib/stores/popups.js";
     import { adminGetDashboard } from "$lib/api/admin.js";
 
@@ -21,12 +21,17 @@
     let showTrends = true;
     let showQuality = true;
     let showModeration = true;
+    let showDistributions = true;
+
+    let showCountryGender = true;
+    let showEloGender = true;
 
     let cvDailyEvents;
     let cvWeeklyEvents;
     let cvMonthlyEvents;
     let cvDailyActivity;
     let cvWeeklyActions;
+    let cvEloByGender;
 
     let charts = [];
 
@@ -96,6 +101,34 @@
         return n > 0 && n <= 400;
     }
 
+    function genderLabel(g) {
+        const t = (g || "").toString();
+        if (!t) return "-";
+        return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+
+    function genderIcon(g) {
+        const key = (g || "other").toString().toLowerCase();
+        return GENDER_ICONS?.[key] || GENDER_ICONS?.other || UI_ICONS.user;
+    }
+
+    function countryRowDecor(r) {
+        const cm = $countryMap || {};
+        const c = r?.country_id ? cm[r.country_id] : null;
+
+        const code = (r?.code || c?.code || "").toString();
+        const flag_icon = c?.flag_icon || (code ? `circle-flags:${code.toLowerCase()}` : null);
+        const name = r?.name || c?.name || "-";
+        const sub_region = c?.sub_region || c?.subregion || c?.region || "-";
+
+        return {
+            ...r,
+            code: code || null,
+            flag_icon,
+            name,
+            sub_region,
+        };
+    }
 
     async function renderCharts() {
         if (!browser) return;
@@ -114,6 +147,9 @@
         const wLabels = weekly.map((r) => isoToYMD(r?.bucket_start));
         const mLabels = monthly.map((r) => isoToYM(r?.bucket_start));
 
+        const genderKeys = data?.breakdowns?.gender_keys || [];
+        const eloBuckets = data?.breakdowns?.elo_buckets_by_gender || [];
+
         if (showTrends && cvDailyEvents && shouldRenderDailyChart()) {
             charts.push(
                 new Chart(cvDailyEvents, {
@@ -121,6 +157,12 @@
                     data: {
                         labels: dLabels,
                         datasets: [
+                            {
+                                label: "profiles created",
+                                data: daily.map((r) => num(r?.events?.profiles_created, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
                             {
                                 label: "decisions",
                                 data: daily.map((r) => num(r?.events?.decisions_total, 0)),
@@ -136,6 +178,18 @@
                             {
                                 label: "loops",
                                 data: daily.map((r) => num(r?.events?.loops_created, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
+                            {
+                                label: "reports",
+                                data: daily.map((r) => num(r?.events?.reports_created, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
+                            {
+                                label: "admin actions",
+                                data: daily.map((r) => num(r?.events?.admin_actions_total, 0)),
                                 borderWidth: 2,
                                 tension: 0.25,
                             },
@@ -188,6 +242,12 @@
                                 borderWidth: 2,
                                 tension: 0.25,
                             },
+                            {
+                                label: "admin actions",
+                                data: weekly.map((r) => num(r?.events?.admin_actions_total, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
                         ],
                     },
                     options: {
@@ -220,6 +280,12 @@
                                 tension: 0.25,
                             },
                             {
+                                label: "connect decisions",
+                                data: monthly.map((r) => num(r?.events?.decisions_connect, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
+                            {
                                 label: "loops",
                                 data: monthly.map((r) => num(r?.events?.loops_created, 0)),
                                 borderWidth: 2,
@@ -228,6 +294,12 @@
                             {
                                 label: "reports",
                                 data: monthly.map((r) => num(r?.events?.reports_created, 0)),
+                                borderWidth: 2,
+                                tension: 0.25,
+                            },
+                            {
+                                label: "admin actions",
+                                data: monthly.map((r) => num(r?.events?.admin_actions_total, 0)),
                                 borderWidth: 2,
                                 tension: 0.25,
                             },
@@ -311,17 +383,39 @@
                 })
             );
         }
-    }
 
+        if (showDistributions && showEloGender && cvEloByGender && eloBuckets.length) {
+            charts.push(
+                new Chart(cvEloByGender, {
+                    type: "bar",
+                    data: {
+                        labels: eloBuckets.map((b) => b.label),
+                        datasets: genderKeys.map((g) => ({
+                            label: g,
+                            data: eloBuckets.map((b) => num((b?.counts || {})[g], 0)),
+                            borderWidth: 1,
+                        })),
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true, beginAtZero: true },
+                        },
+                    },
+                })
+            );
+        }
+    }
 
     async function load() {
         if (loading) return;
         loading = true;
 
         try {
-            const payload = {
-                days,
-            };
+            const payload = { days };
 
             if (startDay) payload.start_day = startDay;
             if (endDay) payload.end_day = endDay;
@@ -375,7 +469,6 @@
         destroyCharts();
     });
 
-
     $: snapshot = data?.snapshot || null;
 
     $: snapshotActivity = snapshot?.activity || {};
@@ -388,7 +481,7 @@
         { k: "computed_at", v: snapshot?.computed_at ? snapshot.computed_at : "-", d: "Timestamp when metrics were computed." },
 
         { k: "profiles_total", v: displayIntOrDash(snapshotTotals?.profiles_total), d: "Total profiles as of snapshot day." },
-        { k: "profiles_active_total", v: displayIntOrDash(snapshotTotals?.profiles_active_total), d: "Profiles that pass current access gating as of snapshot day." },
+        { k: "profiles_active_total", v: displayIntOrDash(snapshotTotals?.profiles_active_total), d: "Profiles that pass access gating as of snapshot day." },
         { k: "profiles_invisible_total", v: displayIntOrDash(snapshotTotals?.profiles_invisible_total), d: "Profiles with visibility is_visible=false as of snapshot day." },
 
         { k: "loops_total", v: displayIntOrDash(snapshotTotals?.loops_total), d: "Total loops as of snapshot day." },
@@ -418,6 +511,21 @@
     ];
 
     $: canShowDailyCharts = shouldRenderDailyChart();
+
+    $: genderKeys = data?.breakdowns?.gender_keys || [];
+
+    $: countriesByGender = (data?.breakdowns?.countries_by_gender || [])
+        .map(countryRowDecor);
+
+    $: eloBucketsByGender = data?.breakdowns?.elo_buckets_by_gender || [];
+
+    function countryCount(r, g) {
+        return num((r?.counts || {})[g], 0);
+    }
+
+    function sumDaily(fieldKey) {
+        return (data?.timeseries?.daily || []).reduce((a, r) => a + num(r?.events?.[fieldKey], 0), 0);
+    }
 </script>
 
 
@@ -439,6 +547,8 @@
 
         <div class="toolbar__group" style="gap:var(--space-2);">
             <select disabled={busy} on:change={onDaysChange} aria-label="Days range">
+                <option value="7" selected={days === 7}>7d</option>
+                <option value="14" selected={days === 14}>14d</option>
                 <option value="30" selected={days === 30}>30d</option>
                 <option value="90" selected={days === 90}>90d</option>
                 <option value="365" selected={days === 365}>365d</option>
@@ -491,14 +601,16 @@
         <div class="page__center">
             <Icon icon={UI_ICONS.animLoadingDots} class="page__icon" />
         </div>
-    {:else if !snapshot}
-        <section class="card">
-            <div class="section stack">
-                <h3 style="margin:0;">No metrics available</h3>
-                <p class="text-hint">No MetricsDaily rows exist for the requested date range.</p>
-            </div>
-        </section>
     {:else}
+        {#if !snapshot}
+            <section class="card">
+                <div class="section stack">
+                    <h3 style="margin:0;">No metrics available</h3>
+                    <p class="text-hint">No MetricsDaily rows exist for the requested date range. Distributions still show live from Profile.</p>
+                </div>
+            </section>
+        {/if}
+
         <!-- Totals -->
         <section class="card">
             <div class="section stack">
@@ -521,28 +633,32 @@
                 </div>
 
                 {#if showTotals}
-                    <p class="text-hint">Snapshot values from the latest available day inside the requested range.</p>
+                    {#if !snapshot}
+                        <p class="text-hint">No snapshot available (metrics_daily empty for this range).</p>
+                    {:else}
+                        <p class="text-hint">Snapshot values from the latest available day inside the requested range.</p>
 
-                    <div class="admin-table-wrap">
-                        <table class="admin-table admin-table--metrics">
-                            <thead>
-                                <tr>
-                                    <th>metric</th>
-                                    <th>value</th>
-                                    <th>description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {#each totalsRows as r}
+                        <div class="admin-table-wrap">
+                            <table class="admin-table admin-table--metrics">
+                                <thead>
                                     <tr>
-                                        <td class="admin-code">{r.k}</td>
-                                        <td>{r.v}</td>
-                                        <td>{r.d}</td>
+                                        <th>metric</th>
+                                        <th>value</th>
+                                        <th>description</th>
                                     </tr>
-                                {/each}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {#each totalsRows as r}
+                                        <tr>
+                                            <td class="admin-code">{r.k}</td>
+                                            <td>{r.v}</td>
+                                            <td>{r.d}</td>
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
+                        </div>
+                    {/if}
                 {/if}
             </div>
         </section>
@@ -569,43 +685,47 @@
                 </div>
 
                 {#if showTrends}
-                    <div class="stack" style="gap:var(--space-4);">
-                        {#if !canShowDailyCharts}
-                            <p class="text-hint">
-                                Daily charts are hidden for large ranges (>{400} days) to avoid heavy rendering. Weekly/monthly remain available.
-                            </p>
-                        {:else}
+                    {#if !snapshot}
+                        <p class="text-hint">No metrics_daily rows in range, so trend charts are empty.</p>
+                    {:else}
+                        <div class="stack" style="gap:var(--space-4);">
+                            {#if !canShowDailyCharts}
+                                <p class="text-hint">
+                                    Daily charts are hidden for large ranges (>{400} days) to avoid heavy rendering. Weekly/monthly remain available.
+                                </p>
+                            {:else}
+                                <div>
+                                    <p class="text-hint">Daily events (all event counters).</p>
+                                    <div style="height:320px;">
+                                        <canvas bind:this={cvDailyEvents}></canvas>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <p class="text-hint">Daily activity (DAU/WAU/MAU).</p>
+                                    <div style="height:260px;">
+                                        <canvas bind:this={cvDailyActivity}></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="u-divider"></div>
+                            {/if}
+
                             <div>
-                                <p class="text-hint">Daily events (decisions, connect decisions, loops).</p>
-                                <div style="height:280px;">
-                                    <canvas bind:this={cvDailyEvents}></canvas>
+                                <p class="text-hint">Weekly events (aggregated from daily rows).</p>
+                                <div style="height:320px;">
+                                    <canvas bind:this={cvWeeklyEvents}></canvas>
                                 </div>
                             </div>
 
                             <div>
-                                <p class="text-hint">Daily activity (DAU/WAU/MAU).</p>
-                                <div style="height:260px;">
-                                    <canvas bind:this={cvDailyActivity}></canvas>
+                                <p class="text-hint">Monthly events (aggregated from daily rows).</p>
+                                <div style="height:320px;">
+                                    <canvas bind:this={cvMonthlyEvents}></canvas>
                                 </div>
                             </div>
-
-                            <div class="u-divider"></div>
-                        {/if}
-
-                        <div>
-                            <p class="text-hint">Weekly events (aggregated from daily rows).</p>
-                            <div style="height:300px;">
-                                <canvas bind:this={cvWeeklyEvents}></canvas>
-                            </div>
                         </div>
-
-                        <div>
-                            <p class="text-hint">Monthly events (aggregated from daily rows).</p>
-                            <div style="height:300px;">
-                                <canvas bind:this={cvMonthlyEvents}></canvas>
-                            </div>
-                        </div>
-                    </div>
+                    {/if}
                 {/if}
             </div>
         </section>
@@ -632,62 +752,193 @@
                 </div>
 
                 {#if showQuality}
-                    <div class="stack" style="gap:var(--space-4);">
-                        <div>
-                            <h4 style="margin:0;">Completeness</h4>
-                            <p class="text-hint">Snapshot coverage metrics and averages.</p>
+                    {#if !snapshot}
+                        <p class="text-hint">No snapshot available (metrics_daily empty for this range).</p>
+                    {:else}
+                        <div class="stack" style="gap:var(--space-4);">
+                            <div>
+                                <h4 style="margin:0;">Completeness</h4>
+                                <p class="text-hint">Snapshot coverage metrics and averages.</p>
 
-                            <div class="admin-table-wrap">
-                                <table class="admin-table admin-table--metrics">
-                                    <thead>
-                                        <tr>
-                                            <th>metric</th>
-                                            <th>value</th>
-                                            <th>description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {#each completenessRows as r}
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table admin-table--metrics">
+                                        <thead>
                                             <tr>
-                                                <td class="admin-code">{r.k}</td>
-                                                <td>{r.v}</td>
-                                                <td>{r.d}</td>
+                                                <th>metric</th>
+                                                <th>value</th>
+                                                <th>description</th>
                                             </tr>
-                                        {/each}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {#each completenessRows as r}
+                                                <tr>
+                                                    <td class="admin-code">{r.k}</td>
+                                                    <td>{r.v}</td>
+                                                    <td>{r.d}</td>
+                                                </tr>
+                                            {/each}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+
+                            <div class="u-divider"></div>
+
+                            <div>
+                                <h4 style="margin:0;">Media size percentiles</h4>
+                                <p class="text-hint">Snapshot percentiles (bytes) for image/audio sizes.</p>
+
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table admin-table--percentiles">
+                                        <thead>
+                                            <tr>
+                                                <th>type</th>
+                                                <th>p90</th>
+                                                <th>p99</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>image</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_p90 ?? 0)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.image_size_p99 ?? 0)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>audio</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_p90 ?? 0)}</td>
+                                                <td>{formatBytes(snapshotPercentiles?.audio_size_p99 ?? 0)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {/if}
+                {/if}
+            </div>
+        </section>
+
+        <!-- Distributions -->
+        <section class="card">
+            <div class="section stack">
+                <div class="row" style="justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0;">Distributions</h3>
+                    <button
+                        type="button"
+                        class="btn btn--ghost btn--icon"
+                        on:click={() => toggleAndRerender(() => (showDistributions = !showDistributions))}
+                        disabled={busy}
+                        title={showDistributions ? "Collapse distributions" : "Expand distributions"}
+                        aria-label={showDistributions ? "Collapse distributions" : "Expand distributions"}
+                    >
+                        {#if showDistributions}
+                            <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                        {:else}
+                            <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                        {/if}
+                    </button>
+                </div>
+
+                {#if showDistributions}
+                    <div class="stack" style="gap:var(--space-4);">
+                        <!-- Country x gender -->
+                        <div>
+                            <div class="row" style="justify-content:space-between;align-items:center;">
+                                <h4 style="margin:0;">Profiles by country and gender</h4>
+                                <button
+                                    type="button"
+                                    class="btn btn--ghost btn--icon"
+                                    on:click={() => toggleAndRerender(() => (showCountryGender = !showCountryGender))}
+                                    disabled={busy}
+                                    title={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}
+                                    aria-label={showCountryGender ? "Collapse country/gender" : "Expand country/gender"}
+                                >
+                                    {#if showCountryGender}
+                                        <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                    {:else}
+                                        <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                    {/if}
+                                </button>
+                            </div>
+
+                            {#if showCountryGender}
+                                <p class="text-hint">Live snapshot from Profile. Columns are gender keys present in the database.</p>
+
+                                <div class="admin-table-wrap">
+                                    <table class="admin-table admin-table--countries">
+                                        <thead>
+                                            <tr>
+                                                <th>flag</th>
+                                                <th>sub_region</th>
+                                                <th>country</th>
+                                                {#each genderKeys as g}
+                                                    <th>
+                                                        <span class="row" style="gap:0.35rem;align-items:center;">
+                                                            <Icon icon={genderIcon(g)} />
+                                                            <span>{genderLabel(g)}</span>
+                                                        </span>
+                                                    </th>
+                                                {/each}
+                                                <th>total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {#each countriesByGender as c}
+                                                <tr>
+                                                    <td>
+                                                        {#if c.flag_icon}
+                                                            <Icon icon={c.flag_icon} />
+                                                        {:else}
+                                                            -
+                                                        {/if}
+                                                    </td>
+                                                    <td>{c.sub_region}</td>
+                                                    <td>{c.name}</td>
+                                                    {#each genderKeys as g}
+                                                        <td>{countryCount(c, g)}</td>
+                                                    {/each}
+                                                    <td>{num(c.total, 0)}</td>
+                                                </tr>
+                                            {/each}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {/if}
                         </div>
 
                         <div class="u-divider"></div>
 
+                        <!-- Elo by gender -->
                         <div>
-                            <h4 style="margin:0;">Media size percentiles</h4>
-                            <p class="text-hint">Snapshot percentiles (bytes) for image/audio sizes.</p>
-
-                            <div class="admin-table-wrap">
-                                <table class="admin-table admin-table--percentiles">
-                                    <thead>
-                                        <tr>
-                                            <th>type</th>
-                                            <th>p90</th>
-                                            <th>p99</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>image</td>
-                                            <td>{formatBytes(snapshotPercentiles?.image_size_p90 ?? 0)}</td>
-                                            <td>{formatBytes(snapshotPercentiles?.image_size_p99 ?? 0)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>audio</td>
-                                            <td>{formatBytes(snapshotPercentiles?.audio_size_p90 ?? 0)}</td>
-                                            <td>{formatBytes(snapshotPercentiles?.audio_size_p99 ?? 0)}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="row" style="justify-content:space-between;align-items:center;">
+                                <h4 style="margin:0;">Elo buckets by gender</h4>
+                                <button
+                                    type="button"
+                                    class="btn btn--ghost btn--icon"
+                                    on:click={() => toggleAndRerender(() => (showEloGender = !showEloGender))}
+                                    disabled={busy}
+                                    title={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}
+                                    aria-label={showEloGender ? "Collapse elo/gender" : "Expand elo/gender"}
+                                >
+                                    {#if showEloGender}
+                                        <Icon icon={UI_ICONS.chevronUp} class="btn__icon" />
+                                    {:else}
+                                        <Icon icon={UI_ICONS.chevronDown} class="btn__icon" />
+                                    {/if}
+                                </button>
                             </div>
+
+                            {#if showEloGender}
+                                <p class="text-hint">Live snapshot from Profile. Stacked bars show gender composition within each 100-point Elo bucket.</p>
+
+                                {#if !eloBucketsByGender.length}
+                                    <p class="text-hint">No profiles available to compute Elo distribution.</p>
+                                {:else}
+                                    <div style="height:340px;">
+                                        <canvas bind:this={cvEloByGender}></canvas>
+                                    </div>
+                                {/if}
+                            {/if}
                         </div>
                     </div>
                 {/if}
@@ -716,38 +967,42 @@
                 </div>
 
                 {#if showModeration}
-                    <div class="stack" style="gap:var(--space-4);">
-                        <div>
-                            <p class="text-hint">Weekly admin actions by type (stacked).</p>
-                            <div style="height:340px;">
-                                <canvas bind:this={cvWeeklyActions}></canvas>
+                    {#if !snapshot}
+                        <p class="text-hint">No metrics_daily rows in range, so moderation trends are empty.</p>
+                    {:else}
+                        <div class="stack" style="gap:var(--space-4);">
+                            <div>
+                                <p class="text-hint">Weekly admin actions by type (stacked).</p>
+                                <div style="height:340px;">
+                                    <canvas bind:this={cvWeeklyActions}></canvas>
+                                </div>
+                            </div>
+
+                            <div class="admin-table-wrap">
+                                <table class="admin-table admin-table--metrics">
+                                    <thead>
+                                        <tr>
+                                            <th>metric</th>
+                                            <th>value</th>
+                                            <th>description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="admin-code">reports_created (range sum)</td>
+                                            <td>{displayIntOrDash(sumDaily("reports_created"))}</td>
+                                            <td>Total reports created across the requested range (sum of daily rows).</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="admin-code">admin_actions_total (range sum)</td>
+                                            <td>{displayIntOrDash(sumDaily("admin_actions_total"))}</td>
+                                            <td>Total admin actions across the requested range (sum of daily rows).</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-
-                        <div class="admin-table-wrap">
-                            <table class="admin-table admin-table--metrics">
-                                <thead>
-                                    <tr>
-                                        <th>metric</th>
-                                        <th>value</th>
-                                        <th>description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="admin-code">reports_created (range sum)</td>
-                                        <td>{displayIntOrDash((data?.timeseries?.daily || []).reduce((a, r) => a + num(r?.events?.reports_created, 0), 0))}</td>
-                                        <td>Total reports created across the requested range (sum of daily rows).</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="admin-code">admin_actions_total (range sum)</td>
-                                        <td>{displayIntOrDash((data?.timeseries?.daily || []).reduce((a, r) => a + num(r?.events?.admin_actions_total, 0), 0))}</td>
-                                        <td>Total admin actions across the requested range (sum of daily rows).</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    {/if}
                 {/if}
             </div>
         </section>

@@ -2,7 +2,7 @@
 import request from "$lib/utils/request.js";
 
 
-// Get admin dashboard stats
+// Get admin dashboard stats (timeseries + snapshot + breakdowns)
 export function adminGetDashboard({ days = 365, start_day = null, end_day = null } = {}) {
     const q = new URLSearchParams();
 
