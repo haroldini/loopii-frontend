@@ -98,7 +98,7 @@
 
     function shouldRenderDailyChart() {
         const n = (data?.timeseries?.daily || []).length;
-        return n > 0 && n <= 400;
+        return n <= 400;
     }
 
     function genderLabel(g) {
@@ -578,8 +578,8 @@
                 style="max-width: 10.5rem;"
             />
 
-            <button type="button" class="btn btn--ghost" on:click={clearDates} disabled={busy}>
-                Clear
+            <button type="button" class="btn btn--ghost btn--icon" on:click={clearDates} disabled={busy}>
+                <Icon icon={UI_ICONS.close} class="btn__icon" />
             </button>
 
             <button
