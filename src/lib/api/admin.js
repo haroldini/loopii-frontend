@@ -2,10 +2,13 @@
 import request from "$lib/utils/request.js";
 
 
-// Get admin dashboard stats (timeseries + aggregates)
-export function adminGetDashboard({ weeks = 12 } = {}) {
+// Get admin dashboard stats
+export function adminGetDashboard({ days = 365, start_day = null, end_day = null } = {}) {
     const q = new URLSearchParams();
-    if (weeks) q.set("weeks", String(weeks));
+
+    if (days) q.set("days", String(days));
+    if (start_day) q.set("start_day", String(start_day));
+    if (end_day) q.set("end_day", String(end_day));
 
     const qs = q.toString();
     return request(`/admin/dashboard${qs ? `?${qs}` : ""}`, { method: "GET" });
