@@ -192,6 +192,7 @@ export const UI_ICONS = {
     "swap": "mdi:swap-horizontal",
     "close": "meteor-icons:xmark",
     "heart": "mdi:heart",
+    "heartOutline": "mdi:heart-outline",
     "tune": "mdi:tune-variant",
     "signUp": "mdi:emoticon-plus-outline",
     "arrowLeft": "mdi:arrow-left",
@@ -219,6 +220,10 @@ export const UI_ICONS = {
 
     "pinAdd": "mdi:map-marker",
     "pinRemove": "mdi:map-marker-remove",
+
+    "compass": "mdi-compass-outline",
+    "sticker": "mdi-sticker-emoji",
+    "starFace": "mdi:star-face",
 };
 
 // ---------------- Reference Data ---------------- //

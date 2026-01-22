@@ -37,6 +37,10 @@ b {
     color: var(--accent);
 }
 
+.text-secondary {
+    color: var(--accent-secondary);
+}
+
 .text-success {
     color: var(--success);
 }

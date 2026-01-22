@@ -19,7 +19,7 @@
     import { initLoopRequestsStore } from "$lib/stores/loopRequests.js";
     import { initPeerStore } from "$lib/stores/feed.js";
     import { profileFormState, submissionProgress } from "$lib/stores/createProfile.js";
-    import { subPage } from "$lib/stores/authForm.js";
+    import { subPage, authFormStatus } from "$lib/stores/authForm.js";
     import { addToast } from "$lib/stores/popups.js";
 
     import Auth from "$lib/components/Auth.svelte";
@@ -87,7 +87,7 @@
     // ---------------- Page metadata ---------------- //
     const pageTitle = $derived.by(() => {
         if ($referencesStatus === "error" || $authState === "error" || $profileState === "error") {
-            return "loopii";
+            return "loopii • Find mutuals, friends, and partners";
         }
 
         if (
@@ -96,29 +96,33 @@
             $authState === "loading" ||
             $profileState === "loading"
         ) {
-            return "loopii";
+            return "loopii • Find mutuals, friends, and partners";
+        }
+
+        if ($authState === "unauthenticated" && $authFormStatus === "landing") {
+            return "loopii • Find mutuals, friends, and partners";
         }
 
         if ($authState === "unauthenticated" && $subPage === "login") {
-            return "loopii • Log In";
+            return "loopii • Log in";
         }
 
         if ($authState === "unauthenticated" && $subPage === "signup") {
-            return "loopii • Sign Up";
+            return "loopii • Sign up";
         }
 
         if (
             $authState === "recovery" || 
             $authState === "unauthenticated" && ["requestReset", "reset"].includes($subPage)
         ) {
-            return "loopii • Reset Password";
+            return "loopii • Reset password";
         }
 
         if ($authState === "authenticated" && $profileState === "missing") {
-            return "loopii • Create Profile";
+            return "loopii • Create profile";
         }
 
-        return "loopii";
+        return "loopii • Find mutuals, friends, and partners";
     });
 
     export const updateThemeColor = () => {
@@ -359,9 +363,7 @@
             <h1 class="gate__brand text-heading">loop<span class="logo--i">ii</span></h1>
 
             <section class="card">
-                <div class="section stack">
-                    <Auth />
-                </div>
+                <Auth />
             </section>
         </div>
     </div>

@@ -1,6 +1,6 @@
 
 <script>
-    import { onDestroy } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { goto } from "$app/navigation";
     import Icon from "@iconify/svelte";
 
@@ -18,13 +18,31 @@
     } from "$lib/stores/authForm.js";
     import { solveCaptcha } from "$lib/utils/captcha.js";
     import { isCaptchaRequired } from "$lib/stores/auth.js";
-
+    import LandingGate from "$lib/components/LandingGate.svelte";
 
     let acceptedLegal = false;
-
+    
     $: if ($subPage !== "signup") {
         acceptedLegal = false;
     }
+    
+    // Landing gate logic
+    function showLanding() {
+        authFormStatus.set("landing");
+        toggleForm(false);
+    }
+
+    function hideLanding() {
+        authFormStatus.set("");
+        toggleForm(true);
+    }
+
+    onMount(() => {
+        // Only show landing for normal unauthenticated entry.
+        if ($authState === "unauthenticated" && !["requestReset", "reset"].includes($subPage) && $authFormStatus === "") {
+            showLanding();
+        }
+    });
 
     // Unmounting logic
     onDestroy(() => {
@@ -200,8 +218,29 @@
 
 <!-- FORM STATES -->
 {#if $showForm}
-    <h2>{pageTitles[$subPage] ?? "Unknown Page"}</h2>
-    <form class="form" on:submit|preventDefault={handleSubmit}>
+    <header class="bar bar--header auth__header">
+        <div class="bar__inner">
+            <div class="bar__title">
+                <h2 class="auth__title">{pageTitles[$subPage] ?? "Account"}</h2>
+            </div>
+
+            <div class="bar__actions">
+                {#if ["login", "signup"].includes($subPage)}
+                    <button
+                        type="button"
+                        class="btn btn--ghost btn--icon"
+                        on:click={showLanding}
+                        aria-label="Back to landing"
+                        title="Back"
+                    >
+                        <Icon icon={UI_ICONS.arrowLeft} class="btn__icon" />
+                    </button>
+                {/if}
+            </div>
+        </div>
+    </header>
+    <div class="separator"></div>
+    <form class="form section stack" on:submit|preventDefault={handleSubmit}>
         {#if $subPage !== "reset"}
             <div class="field">
                 <label class="field__label" for="auth-email">Email</label>
@@ -286,28 +325,28 @@
             </p>
         {/if}
 
-{#if $subPage === "signup"}
-    <label class="form__legal" for="auth-accept-legal">
-        <span>
-            I agree to the
-            <a class="text-link" href="/terms" target="_blank" rel="noreferrer">Terms</a>
-            and
-            <a class="text-link" href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
-        </span>
+        {#if $subPage === "signup"}
+            <label class="form__legal" for="auth-accept-legal">
+                <span>
+                    I agree to the
+                    <a class="text-link" href="/terms" target="_blank" rel="noreferrer">Terms</a>
+                    and
+                    <a class="text-link" href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+                </span>
 
-        <input
-            id="auth-accept-legal"
-            type="checkbox"
-            checked={acceptedLegal}
-            on:change={(e) => (acceptedLegal = e.target.checked)}
-        />
-    </label>
-{/if}
+                <input
+                    id="auth-accept-legal"
+                    type="checkbox"
+                    checked={acceptedLegal}
+                    on:change={(e) => (acceptedLegal = e.target.checked)}
+                />
+            </label>
+        {/if}
 
         {#if $error}
             <p class="text-danger">{$error}</p>
         {/if}
-        
+            
         <div class="form__actions">
             {#if $subPage === "signup"}
                 <div class="actionbar">                    
@@ -387,7 +426,9 @@
 
 <!-- TERMINAL / RESULT STATES -->
 {:else}
-    {#if $authFormStatus === "signedUp"}
+    {#if $authFormStatus === "landing"}
+        <LandingGate onContinue={hideLanding} />
+    {:else if  $authFormStatus === "signedUp"}
         <Icon icon={UI_ICONS.animEmailSent} class="icon--large" />
         <p>
             <span class="text-success text-fw-semibold">Confirmation email sent.</span> Check your inbox to verify your account.
@@ -427,7 +468,9 @@
         <button
             type="button"
             class="btn btn--primary btn--block"
-            on:click={() => window.location.replace("/")}
+            on:click={() => {
+                window.location.replace("/");
+            }}
         >
             <Icon icon={UI_ICONS.arrowRight} class="btn__icon" />
             Continue
@@ -450,3 +493,19 @@
         </button>
     {/if}
 {/if}
+
+
+<style>
+    .auth__title {
+        margin: 0;
+    }
+
+    .auth__header {
+        padding-bottom: var(--space-2);
+        padding-top: var(--space-2);
+        background-color: inherit;
+        border-radius: inherit;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+</style>
