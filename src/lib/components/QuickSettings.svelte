@@ -192,21 +192,22 @@
             <header class="bar bar--header overlay__header">
                 <div class="bar__inner">
                     <div class="bar__title">
-                        <h3>Settings</h3>
+                        <h2 class="text-heading">Settings</h2>
                         {#if $authState === "authenticated" && $user}
                             <p class="text-hint">Signed in as <strong>{$user?.email || ""}</strong></p>
                         {/if}
                     </div>
                 </div>
-
-                <button
-                    type="button"
-                    class="btn btn--ghost btn--icon"
-                    aria-label="Close"
-                    on:click={() => close()}
-                >
-                    <Icon icon={UI_ICONS.close} class="btn__icon" />
-                </button>
+                <div class="bar__actions">
+                    <button
+                        type="button"
+                        class="btn btn--ghost btn--icon"
+                        aria-label="Close"
+                        on:click={() => close()}
+                    >
+                        <Icon icon={UI_ICONS.close} class="btn__icon" />
+                    </button>
+                </div>
             </header>
 
             <main class="overlay__body quick-settings__body">
