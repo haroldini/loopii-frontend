@@ -30,7 +30,7 @@
     <header class="bar bar--header">
         <div class="bar__inner">
             <div class="bar__title">
-                <h1 class="text-logo">loop<span class="logo--i">ii</span></h1>
+                <h1 class="text-heading text-logo">loop<span class="logo--i">ii</span></h1>
             </div>
 
             <div class="bar__actions">
