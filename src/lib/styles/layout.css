@@ -24,6 +24,10 @@
     width: 100%;
 }
 
+.grid > * {
+    min-width: 0;
+}
+
 .grid-2 {
     grid-template-columns: repeat(2, 1fr);
 }

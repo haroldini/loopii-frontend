@@ -235,15 +235,13 @@
                 <div class="grid grid-3">
                     {#each $loopRequests as entry}
                         {#if entry?.profile}
-                            <div class="stack u-aspect-square">
-                                <ProfileCardPreview
-                                    profile={entry.profile}
-                                    decision={entry.decision}
-                                    on:expand={() => expandRequest(entry)}
-                                    on:accept={() => handleAccept(entry)}
-                                    on:decline={() => handleDecline(entry)}
-                                />
-                            </div>
+							<ProfileCardPreview
+								profile={entry.profile}
+								decision={entry.decision}
+								on:expand={() => expandRequest(entry)}
+								on:accept={() => handleAccept(entry)}
+								on:decline={() => handleDecline(entry)}
+							/>
                         {/if}
                     {/each}
                 </div>
