@@ -66,13 +66,29 @@
         }
     }
 
+    function destroyWidget() {
+        try {
+            if (window.hcaptcha && widgetId !== null) {
+                window.hcaptcha.remove(widgetId);
+            }
+        } catch {}
+
+        widgetId = null;
+
+        try {
+            container?.replaceChildren();
+        } catch {}
+
+        emit("");
+    }
+
     onMount(async () => {
         await loadScriptOnce();
         renderWidget();
     });
 
     onDestroy(() => {
-        widgetId = null;
+        destroyWidget();
     });
 </script>
 
