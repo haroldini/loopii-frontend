@@ -363,7 +363,7 @@
     align-items: center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 951px) {
     .app-nav {
         top: 0;
         bottom: auto;
@@ -377,7 +377,7 @@
     }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 950px) {
     .app-nav {
         top: auto;
         bottom: 0;

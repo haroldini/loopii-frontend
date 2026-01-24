@@ -7,6 +7,7 @@
     position: fixed;
     inset: 0;
     z-index: var(--z-overlay);
+    height: var(--app-height);
 
     display: flex;
     align-items: stretch;
@@ -44,7 +45,7 @@
 
 .overlay.overlay--windowed .overlay__panel {
     width: min(92vw, 1500px);
-    max-height: min(92vh, 900px);
+    max-height: min(calc(var(--app-height) * 0.92), 900px);
 
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-2);
@@ -106,7 +107,7 @@
     max-width: 32rem;
     width: min(32rem, calc(100% - var(--space-4)));
     height: auto;
-    max-height: min(92vh, 900px);
+    max-height: min(calc(var(--app-vh) * 92), 900px);
     margin: 0 auto;
 }
 
@@ -266,7 +267,7 @@
 .overlay--windowed .captcha__panel {
     width: min(32rem, calc(100% - var(--space-2)));
     max-width: 32rem;
-    max-height: min(92vh, 900px);
+    max-height: min(calc(var(--app-vh) * 92), 900px);
     height: fit-content;
     margin: 0 auto;
 }
@@ -473,7 +474,7 @@
     max-width: 32rem;
     width: min(32rem, calc(100% - var(--space-4)));
     height: auto;
-    max-height: min(92vh, 900px);
+    max-height: min(calc(var(--app-vh) * 92), 900px);
     margin: 0 auto;
 }
 
@@ -496,7 +497,7 @@
 .overlay--windowed .report-overlay__panel {
     max-width: 32rem;
     width: min(32rem, calc(100% - var(--space-4)));
-    max-height: min(92vh, 900px);
+    max-height: min(calc(var(--app-vh) * 92), 900px);
     height: fit-content;
     margin: 0 auto;
 }
