@@ -9,7 +9,6 @@
 
     --app-height: 100vh;
     --app-height: 100svh;
-    --app-height: 100dvh;
     --app-vh: calc(var(--app-height) / 100);
 
     /* Global colors */
