@@ -23,7 +23,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-
+        
         padding-top: calc(var(--space-3) + var(--nav-height));
         gap: calc(var(--space-2) + var(--space-1));
 

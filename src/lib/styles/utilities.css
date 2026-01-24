@@ -44,5 +44,5 @@
 }
 
 .u-fill-vh {
-    min-height: 80vh;
+    min-height: calc(var(--app-vh) * 80);
 }

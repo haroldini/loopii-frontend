@@ -7,6 +7,11 @@
     --font-size-root: 12px;
     --font-logo: "Pixelify Sans", sans-serif;
 
+    --app-height: 100vh;
+    --app-height: 100svh;
+    --app-height: 100dvh;
+    --app-vh: calc(var(--app-height) / 100);
+
     /* Global colors */
     --color-black: #121212;
     --gender-male:   #4DA3FF;
@@ -87,8 +92,8 @@
 @media (max-width: 300px) {
     :root {
         --font-size-root: 12px;
-        --nav-height: max(4.5rem, 9vh);
-        --header-height: max(4.5rem, 9vh);
+        --nav-height: max(4.5rem, calc(var(--app-vh) * 9));
+        --header-height: max(4.5rem, calc(var(--app-vh) * 9));
     }
 }
 
@@ -96,8 +101,8 @@
 @media (min-width: 301px) and (max-width: 380px) {
     :root {
         --font-size-root: 13px;
-        --nav-height: max(4.5rem, 9vh);
-        --header-height: max(4.5rem, 9vh);
+        --nav-height: max(4.5rem, calc(var(--app-vh) * 9));
+        --header-height: max(4.5rem, calc(var(--app-vh) * 9));
     }
 }
 
@@ -105,8 +110,8 @@
 @media (min-width: 381px) and (max-width: 480px) {
     :root {
         --font-size-root: 14px;
-        --nav-height: max(4.5rem, 9vh);
-        --header-height: max(4.5rem, 9vh);
+        --nav-height: max(4.5rem, calc(var(--app-vh) * 9));
+        --header-height: max(4.5rem, calc(var(--app-vh) * 9));
     }
 }
 
@@ -117,15 +122,21 @@
     }
 }
 
-/* Desktop and up: nav moves to top */
-@media (min-width: 768px) {
+/* Tablet */
+@media (min-width: 768px) and (max-width: 950px) {
+    :root {
+        --font-size-root: 15px;
+    }
+}
+
+/* Desktop and up */
+@media (min-width: 951px) {
     :root {
         --font-size-root: 15px;
         --nav-top-space: calc(var(--nav-height) + var(--safe-top));
         --nav-bottom-space: 0px;
     }
 }
-
 
 /* ===== Default style (Pixel) ===== */
 :root {
