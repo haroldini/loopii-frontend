@@ -1,6 +1,6 @@
 
 <script>
-    import { onDestroy, tick } from "svelte";
+    import { onDestroy, onMount, tick } from "svelte";
     import Icon from "@iconify/svelte";
     import { UI_ICONS } from "$lib/stores/app.js"; 
     import { HCAPTCHA_SITEKEY } from "$lib/utils/env.js";
@@ -16,6 +16,18 @@
 
     let busy = false;
     let message = null;
+
+    // Compact captcha on small screens
+    let captchaSize = "normal";
+    onMount(() => {
+        const mq = window.matchMedia("(max-width: 340px)");
+        const setSize = () => {
+            captchaSize = mq.matches ? "compact" : "normal";
+        };
+        setSize();
+        mq.addEventListener?.("change", setSize);
+        return () => mq.removeEventListener?.("change", setSize);
+    });
 
     // Promise hooks
     let resolveFn = null;
@@ -69,8 +81,8 @@
         const res = resolveFn;
         const token = captchaToken;
 
-        cleanup();
         closeOverlay();
+        cleanup();
 
         await tick();
         res?.(token);
@@ -83,7 +95,7 @@
             return Promise.reject(new Error("captcha_already_open"));
         }
 
-        message = opts.message || message;
+        message = opts.message ?? null;
 
         openOverlay();
 
@@ -113,7 +125,7 @@
     closedClass="u-hidden"
     renderOpenOnly={false}
     ariaLabel="Captcha verification"
-    mode="windowed"
+    windowedAt={560}
     on:requestClose={() => cancel("closed")}
 >
     {#if isOpen}
@@ -139,6 +151,7 @@
                     <HCaptcha
                         sitekey={HCAPTCHA_SITEKEY}
                         theme="dark"
+                        size={captchaSize}
                         on:token={onCaptchaToken}
                     />
                 </div>

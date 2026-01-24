@@ -16,6 +16,9 @@
     .popups {
         position: fixed;
         inset: 0;
+        overflow: hidden;
+        overflow-x: clip;
+
         display: flex;
         flex-direction: column;
         align-items: center;

@@ -63,8 +63,13 @@
 /* ===== App shell ===== */
 
 .app {
+    position: fixed;
+    inset: 0;
+
     /* lock the app to the viewport; scrolling happens inside pages */
+    height: 100vh;
     height: 100svh;
+    height: 100dvh;
     box-sizing: border-box;
 
     background: var(--bg-app);
@@ -99,8 +104,12 @@
 /* ===== Gate screens (auth / create profile / loading) ===== */
 
 .gate {
+    position: fixed;
+    inset: 0;
+    
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
     min-height: 0;
     display: flex;
     overflow-y: auto;
