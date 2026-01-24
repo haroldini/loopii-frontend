@@ -36,59 +36,6 @@
     let captchaOverlay = $state(null);
 
 
-    // ---------------- App height init ---------------- //
-    function installAppHeightSync() {
-        let maxHeight = 0;
-
-        const apply = (h) => {
-            maxHeight = h;
-
-            document.documentElement.style.setProperty("--app-height", `${maxHeight}px`);
-            document.documentElement.style.setProperty("--app-vh", `${maxHeight / 100}px`);
-        };
-
-        const setSoft = () => {
-            const h = Math.round(window.innerHeight);
-
-            // Ignore keyboard + other shrink events
-            if (h <= maxHeight) return;
-
-            apply(h);
-        };
-
-        const setHard = () => {
-            // Used for real layout changes like rotation
-            const h = Math.round(window.innerHeight);
-            apply(h);
-        };
-
-        const rafSoft = () => requestAnimationFrame(setSoft);
-        const rafHard = () => requestAnimationFrame(setHard);
-
-        const onPageShow = () => {
-            rafSoft();
-
-            // One-time scroll correction after resume/autofill/biometrics
-            try { document.scrollingElement.scrollTop = 0; } catch {}
-            try { window.scrollTo(0, 0); } catch {}
-        };
-
-        // Initial
-        setHard();
-        requestAnimationFrame(setHard);
-
-        window.addEventListener("resize", rafSoft, { passive: true });
-        window.addEventListener("pageshow", onPageShow, { passive: true });
-        window.addEventListener("orientationchange", rafHard, { passive: true });
-
-        return () => {
-            window.removeEventListener("resize", rafSoft);
-            window.removeEventListener("pageshow", onPageShow);
-            window.removeEventListener("orientationchange", rafHard);
-        };
-    }
-
-
     // ---------------- Account access gating ---------------- //
 
     const accessStatus = $derived.by(() => {
@@ -190,7 +137,6 @@
 
     // ---------------- Initial setup ---------------- //
     onMount(() => {
-        const uninstall = installAppHeightSync();
         registerCaptchaOverlay(captchaOverlay); 
         initReferences();
         initAuth();
@@ -219,7 +165,6 @@
 
         return () => {
             unsubscribeTheme();
-            uninstall?.();
         };
     });
 
